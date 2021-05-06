@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Choreo Cue",
-    "slug": "expo.io/@pnarielwala/ChoreoCue",
+    "slug": "expo.io/@pnarielwala/choreo-cue",
     "version": "1.0.0",
     "entryPoint": "./src/index.tsx",
     "orientation": "portrait",
