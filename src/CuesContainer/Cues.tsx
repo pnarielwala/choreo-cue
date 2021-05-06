@@ -1,5 +1,8 @@
-import React from 'react';
-import { StyleSheet, Button, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { Text, Button, View, Alert } from 'react-native';
+import Toast from 'react-native-toast-message';
+
+import * as Device from 'expo-device';
 
 import CueButton from './CueButton';
 
@@ -9,71 +12,106 @@ type PropsT = {
 };
 
 const Cues = (props: PropsT) => {
+  const [triggerReset, setTriggerReset] = useState(false);
+
+  const displayResetConfirmation = () =>
+    Alert.alert('Are you sure?', 'This will clear all your cues', [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Reset',
+        style: 'destructive',
+        onPress: () => {
+          setTriggerReset(true);
+          setTriggerReset(false);
+
+          Toast.show({
+            type: 'success',
+            position: 'top',
+            text1: 'Cues cleared!',
+            visibilityTime: 1000,
+          });
+        },
+      },
+    ]);
   return (
     <View
-      style={{
-        width: '100%',
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        marginLeft: -4,
-        marginRight: -4,
-        marginTop: 16,
-      }}
+      style={
+        {
+          // height: '100%',
+        }
+      }
     >
-      <CueButton
-        currentPosition={props.currentPosition}
-        onPress={props.onPlayFromPosition}
-        color="#f35588"
-        inactiveColor="#f3558899"
-        activeColor="#f35588"
-      />
-      <CueButton
-        currentPosition={props.currentPosition}
-        onPress={props.onPlayFromPosition}
-        color="#05dfd7"
-        inactiveColor="#05dfd799"
-        activeColor="#05dfd7"
-      />
-      <CueButton
-        currentPosition={props.currentPosition}
-        onPress={props.onPlayFromPosition}
-        color="#a3f7bf"
-        inactiveColor="#a3f7bf99"
-        activeColor="#a3f7bf"
-      />
-      <CueButton
-        currentPosition={props.currentPosition}
-        onPress={props.onPlayFromPosition}
-        color="#fff591"
-        inactiveColor="#fff59199"
-        activeColor="#fff591"
-      />
+      <View
+        style={{
+          width: '100%',
+          display: 'flex',
+          justifyContent: 'space-between',
+          flexDirection: 'row',
+          marginTop: 8,
+          marginBottom: 8,
+          alignItems: 'baseline',
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 24,
+            fontWeight: 'bold',
+          }}
+        >
+          Cues
+        </Text>
+      </View>
+      <View
+        style={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          marginHorizontal: -4,
+        }}
+      >
+        <CueButton
+          currentPosition={props.currentPosition}
+          onPress={props.onPlayFromPosition}
+          triggerReset={triggerReset}
+          inactiveColor="#f3558880"
+          activeColor="#f35588"
+        />
+        <CueButton
+          currentPosition={props.currentPosition}
+          onPress={props.onPlayFromPosition}
+          triggerReset={triggerReset}
+          inactiveColor="#05dfd780"
+          activeColor="#05dfd7"
+        />
+        <CueButton
+          currentPosition={props.currentPosition}
+          onPress={props.onPlayFromPosition}
+          triggerReset={triggerReset}
+          inactiveColor="#a3f7bf80"
+          activeColor="#a3f7bf"
+        />
+        <CueButton
+          currentPosition={props.currentPosition}
+          onPress={props.onPlayFromPosition}
+          triggerReset={triggerReset}
+          inactiveColor="#fff59180"
+          activeColor="#fff591"
+        />
+      </View>
+
+      <View style={{ marginTop: 12 }}>
+        <Button
+          onPress={() => displayResetConfirmation()}
+          title="Reset Cues"
+          color="red"
+        >
+          Reset
+        </Button>
+      </View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    width: '25%',
-    padding: 4,
-  },
-  button: {
-    paddingBottom: '100%',
-    width: '100%',
-    borderRadius: 4,
-  },
-  button1: {
-    backgroundColor: '#f35588',
-  },
-  button2: {
-    backgroundColor: '#05dfd7',
-  },
-  button3: {
-    backgroundColor: '#a3f7bf',
-  },
-  button4: {
-    backgroundColor: '#fff591',
-  },
-});
 
 export default Cues;

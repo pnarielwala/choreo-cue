@@ -1,121 +1,94 @@
-import { StatusBar } from 'expo-status-bar';
-import React, { useEffect, useState } from 'react';
-import { Button, StyleSheet, Text, View } from 'react-native';
+import 'react-native-gesture-handler';
+import React from 'react';
+import MusicPlayer from './MusicPlayer';
+import { NavigationContainer } from '@react-navigation/native';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
-import * as MediaLibrary from 'expo-media-library';
+import { createStackNavigator } from '@react-navigation/stack';
+import SplashScreen from './SplashScreen';
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import { Alert } from 'react-native';
+import Toast, { BaseToast, BaseToastProps } from 'react-native-toast-message';
 
-import * as DocumentPicker from 'expo-document-picker';
-
-import Slider from 'react-native-slider';
-
-import RNFetchBlob from 'rn-fetch-blob';
-
-import PlayButton from './PlayButton';
-import TrackSlider from './TrackSlider';
-
-import { Audio, AVPlaybackStatus } from 'expo-av';
-import Cues from './CuesContainer/Cues';
+const Stack = createStackNavigator();
 
 export default function App() {
-  const [sound, setSound] = useState<Audio.Sound>();
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [duration, setDuration] = useState(0);
-  const [timeElapsed, setTimeElapsed] = useState(0);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [trackName, setTrackName] = useState('');
-
-  const onPlaybackStatusUpdate = (status: AVPlaybackStatus) => {
-    if (status.isLoaded) {
-      setIsPlaying(status.isPlaying);
-      setTimeElapsed(status.positionMillis);
-    }
-  };
-
-  async function loadSound() {
-    Audio.setAudioModeAsync({
-      playsInSilentModeIOS: true,
-      staysActiveInBackground: true,
-    });
-    const sound = new Audio.Sound();
-    sound.setOnPlaybackStatusUpdate(onPlaybackStatusUpdate);
-    setSound(sound);
-
-    console.log('Loading Sound');
-    const result = await DocumentPicker.getDocumentAsync({ type: 'audio/*' });
-    if (result.type !== 'success') return;
-
-    const track = await sound.loadAsync(result);
-
-    if (track.isLoaded) {
-      setIsLoaded(true);
-      setTrackName(result.name);
-      track.durationMillis && setDuration(track.durationMillis);
-    }
-  }
-
-  async function playSound() {
-    console.log('Playing Sound');
-    await sound?.playFromPositionAsync(timeElapsed);
-  }
-
-  async function pauseSound() {
-    await sound?.pauseAsync();
-  }
-
-  useEffect(() => {
-    return sound
-      ? () => {
-          console.log('Unloading Sound');
-          sound.unloadAsync();
-        }
-      : undefined;
-  }, []);
-
   return (
-    <View style={styles.container}>
-      {/* <View>
-        <Button
-          onPress={() => {
-            loadSound();
-          }}
-          title="Press Me"
+    <NavigationContainer>
+      <Stack.Navigator
+        initialRouteName="Home"
+        screenOptions={{
+          headerTransparent: true,
+        }}
+      >
+        <Stack.Screen
+          name="Home"
+          component={SplashScreen}
+          options={{ headerShown: false }}
         />
-      </View> */}
-      <Text>{trackName}</Text>
-      <PlayButton
-        onPress={() => {
-          if (isLoaded) {
-            if (isPlaying === false) {
-              playSound();
-            } else {
-              pauseSound();
-            }
-            setIsPlaying((value) => !value);
-          }
+        <Stack.Screen
+          name="Player"
+          component={MusicPlayer}
+          options={({ navigation }) => ({
+            headerTitle: '',
+            gestureEnabled: false,
+
+            headerLeft: (props) => (
+              <TouchableOpacity
+                {...props}
+                onPress={() => {
+                  Alert.alert(
+                    'Are you sure?',
+                    'Exiting will clear all cues and the loaded music',
+                    [
+                      {
+                        style: 'cancel',
+                        text: 'Cancel',
+                      },
+                      {
+                        style: 'destructive',
+                        text: 'Exit',
+                        onPress: navigation.goBack,
+                      },
+                    ],
+                  );
+                }}
+                style={{ flexDirection: 'row', alignItems: 'center' }}
+              >
+                <FontAwesome
+                  name="angle-left"
+                  size={32}
+                  color="#3D425C"
+                  style={{
+                    marginHorizontal: 12,
+                  }}
+                />
+              </TouchableOpacity>
+            ),
+          })}
+        />
+      </Stack.Navigator>
+
+      <Toast
+        config={{
+          success: ({ ...rest }: BaseToastProps) => (
+            <BaseToast
+              {...rest}
+              style={{ borderLeftColor: '#28df99' }}
+              text1Style={{
+                fontSize: 20,
+                fontWeight: '600',
+                marginBottom: 0,
+              }}
+              contentContainerStyle={{
+                paddingHorizontal: 12,
+              }}
+            />
+          ),
         }}
-        state={isPlaying ? 'pause' : 'play'}
+        ref={(ref) => Toast.setRef(ref)}
+        topOffset={45}
       />
-      <TrackSlider
-        duration={duration}
-        currentPosition={timeElapsed}
-        onPositionChange={(value) => {
-          sound?.setPositionAsync(value);
-        }}
-      />
-      <Cues
-        currentPosition={timeElapsed}
-        onPlayFromPosition={(position) => sound?.setPositionAsync(position)}
-      />
-    </View>
+    </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-  },
-});
