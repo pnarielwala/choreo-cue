@@ -61,13 +61,17 @@ export default function MusicPlayer(
 
   useEffect(() => {
     props.route.params && loadSoundFromData(props.route.params?.musicData);
+  }, []);
 
+  useEffect(() => {
     return sound
       ? () => {
           sound.unloadAsync();
         }
-      : undefined;
-  }, []);
+      : () => {
+          console.log('Unabled to unload music: sound missing');
+        };
+  }, [sound]);
 
   return (
     <>
