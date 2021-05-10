@@ -1,15 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import 'react-native-gesture-handler';
+import 'react-native-gesture-handler';
+import React from 'react';
 import { StyleSheet, View, Easing, SafeAreaView } from 'react-native';
 import Spinner from 'react-native-loading-spinner-overlay';
 import TextTicker from 'react-native-text-ticker';
 import { StackScreenProps } from '@react-navigation/stack';
 
-import { Audio, AVPlaybackStatus } from 'expo-av';
-
 import TrackSlider from './TrackSlider';
 import Cues from './CuesContainer/Cues';
 import Controls from './Controls/Controls';
 import Tempo from './Tempo';
+import useMusicPlayer from './hooks/useMusicPlayer';
 
 export type PropsT = {
   musicData: { uri: string; name: string };
@@ -18,60 +19,16 @@ export type PropsT = {
 export default function MusicPlayer(
   props: StackScreenProps<{ Home: undefined; Player: PropsT }>,
 ) {
-  const [sound, setSound] = useState<Audio.Sound>();
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [duration, setDuration] = useState(0);
-  const [timeElapsed, setTimeElapsed] = useState(0);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const onPlaybackStatusUpdate = (status: AVPlaybackStatus) => {
-    if (status.isLoaded) {
-      setIsPlaying(status.isPlaying);
-      setTimeElapsed(status.positionMillis);
-    }
-  };
-
-  const loadSoundFromData = async (data: { uri: string; name: string }) => {
-    Audio.setAudioModeAsync({
-      playsInSilentModeIOS: true,
-      staysActiveInBackground: true,
-    });
-    const sound = new Audio.Sound();
-    sound.setOnPlaybackStatusUpdate(onPlaybackStatusUpdate);
-    setSound(sound);
-
-    const track = await sound.loadAsync(data);
-
-    if (track.isLoaded) {
-      setIsLoaded(true);
-      track.durationMillis && setDuration(track.durationMillis);
-    }
-
-    setIsLoading(false);
-  };
-
-  async function playSound() {
-    await sound?.playAsync();
-  }
-
-  async function pauseSound() {
-    await sound?.pauseAsync();
-  }
-
-  useEffect(() => {
-    props.route.params && loadSoundFromData(props.route.params?.musicData);
-  }, []);
-
-  useEffect(() => {
-    return sound
-      ? () => {
-          sound.unloadAsync();
-        }
-      : () => {
-          console.log('Unabled to unload music: sound missing');
-        };
-  }, [sound]);
+  const {
+    playAudio,
+    pauseAudio,
+    setAudioPosition,
+    setAudioSpeed,
+    isPlaying,
+    currentPosition,
+    duration,
+    details,
+  } = useMusicPlayer(props.route.params?.musicData);
 
   return (
     <>
@@ -90,37 +47,35 @@ export default function MusicPlayer(
               easing={Easing.linear}
               marqueeDelay={1000}
             >
-              {props.route.params?.musicData.name}
+              {details.trackName}
             </TextTicker>
           </View>
 
           <Controls
-            playSound={playSound}
-            pauseSound={pauseSound}
-            currentPosition={timeElapsed}
+            playSound={playAudio}
+            pauseSound={pauseAudio}
+            currentPosition={currentPosition}
             isPlaying={isPlaying}
-            setPosition={(position) => sound?.setPositionAsync(position)}
+            setPosition={setAudioPosition}
           />
 
           <TrackSlider
             duration={duration}
-            currentPosition={timeElapsed}
-            onPositionChange={(value) => {
-              sound?.setPositionAsync(value);
-            }}
-            disabled={!isLoaded || isLoading}
+            currentPosition={currentPosition}
+            onPositionChange={setAudioPosition}
+            disabled={false}
           />
 
-          <Tempo setRate={(tempo) => sound?.setRateAsync(tempo, true)} />
+          <Tempo setRate={setAudioSpeed} />
 
           <Cues
-            currentPosition={timeElapsed}
-            onPlayFromPosition={(position) => sound?.setPositionAsync(position)}
+            currentPosition={currentPosition}
+            onPlayFromPosition={setAudioPosition}
           />
         </View>
       </SafeAreaView>
 
-      <Spinner visible={isLoading} />
+      <Spinner visible={false} />
     </>
   );
 }
