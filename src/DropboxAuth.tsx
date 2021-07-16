@@ -48,6 +48,11 @@ const DropboxAuthButton = ({ onCheckAuth }: PropsT) => {
 
   const authenticate = async () => {
     try {
+      const storageValue = await SecureStore.getItemAsync(
+        DROPBOX_AUTH_STATE_KEY,
+      );
+      const auth = JSON.parse(storageValue ?? '{}');
+      dropboxAddAuth(auth.access_token);
       await checkDropboxAuth();
       onCheckAuth(true);
     } catch (e) {

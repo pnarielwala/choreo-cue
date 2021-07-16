@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { View, Image, SafeAreaView, Platform } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
 
@@ -9,14 +9,17 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 
 import DropboxAuthButton from './DropboxAuth';
 import { getFolderContents } from './api/dropboxClient';
+import { useQueryClient } from 'react-query';
+import { ScreenPropsT as DropboxNavigatorPropsT } from './DropboxNavigator';
 
 export default function SplashScreen(
   props: StackScreenProps<{
     Home: undefined;
     Player: MusicPlayerPropsT;
-    DropboxAuth: undefined;
+    DropboxNavigator: DropboxNavigatorPropsT;
   }>,
 ) {
+  const queryClient = useQueryClient();
   return (
     <View style={{ position: 'relative', height: '100%' }}>
       <SafeAreaView
@@ -64,11 +67,17 @@ export default function SplashScreen(
             />
           </TouchableOpacity>
           <DropboxAuthButton
-            onCheckAuth={(authenticated) => {
+            onCheckAuth={async (authenticated) => {
               if (authenticated) {
-                getFolderContents('').then((data) => {
-                  const files = data.data.entries.map((entry) => entry.name);
-                  console.log('files', files);
+                if (!queryClient.getQueryData(['dropbox-contents', ''])) {
+                  await queryClient.prefetchQuery(
+                    ['dropbox-contents', ''],
+                    () => getFolderContents(''),
+                  );
+                }
+                props.navigation.push('DropboxNavigator', {
+                  path: '',
+                  name: 'Home',
                 });
               }
             }}

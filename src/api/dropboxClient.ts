@@ -1,7 +1,12 @@
 import axios, { AxiosResponse } from 'axios';
+import * as FileSystem from 'expo-file-system';
 
 const dropboxClient = axios.create({
   baseURL: 'https://api.dropboxapi.com/2',
+});
+
+const dropboxDownloadClient = axios.create({
+  baseURL: 'https://content.dropboxapi.com/2',
 });
 
 export const dropboxAddAuth = (access_token: string) => {
@@ -9,22 +14,77 @@ export const dropboxAddAuth = (access_token: string) => {
     Authorization: `Bearer ${access_token}`,
     'Content-Type': 'application/json',
   };
+  dropboxDownloadClient.defaults.headers = {
+    Authorization: `Bearer ${access_token}`,
+  };
 };
 
 export const checkDropboxAuth = async () =>
   await dropboxClient.post('/check/user', {});
+
+export const downloadFile = async (params: {
+  path: string;
+  name: string;
+}): Promise<{ name: string; uri: string } | undefined> => {
+  const { name, path } = params;
+  const results = await FileSystem.getInfoAsync(
+    String(FileSystem.documentDirectory),
+  );
+
+  if (results.isDirectory) {
+    const contents = await FileSystem.readDirectoryAsync(
+      String(FileSystem.documentDirectory),
+    );
+    console.log('contents', contents);
+
+    const promises = contents.map((fileName) =>
+      FileSystem.deleteAsync(
+        FileSystem.documentDirectory + encodeURI(fileName),
+      ),
+    );
+    await Promise.all(promises);
+  }
+  if (results.exists) {
+    const headers = {
+      Authorization: dropboxClient.defaults.headers.Authorization,
+      'Dropbox-API-Arg': JSON.stringify({ path }),
+    };
+
+    const dlResults = await FileSystem.downloadAsync(
+      'https://content.dropboxapi.com/2/files/download',
+      FileSystem.documentDirectory + encodeURI(name),
+      {
+        headers,
+      },
+    );
+
+    return { name, uri: dlResults.uri };
+  }
+};
+
+type EntryT =
+  | {
+      '.tag': 'folder';
+      id: string;
+      name: string;
+      path_display: string;
+    }
+  | {
+      '.tag': 'file';
+      id: string;
+      name: string;
+      path_display: string;
+      content_hash: string;
+      size: string;
+      is_downloadable: boolean;
+    };
 
 export const getFolderContents = async (
   path: string,
 ): Promise<
   AxiosResponse<{
     cursor: string;
-    entries: Array<{
-      '.tag': 'folder' | 'file';
-      id: string;
-      name: string;
-      path_display: string;
-    }>;
+    entries: Array<EntryT>;
     has_more: boolean;
   }>
 > =>
