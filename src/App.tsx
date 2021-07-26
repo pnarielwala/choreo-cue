@@ -1,16 +1,16 @@
 import 'react-native-gesture-handler';
 import React from 'react';
-import MusicPlayer from './MusicPlayer';
 import { NavigationContainer } from '@react-navigation/native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-
-import { createStackNavigator } from '@react-navigation/stack';
-import SplashScreen from './SplashScreen';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Alert } from 'react-native';
 import Toast, { BaseToast, BaseToastProps } from 'react-native-toast-message';
-import DropboxNavigator from './DropboxNavigator';
 import { QueryClient, QueryClientProvider } from 'react-query';
+import { createStackNavigator } from '@react-navigation/stack';
+
+import MusicPlayer from 'screens/MusicPlayer';
+import Main from 'screens/Main';
+import DropboxNavigator from 'screens/DropboxNavigator';
 
 import { DripsyProvider } from 'dripsy';
 
@@ -28,7 +28,7 @@ const MainStackScreen = () => {
       <MainStack.Screen
         options={{ headerShown: false }}
         name="Home"
-        component={SplashScreen}
+        component={Main}
       />
       <MainStack.Screen
         name="Player"

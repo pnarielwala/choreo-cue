@@ -1,24 +1,19 @@
 import 'react-native-gesture-handler';
-import 'react-native-gesture-handler';
 import React from 'react';
 import { StyleSheet, View, Easing, SafeAreaView } from 'react-native';
 import Spinner from 'react-native-loading-spinner-overlay';
 import TextTicker from 'react-native-text-ticker';
-import { StackScreenProps } from '@react-navigation/stack';
 
-import TrackSlider from './TrackSlider';
-import Cues from './CuesContainer/Cues';
-import Controls from './Controls/Controls';
-import Tempo from './Tempo';
-import useMusicPlayer from './hooks/useMusicPlayer';
+import TrackSlider from './components/TrackSlider';
+import Cues from './components/CuesContainer/Cues';
+import Controls from './components/Controls/Controls';
+import Tempo from './components/Tempo';
+import useMusicPlayer from 'hooks/useMusicPlayer';
+import { ScreenPropsT } from 'screens/ScreenProps';
 
-export type PropsT = {
-  musicData: { uri: string; name: string };
-};
+export type PropsT = ScreenPropsT<'Player'>;
 
-export default function MusicPlayer(
-  props: StackScreenProps<{ Home: undefined; Player: PropsT }>,
-) {
+const MusicPlayer = (props: PropsT) => {
   const {
     playAudio,
     pauseAudio,
@@ -28,7 +23,7 @@ export default function MusicPlayer(
     currentPosition,
     duration,
     details,
-  } = useMusicPlayer(props.route.params?.musicData);
+  } = useMusicPlayer(props.route.params.musicData);
 
   return (
     <>
@@ -78,7 +73,7 @@ export default function MusicPlayer(
       <Spinner visible={false} />
     </>
   );
-}
+};
 
 const styles = StyleSheet.create({
   safeContainer: {
@@ -94,3 +89,5 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
 });
+
+export default MusicPlayer;

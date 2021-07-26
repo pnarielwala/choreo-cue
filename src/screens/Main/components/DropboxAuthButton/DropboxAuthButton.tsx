@@ -4,11 +4,11 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import { useAuthRequest } from 'expo-auth-session';
 
 import * as SecureStore from 'expo-secure-store';
-import { checkDropboxAuth, dropboxAddAuth } from './api/dropboxClient';
+import { checkDropboxAuth, dropboxAddAuth } from 'api/dropboxClient';
 
 const DROPBOX_AUTH_STATE_KEY = 'ChoreoCue_Dropbox';
 
-type PropsT = {
+export type PropsT = {
   onCheckAuth: (authenticated: boolean) => void;
 };
 
@@ -67,7 +67,7 @@ const DropboxAuthButton = ({ onCheckAuth }: PropsT) => {
       }}
     >
       <Image
-        source={require('./assets/dropbox.png')}
+        source={require('assets/dropbox.png')}
         resizeMode="contain"
         style={{ width: 50, height: 50 }}
       />

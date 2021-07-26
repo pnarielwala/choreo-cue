@@ -35,7 +35,6 @@ export const downloadFile = async (params: {
     const contents = await FileSystem.readDirectoryAsync(
       String(FileSystem.documentDirectory),
     );
-    console.log('contents', contents);
 
     const promises = contents.map((fileName) =>
       FileSystem.deleteAsync(

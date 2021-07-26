@@ -1,24 +1,16 @@
 import React from 'react';
-import { View, Image, SafeAreaView, Platform } from 'react-native';
-import { StackScreenProps } from '@react-navigation/stack';
+import { View, Image, SafeAreaView } from 'dripsy';
 
-import type { PropsT as MusicPlayerPropsT } from './MusicPlayer';
 import * as DocumentPicker from 'expo-document-picker';
 
 import { TouchableOpacity } from 'react-native-gesture-handler';
 
-import DropboxAuthButton from './DropboxAuth';
-import { getFolderContents } from './api/dropboxClient';
+import DropboxAuthButton from './components/DropboxAuthButton';
+import { getFolderContents } from 'api/dropboxClient';
 import { useQueryClient } from 'react-query';
-import { ScreenPropsT as DropboxNavigatorPropsT } from './DropboxNavigator';
+import { ScreenPropsT } from 'screens/ScreenProps';
 
-export default function SplashScreen(
-  props: StackScreenProps<{
-    Home: undefined;
-    Player: MusicPlayerPropsT;
-    DropboxNavigator: DropboxNavigatorPropsT;
-  }>,
-) {
+export default function SplashScreen(props: ScreenPropsT<'Home'>) {
   const queryClient = useQueryClient();
   return (
     <View style={{ position: 'relative', height: '100%' }}>
@@ -32,7 +24,7 @@ export default function SplashScreen(
             zIndex: -1,
           }}
           resizeMode="contain"
-          source={require('./assets/splash.png')}
+          source={require('assets/splash.png')}
         />
         {/* 
         Create a button group "bar" to contain
@@ -55,13 +47,12 @@ export default function SplashScreen(
                 type: 'audio/*',
               });
               if (result.type === 'success') {
-                console.log('result', result);
                 props.navigation.push('Player', { musicData: result });
               }
             }}
           >
             <Image
-              source={require('./assets/icloud.png')}
+              source={require('assets/icloud.png')}
               resizeMode="contain"
               style={{ width: 50, height: 50 }}
             />
@@ -84,7 +75,7 @@ export default function SplashScreen(
           />
           <TouchableOpacity>
             <Image
-              source={require('./assets/google-drive.png')}
+              source={require('assets/google-drive.png')}
               resizeMode="contain"
               style={{ width: 50, height: 50 }}
             />

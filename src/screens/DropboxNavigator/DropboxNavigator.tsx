@@ -1,28 +1,20 @@
 import React, { useEffect } from 'react';
 import { SafeAreaView, FlatList, TouchableOpacity, Alert } from 'react-native';
 import { useMutation, useQuery } from 'react-query';
-import { downloadFile, getFolderContents } from './api/dropboxClient';
 
 import Icon from 'react-native-vector-icons/FontAwesome5';
+import { Text } from 'dripsy';
 
-import { Text, Flex, Box } from 'dripsy';
-import { StackScreenProps } from '@react-navigation/stack';
-
-import { PropsT as MusicPlayerPropsT } from './MusicPlayer';
 import Spinner from 'react-native-loading-spinner-overlay';
 import { ListItem } from 'react-native-elements';
 
-export type ScreenPropsT = {
-  path: string;
-  name: string;
-};
+import { downloadFile, getFolderContents } from 'api/dropboxClient';
 
-const DropboxNavigator = (
-  props: StackScreenProps<
-    { Player: MusicPlayerPropsT; DropboxNavigator: ScreenPropsT },
-    'DropboxNavigator'
-  >,
-) => {
+import { ScreenPropsT } from 'screens/ScreenProps';
+
+export type PropsT = ScreenPropsT<'DropboxNavigator'>;
+
+const DropboxNavigator = (props: PropsT) => {
   const path = props.route.params.path;
   const folderName = props.route.params.name;
 
