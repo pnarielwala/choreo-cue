@@ -1,14 +1,13 @@
-import React, { useEffect } from 'react';
-import { Image, Platform } from 'react-native';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import { useEffect } from 'react';
+import { Platform } from 'react-native';
 import { useAuthRequest } from 'expo-auth-session';
 
 import * as SecureStore from 'expo-secure-store';
 import { checkDropboxAuth, dropboxAddAuth } from 'api/dropboxClient';
 
-const DROPBOX_AUTH_STATE_KEY = 'ChoreoCue_Dropbox';
+export const DROPBOX_AUTH_STATE_KEY = 'ChoreoCue_Dropbox';
 
-export type PropsT = {
+type PropsT = {
   onCheckAuth: (authenticated: boolean) => void;
 };
 
@@ -17,7 +16,7 @@ const discovery = {
   tokenEndpoint: 'https://www.dropbox.com/oauth2/token',
 };
 
-const DropboxAuthButton = ({ onCheckAuth }: PropsT) => {
+const useDropBoxAuth = ({ onCheckAuth }: PropsT) => {
   const [, response, promptAsync] = useAuthRequest(
     {
       clientId: '7chw5fn2w0v0jkz',
@@ -60,19 +59,9 @@ const DropboxAuthButton = ({ onCheckAuth }: PropsT) => {
     }
   };
 
-  return (
-    <TouchableOpacity
-      onPress={() => {
-        authenticate();
-      }}
-    >
-      <Image
-        source={require('assets/dropbox.png')}
-        resizeMode="contain"
-        style={{ width: 50, height: 50 }}
-      />
-    </TouchableOpacity>
-  );
+  return {
+    authenticate,
+  };
 };
 
-export default DropboxAuthButton;
+export default useDropBoxAuth;

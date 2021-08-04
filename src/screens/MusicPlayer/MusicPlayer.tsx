@@ -9,7 +9,7 @@ import Cues from './components/CuesContainer/Cues';
 import Controls from './components/Controls/Controls';
 import Tempo from './components/Tempo';
 import useMusicPlayer from 'hooks/useMusicPlayer';
-import { ScreenPropsT } from 'screens/ScreenProps';
+import { ScreenPropsT } from 'App';
 
 export type PropsT = ScreenPropsT<'Player'>;
 

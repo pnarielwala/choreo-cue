@@ -1,104 +1,81 @@
 import 'react-native-gesture-handler';
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import { TouchableOpacity } from 'react-native-gesture-handler';
-import { Alert } from 'react-native';
 import Toast, { BaseToast, BaseToastProps } from 'react-native-toast-message';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import { createStackNavigator } from '@react-navigation/stack';
-
-import MusicPlayer from 'screens/MusicPlayer';
-import Main from 'screens/Main';
-import DropboxNavigator from 'screens/DropboxNavigator';
+import {
+  StackScreenProps,
+  createStackNavigator,
+  StackNavigationOptions,
+} from '@react-navigation/stack';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
 import { DripsyProvider } from 'dripsy';
-
 import theme from './theme';
-const RootStack = createStackNavigator();
-const MainStack = createStackNavigator();
 
-const MainStackScreen = () => {
-  return (
-    <MainStack.Navigator
-      screenOptions={{
-        headerTransparent: true,
-      }}
-    >
-      <MainStack.Screen
-        options={{ headerShown: false }}
-        name="Home"
-        component={Main}
-      />
-      <MainStack.Screen
-        name="Player"
-        component={MusicPlayer}
-        options={({ navigation }) => ({
-          headerTitle: '',
-          gestureEnabled: false,
+import Main from 'screens/Main';
+import MusicPlayer from 'screens/MusicPlayer';
+import DropboxNavigator from 'screens/DropboxNavigator';
 
-          headerLeft: (props) => (
-            <TouchableOpacity
-              {...props}
-              onPress={() => {
-                Alert.alert(
-                  'Are you sure?',
-                  'Exiting will clear all cues and the loaded music',
-                  [
-                    {
-                      style: 'cancel',
-                      text: 'Cancel',
-                    },
-                    {
-                      style: 'destructive',
-                      text: 'Exit',
-                      onPress: navigation.goBack,
-                    },
-                  ],
-                );
-              }}
-              style={{ flexDirection: 'row', alignItems: 'center' }}
-            >
-              <FontAwesome
-                name="angle-left"
-                size={32}
-                color="#3D425C"
-                style={{
-                  marginHorizontal: 12,
-                }}
-              />
-            </TouchableOpacity>
-          ),
-        })}
-      />
-    </MainStack.Navigator>
-  );
+type StacksT = {
+  Home: undefined;
+  Player: {
+    musicData: { uri: string; name: string };
+  };
+  DropboxNavigator: {
+    path: string;
+    name: string;
+  };
 };
 
-export default function App() {
+export type ScreenPropsT<T extends keyof StacksT> = StackScreenProps<
+  StacksT,
+  T
+>;
+
+const RootStack = createStackNavigator();
+
+const App = () => {
+  const screenOptions: StackNavigationOptions = {
+    headerTitle: '',
+    headerTransparent: true,
+    headerBackTitleVisible: false,
+    headerBackImage: () => (
+      <FontAwesome
+        name="angle-left"
+        size={32}
+        color="#3D425C"
+        style={{
+          marginHorizontal: 12,
+        }}
+      />
+    ),
+  };
+  const modalOptions: StackNavigationOptions = {
+    presentation: 'modal',
+  };
   return (
     <DripsyProvider theme={theme}>
       <QueryClientProvider client={new QueryClient()}>
         <NavigationContainer>
-          <RootStack.Navigator
-            initialRouteName="Home"
-            screenOptions={{
-              headerTransparent: true,
-            }}
-            mode="modal"
-          >
-            <RootStack.Screen
-              name="Main"
-              component={MainStackScreen}
-              options={{ headerShown: false }}
-            />
-            <RootStack.Screen
-              name="DropboxNavigator"
-              component={DropboxNavigator}
-              options={{
-                headerTransparent: false,
-              }}
-            />
+          <RootStack.Navigator initialRouteName="Home">
+            {/* Normal Stack Screens */}
+            <RootStack.Group screenOptions={screenOptions}>
+              <RootStack.Screen name="Home" component={Main} />
+              <RootStack.Screen
+                name="Player"
+                component={MusicPlayer}
+                options={{ gestureEnabled: false }}
+              />
+            </RootStack.Group>
+
+            {/* Modal Stack Screens */}
+            <RootStack.Group screenOptions={modalOptions}>
+              <RootStack.Screen
+                name="DropboxNavigator"
+                component={DropboxNavigator}
+              />
+            </RootStack.Group>
           </RootStack.Navigator>
 
           <Toast
@@ -125,4 +102,6 @@ export default function App() {
       </QueryClientProvider>
     </DripsyProvider>
   );
-}
+};
+
+export default App;

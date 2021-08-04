@@ -10,7 +10,7 @@ import { ListItem } from 'react-native-elements';
 
 import { downloadFile, getFolderContents } from 'api/dropboxClient';
 
-import { ScreenPropsT } from 'screens/ScreenProps';
+import { ScreenPropsT } from 'App';
 
 export type PropsT = ScreenPropsT<'DropboxNavigator'>;
 
