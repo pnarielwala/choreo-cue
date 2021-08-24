@@ -1,13 +1,14 @@
 name: GitHub Actions Demo
 on: [push]
 jobs:
-  install:
+  setup:
+    name: Install dependencies
+    runs-on: ubuntu-latest
     steps:
-      - name: Install dependencies
       - run: yarn install
   test:
+    name: Run unit tests
     needs: install
     runs-on: ubuntu-latest
     steps:
-      - name: Run unit tests
       - run: yarn jest --runInband
