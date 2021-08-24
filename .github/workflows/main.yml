@@ -5,6 +5,7 @@ jobs:
     name: Install dependencies
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@${{github.sha}}
       - run: yarn install
   test:
     name: Run unit tests
