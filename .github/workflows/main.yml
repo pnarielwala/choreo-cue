@@ -8,7 +8,7 @@ jobs:
       - run: yarn install
   test:
     name: Run unit tests
-    needs: install
+    needs: setup
     runs-on: ubuntu-latest
     steps:
       - run: yarn jest --runInband
