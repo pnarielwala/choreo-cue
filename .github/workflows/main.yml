@@ -1,5 +1,7 @@
-name: GitHub Actions Demo
+name: Choreo Cue
+
 on: [push]
+
 jobs:
   setup:
     name: Install dependencies
@@ -11,6 +13,7 @@ jobs:
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+      - name: Install dependencies
       - run: yarn install
   test:
     name: Run unit tests
@@ -23,4 +26,5 @@ jobs:
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+      - name: Run unit tests
       - run: yarn jest --runInBand
