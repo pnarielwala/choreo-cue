@@ -14,7 +14,7 @@ jobs:
           path: '**/node_modules'
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
       - name: Install dependencies
-      - run: yarn install
+        run: yarn install
   test:
     name: Run unit tests
     needs: setup
@@ -27,4 +27,4 @@ jobs:
           path: '**/node_modules'
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
       - name: Run unit tests
-      - run: yarn jest --runInBand
+        run: yarn jest --runInBand
