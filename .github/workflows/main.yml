@@ -6,10 +6,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@main
+      - uses: actions/cache@v2
       - run: yarn install
   test:
     name: Run unit tests
     needs: setup
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@main
+      - uses: actions/cache@v2
       - run: yarn jest --runInband
