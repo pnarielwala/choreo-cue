@@ -23,4 +23,4 @@ jobs:
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-      - run: yarn jest --runInband
+      - run: yarn jest --runInBand
