@@ -52,7 +52,7 @@ jobs:
         run: yarn jest --runInBand
   publish:
     name: Publish expo version
-    needs: test
+    needs: [test, typecheck]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@main
