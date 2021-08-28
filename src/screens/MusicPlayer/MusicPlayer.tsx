@@ -3,6 +3,7 @@ import React from 'react';
 import { StyleSheet, View, Easing, SafeAreaView } from 'react-native';
 import Spinner from 'react-native-loading-spinner-overlay';
 import TextTicker from 'react-native-text-ticker';
+import { useKeepAwake } from 'expo-keep-awake';
 
 import TrackSlider from './components/TrackSlider';
 import Cues from './components/CuesContainer/Cues';
@@ -14,6 +15,7 @@ import { ScreenPropsT } from 'App';
 export type PropsT = ScreenPropsT<'Player'>;
 
 const MusicPlayer = (props: PropsT) => {
+  useKeepAwake();
   const {
     playAudio,
     pauseAudio,
