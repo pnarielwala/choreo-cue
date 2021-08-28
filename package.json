@@ -94,9 +94,7 @@
   },
   "release": {
     "branches": [
-      "main",
-      "beta",
-      "add-semantic-versioning"
+      "main"
     ],
     "plugins": [
       "semantic-release-expo"
