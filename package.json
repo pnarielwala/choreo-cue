@@ -2,6 +2,7 @@
   "name": "choreo-cue",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
+    "commit": "git add . && git commit",
     "start": "NODE_ENV=development expo start",
     "build:ios": "NODE_ENV=production expo build:ios",
     "build:android": "NODE_ENV=production expo build:android",
