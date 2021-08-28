@@ -1,0 +1,55 @@
+name: Choreo Cue - development branches
+
+on:
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  setup:
+    name: Install dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 'lts/*'
+      - uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+      - name: Install dependencies
+        run: yarn install
+  test:
+    name: Run unit tests
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 'lts/*'
+      - uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+      - name: Run unit tests
+        run: yarn jest --runInBand
+  publish:
+    name: Publish expo version
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 'lts/*'
+      - uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+      - name: Publish
+        env:
+          EXPO_USERNAME: ${{ secrets.EXPO_USERNAME }}
+          EXPO_PASSWORD: ${{ secrets.EXPO_PASSWORD }}
+        run: yarn semantic-release --debug

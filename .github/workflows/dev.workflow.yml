@@ -1,6 +1,10 @@
-name: Choreo Cue
+name: Choreo Cue - development branches
 
-on: [push]
+on:
+  push:
+    branches:
+      - '**'
+      - '!main'
 
 jobs:
   setup:
@@ -8,7 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@main
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 'lts/*'
       - uses: actions/cache@v2
         with:
           path: '**/node_modules'
@@ -21,7 +27,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@main
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 'lts/*'
       - uses: actions/cache@v2
         with:
           path: '**/node_modules'
