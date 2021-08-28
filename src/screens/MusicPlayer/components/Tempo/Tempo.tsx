@@ -21,7 +21,7 @@ const TEMPOS: { [key: number]: { rate: number; display: string } } = {
   },
 };
 
-type PropsT = {
+export type PropsT = {
   setRate: (tempo: number) => void;
 };
 

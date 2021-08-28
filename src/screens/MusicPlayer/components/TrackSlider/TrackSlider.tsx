@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import Slider from 'react-native-slider';
 import format from 'format-duration';
 
-type PropsT = {
+export type PropsT = {
   duration: number;
   currentPosition: number;
   onPositionChange: (value: number) => void;
