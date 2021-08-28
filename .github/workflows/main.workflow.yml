@@ -1,4 +1,4 @@
-name: Choreo Cue - development branches
+name: Production workflow
 
 on:
   push:
