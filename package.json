@@ -95,7 +95,10 @@
   },
   "release": {
     "branches": [
-      "main"
+      {
+        "name": "main",
+        "channel": "prod-v1"
+      }
     ],
     "plugins": [
       "semantic-release-expo"
@@ -126,7 +129,7 @@
       [
         "@semantic-release/exec",
         {
-          "publishCmd": "yarn expo publish"
+          "publishCmd": "yarn expo publish --release-channel ${options.channel}"
         }
       ]
     ]
