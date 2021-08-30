@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
 import * as FileSystem from 'expo-file-system';
+import { DropboxEntryT } from 'types/Dropbox';
 
 const dropboxClient = axios.create({
   baseURL: 'https://api.dropboxapi.com/2',
@@ -61,29 +62,12 @@ export const downloadFile = async (params: {
   }
 };
 
-type EntryT =
-  | {
-      '.tag': 'folder';
-      id: string;
-      name: string;
-      path_display: string;
-    }
-  | {
-      '.tag': 'file';
-      id: string;
-      name: string;
-      path_display: string;
-      content_hash: string;
-      size: string;
-      is_downloadable: boolean;
-    };
-
 export const getFolderContents = async (
   path: string,
 ): Promise<
   AxiosResponse<{
     cursor: string;
-    entries: Array<EntryT>;
+    entries: Array<DropboxEntryT>;
     has_more: boolean;
   }>
 > =>

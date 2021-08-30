@@ -25,20 +25,16 @@ const DropboxNavigator = (props: PropsT) => {
     });
   }, []);
 
-  const { data } = useQuery(
-    ['dropbox-contents', path],
-    () => getFolderContents(path),
-    {
-      enabled: !!path,
-      cacheTime: Infinity,
-      staleTime: Infinity,
-    },
+  const { data } = useQuery(['dropbox-contents', path], () =>
+    getFolderContents(path),
   );
 
   const { mutate: doDownloadFile, isLoading } = useMutation(downloadFile, {
     onSuccess: (response) => {
       if (response) {
-        props.navigation.popToTop();
+        if (props.navigation.canGoBack()) {
+          props.navigation.popToTop();
+        }
         props.navigation.push('Player', {
           musicData: {
             name: response.name,
@@ -82,6 +78,7 @@ const DropboxNavigator = (props: PropsT) => {
                   }
                 }
               }}
+              testID={`clickable-${item.name}`}
             >
               <ListItem bottomDivider={true}>
                 {item['.tag'] === 'folder' ? (
@@ -94,11 +91,7 @@ const DropboxNavigator = (props: PropsT) => {
                   >
                     {item.name}
                   </Text>
-                  {/* <ListItem.Subtitle>{l.subtitle}</ListItem.Subtitle> */}
                 </ListItem.Content>
-                {/* <Flex sx={{ p: 3, alignItems: 'center' }}>
-              <Text>{item.name}</Text>
-            </Flex> */}
               </ListItem>
             </TouchableOpacity>
           );

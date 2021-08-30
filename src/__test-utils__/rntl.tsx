@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { render, RenderOptions } from '@testing-library/react-native';
+import { ReactTestInstance } from 'react-test-renderer';
 import {
   DefaultOptions,
   MutationCache,
@@ -70,6 +71,12 @@ function renderWithProviders(
   return { ...result, rerender };
 }
 
+const debug = (instance: ReactTestInstance) => {
+  const { debug } = render(React.createElement(instance.type, instance.props));
+
+  return debug();
+};
+
 export * from '@testing-library/react-native';
 
-export { renderWithProviders };
+export { renderWithProviders, debug };
