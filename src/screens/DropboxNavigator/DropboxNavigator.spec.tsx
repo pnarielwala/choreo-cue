@@ -18,7 +18,7 @@ import { anApiResponse } from '__test-utils__/builders/apiResponseBuilder';
 import { downloadFile, getFolderContents } from 'api/dropboxClient';
 
 import DropboxNavigator from './DropboxNavigator';
-import { ScreenPropsT } from 'App';
+import { ScreenPropsT, StacksT } from 'App';
 
 jest.mock('api/dropboxClient');
 
@@ -26,7 +26,7 @@ afterEach(cleanup);
 
 type ScreenParamsT = ScreenPropsT<'DropboxNavigator'>['route']['params'];
 
-const Stack = createStackNavigator();
+const Stack = createStackNavigator<StacksT>();
 
 const doRenderWithProviders = (
   initialParams: ScreenParamsT = { name: 'Home', path: '' },
@@ -40,9 +40,7 @@ const doRenderWithProviders = (
       />
       <Stack.Screen name="Player">
         {({ route }) => (
-          <Text>{`Player screen: ${
-            (route.params as any)?.musicData.name
-          }`}</Text>
+          <Text>{`Player screen: ${route.params.musicData.name}`}</Text>
         )}
       </Stack.Screen>
     </Stack.Navigator>,

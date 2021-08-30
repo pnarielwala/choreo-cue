@@ -17,7 +17,7 @@ import Main from 'screens/Main';
 import MusicPlayer from 'screens/MusicPlayer';
 import DropboxNavigator from 'screens/DropboxNavigator';
 
-type StacksT = {
+export type StacksT = {
   Home: undefined;
   Player: {
     musicData: { uri: string; name: string };
@@ -33,7 +33,7 @@ export type ScreenPropsT<T extends keyof StacksT> = StackScreenProps<
   T
 >;
 
-const RootStack = createStackNavigator();
+const RootStack = createStackNavigator<StacksT>();
 
 const App = () => {
   const screenOptions: StackNavigationOptions = {
