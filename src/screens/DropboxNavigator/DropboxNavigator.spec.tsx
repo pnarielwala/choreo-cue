@@ -19,6 +19,7 @@ import { downloadFile, getFolderContents } from 'api/dropboxClient';
 
 import DropboxNavigator from './DropboxNavigator';
 import { ScreenPropsT, StacksT } from 'App';
+import { Pressable } from 'design';
 
 jest.mock('api/dropboxClient');
 
@@ -30,9 +31,10 @@ const Stack = createStackNavigator<StacksT>();
 
 const doRenderWithProviders = (
   initialParams: ScreenParamsT = { name: 'Home', path: '' },
+  initialRouteName: keyof StacksT = 'DropboxNavigator',
 ) => {
   return renderWithProviders(
-    <Stack.Navigator initialRouteName={'DropboxNavigator'}>
+    <Stack.Navigator initialRouteName={initialRouteName}>
       <Stack.Screen
         name="DropboxNavigator"
         component={DropboxNavigator}
@@ -41,6 +43,20 @@ const doRenderWithProviders = (
       <Stack.Screen name="Player">
         {({ route }) => (
           <Text>{`Player screen: ${route.params.musicData.name}`}</Text>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="Home">
+        {({ navigation }) => (
+          <Pressable
+            onPress={() =>
+              navigation.push('DropboxNavigator', {
+                name: 'Home',
+                path: '',
+              })
+            }
+          >
+            <Text>Go to dropbox</Text>
+          </Pressable>
         )}
       </Stack.Screen>
     </Stack.Navigator>,
@@ -156,4 +172,93 @@ it('should display unsupported files and throw alert when trying to download', a
     'Unsupported file type',
     'Unable to download this file. Please select an .mp3 file',
   );
+});
+
+it('go navigate back up the dropbox folder heirarchy', async () => {
+  mock(getFolderContents).mockResolvedValueOnce(
+    anApiResponse({
+      data: {
+        cursor: '',
+        entries: [
+          aDropboxEntryFolder({
+            name: 'Music',
+            path_display: '/Music',
+          }),
+        ],
+        has_more: false,
+      },
+    }),
+  );
+  const { getByText, getByA11yLabel, queryByText, debug } =
+    doRenderWithProviders();
+
+  await waitFor(() => getByText('Music'));
+
+  mock(getFolderContents).mockResolvedValueOnce(
+    anApiResponse({
+      data: {
+        cursor: '',
+        entries: [
+          aDropboxEntryFile({
+            name: 'Forever - Chris Brown.mp3',
+            path_display: '/Music/Forever - Chris Brown.mp3',
+          }),
+        ],
+        has_more: false,
+      },
+    }),
+  );
+  fireEvent.press(getByText('Music'));
+
+  await waitFor(() => getByText('Forever - Chris Brown.mp3'));
+
+  mock(getFolderContents).mockResolvedValueOnce(
+    anApiResponse({
+      data: {
+        cursor: '',
+        entries: [
+          aDropboxEntryFolder({
+            name: 'Music',
+            path_display: '/Music',
+          }),
+        ],
+        has_more: false,
+      },
+    }),
+  );
+  fireEvent.press(getByA11yLabel('Back'));
+  await waitFor(() =>
+    expect(queryByText('Forever - Chris Brown.mp3')).toBeNull(),
+  );
+
+  expect(queryByText('Music')).not.toBeNull();
+});
+
+it('should close navigator', async () => {
+  mock(getFolderContents).mockResolvedValue(
+    anApiResponse({
+      data: {
+        cursor: '',
+        entries: [
+          aDropboxEntryFolder({
+            name: 'Music',
+            path_display: '/Music',
+          }),
+        ],
+        has_more: false,
+      },
+    }),
+  );
+  const { getByText, queryByText, getByA11yLabel } = doRenderWithProviders(
+    undefined,
+    'Home',
+  );
+
+  fireEvent.press(getByText('Go to dropbox'));
+
+  await waitFor(() => getByText('Music'));
+
+  fireEvent.press(getByA11yLabel('Close'));
+
+  await waitFor(() => expect(queryByText('Music')).toBeNull());
 });

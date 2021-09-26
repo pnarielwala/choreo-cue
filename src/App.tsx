@@ -10,8 +10,9 @@ import {
 } from '@react-navigation/stack';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
-import { DripsyProvider } from 'dripsy';
-import theme from './theme';
+import { DripsyProvider, Icon, Pressable } from 'design';
+import theme from './design/theme';
+import Close from 'assets/xmark.svg';
 
 import Main from 'screens/Main';
 import MusicPlayer from 'screens/MusicPlayer';
@@ -53,6 +54,9 @@ const App = () => {
   };
   const modalOptions: StackNavigationOptions = {
     presentation: 'modal',
+    headerTitle: '',
+    headerTransparent: true,
+    headerBackTitleVisible: false,
   };
   return (
     <DripsyProvider theme={theme}>
