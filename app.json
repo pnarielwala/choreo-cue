@@ -2,7 +2,7 @@
   "expo": {
     "name": "Choreo Cue",
     "slug": "choreo-cue",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "entryPoint": "./src/index.tsx",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -20,7 +20,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.pnarielwala.choreo-cue",
-      "buildNumber": "1.0.1"
+      "buildNumber": "1.1.0"
     },
     "android": {
       "adaptiveIcon": {
