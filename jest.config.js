@@ -7,4 +7,7 @@ module.exports = {
   ],
   setupFiles: ['<rootDir>/src/__test-utils__/setup.ts'],
   setupFilesAfterEnv: ['<rootDir>/src/__test-utils__/setupEnv.ts'],
+  moduleNameMapper: {
+    '\\.svg': '<rootDir>/src/__test-utils__/svgMock.tsx',
+  },
 };

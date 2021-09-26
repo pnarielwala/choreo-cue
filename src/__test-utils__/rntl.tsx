@@ -11,7 +11,7 @@ import {
 } from 'react-query';
 import { DripsyProvider } from 'dripsy';
 
-import theme from '../theme';
+import theme from '../design/theme';
 
 type WithProvidersPropsT = {
   children?: any;

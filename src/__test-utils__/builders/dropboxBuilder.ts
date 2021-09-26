@@ -21,14 +21,14 @@ export const aDropboxEntryFile = (override: Partial<DropboxFileT> = {}) => ({
 const baseDropboxEntryFolder: DropboxFolderT = {
   '.tag': 'folder',
   id: datatype.uuid(),
-  name: 'Hello world.txt',
-  path_display: '/Hello world.txt',
+  name: 'Public',
+  path_display: '/Public',
 };
 
 export const aDropboxEntryFolder = (
   override: Partial<DropboxFolderT> = {},
 ) => ({
-  ...baseDropboxEntryFile,
+  ...baseDropboxEntryFolder,
   id: datatype.uuid(),
   ...override,
 });
