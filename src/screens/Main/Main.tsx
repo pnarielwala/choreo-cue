@@ -1,43 +1,41 @@
-import React from 'react';
-import { View, Image, SafeAreaView } from 'dripsy';
+import React from 'react'
+import { View, Image, SafeAreaView, Pressable } from 'design'
 
-import * as DocumentPicker from 'expo-document-picker';
+import * as DocumentPicker from 'expo-document-picker'
 
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import { getFolderContents } from 'api/dropboxClient'
+import { useQueryClient } from 'react-query'
+import { ScreenPropsT } from 'App'
+import useDropBoxAuth from 'hooks/useDropboxAuth'
 
-import { getFolderContents } from 'api/dropboxClient';
-import { useQueryClient } from 'react-query';
-import { ScreenPropsT } from 'App';
-import useDropBoxAuth from 'hooks/useDropboxAuth';
-
-export type PropsT = ScreenPropsT<'Home'>;
+export type PropsT = ScreenPropsT<'Home'>
 
 const Main = (props: PropsT) => {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   const { authenticate } = useDropBoxAuth({
     onCheckAuth: async (authenticated) => {
       if (authenticated) {
         if (!queryClient.getQueryData(['dropbox-contents', ''])) {
           await queryClient.prefetchQuery(['dropbox-contents', ''], () =>
-            getFolderContents(''),
-          );
+            getFolderContents('')
+          )
         }
         props.navigation.push('DropboxNavigator', {
           path: '',
           name: 'Home',
-        });
+        })
       }
     },
-  });
+  })
 
   return (
-    <View style={{ position: 'relative', height: '100%' }}>
+    <View sx={{ position: 'relative', height: '100%' }}>
       <SafeAreaView
-        style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+        sx={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
       >
         <Image
-          style={{
+          sx={{
             width: '100%',
             position: 'absolute',
             zIndex: -1,
@@ -47,7 +45,7 @@ const Main = (props: PropsT) => {
           testID="logo-image"
         />
         <View
-          style={{
+          sx={{
             position: 'absolute',
             bottom: 50,
             flexDirection: 'row',
@@ -55,13 +53,15 @@ const Main = (props: PropsT) => {
             justifyContent: 'space-evenly',
           }}
         >
-          <TouchableOpacity
+          <Pressable
             onPress={async () => {
               const result = await DocumentPicker.getDocumentAsync({
                 type: 'audio/*',
-              });
+              })
               if (result.type === 'success') {
-                props.navigation.push('Player', { musicData: result });
+                props.navigation.push('Player', {
+                  musicData: result,
+                })
               }
             }}
             testID="icloud-source"
@@ -69,27 +69,25 @@ const Main = (props: PropsT) => {
             <Image
               source={require('assets/icloud.png')}
               resizeMode="contain"
-              style={{ width: 50, height: 50 }}
               testID="icloud-image"
             />
-          </TouchableOpacity>
-          <TouchableOpacity
+          </Pressable>
+          <Pressable
             onPress={() => {
-              authenticate();
+              authenticate()
             }}
             testID="dropbox-source"
           >
             <Image
               source={require('assets/dropbox.png')}
               resizeMode="contain"
-              style={{ width: 50, height: 50 }}
               testID="dropbox-image"
             />
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </SafeAreaView>
     </View>
-  );
-};
+  )
+}
 
-export default Main;
+export default Main
