@@ -1,7 +1,7 @@
 import React, { forwardRef, ComponentProps } from 'react';
 import _ from 'lodash';
 
-import { Box, useDripsyTheme } from 'design';
+import { Box, useDripsyTheme } from 'dripsy';
 
 type PropsT = ComponentProps<typeof Box> &
   React.SVGProps<SVGSVGElement> & {

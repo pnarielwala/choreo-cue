@@ -111,7 +111,6 @@ const DropboxNavigator = (props: PropsT) => {
   });
 
   const entryClick = (entry: DropboxEntryT, isDownloadable: boolean) => {
-    console.log('clicked', entry);
     const { path_display: path, name } = entry;
     if (entry['.tag'] === 'folder') {
       pushParams({
