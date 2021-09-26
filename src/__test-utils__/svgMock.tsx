@@ -1,5 +1,9 @@
-import React from 'react';
-import { Text } from 'react-native';
+import React, { forwardRef } from 'react'
+import { View } from 'react-native'
 
-module.exports = () => <Text>SvgMock</Text>;
-module.exports.ReactComponent = () => <Text>SvgMock</Text>;
+const SVGMock = forwardRef((props: any, ref) => (
+  <View {...props} source="svgMock" ref={ref} />
+))
+
+module.exports = SVGMock
+module.exports.ReactComponent = SVGMock

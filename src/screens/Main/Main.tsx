@@ -1,5 +1,8 @@
 import React from 'react'
-import { View, Image, SafeAreaView, Pressable } from 'design'
+import { View, Image, SafeAreaView, Pressable, Icon } from 'design'
+
+import Dropbox from 'assets/dropbox.svg'
+import iCloud from 'assets/icloud.svg'
 
 import * as DocumentPicker from 'expo-document-picker'
 
@@ -66,11 +69,7 @@ const Main = (props: PropsT) => {
             }}
             testID="icloud-source"
           >
-            <Image
-              source={require('assets/icloud.png')}
-              resizeMode="contain"
-              testID="icloud-image"
-            />
+            <Icon as={iCloud} width={64} height={64} testID="icloud-image" />
           </Pressable>
           <Pressable
             onPress={() => {
@@ -78,11 +77,7 @@ const Main = (props: PropsT) => {
             }}
             testID="dropbox-source"
           >
-            <Image
-              source={require('assets/dropbox.png')}
-              resizeMode="contain"
-              testID="dropbox-image"
-            />
+            <Icon as={Dropbox} width={64} height={64} testID="dropbox-image" />
           </Pressable>
         </View>
       </SafeAreaView>
