@@ -1,6 +1,6 @@
-import { Theme } from 'dripsy';
+import { Theme } from 'dripsy'
 
-const makeTheme = <T extends Theme>(t: T) => t;
+const makeTheme = <T extends Theme>(t: T) => t
 
 const theme = makeTheme({
   colors: {
@@ -18,6 +18,8 @@ const theme = makeTheme({
     orange: '#F8A978',
   },
   space: [2, 4, 8, 16, 20, 32, 48, 56],
+  // @ts-ignore FIXME: can be numbers too
+  breakpoints: [325, 500],
   text: {
     heading1: {
       fontWeight: 'bold',
@@ -30,6 +32,6 @@ const theme = makeTheme({
       fontSize: 14,
     },
   },
-});
+})
 
-export default theme;
+export default theme

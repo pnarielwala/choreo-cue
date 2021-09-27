@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
-import { Text, Button, View, Alert } from 'react-native';
-import Toast from 'react-native-toast-message';
+import React, { useState } from 'react'
+import { Button, View, Alert } from 'react-native'
+import Toast from 'react-native-toast-message'
 
-import * as Device from 'expo-device';
+import { Text } from 'design'
 
-import CueButton from './CueButton';
+import CueButton from './CueButton'
 
 type PropsT = {
-  currentPosition: number;
-  onPlayFromPosition: (position: number) => void;
-};
+  currentPosition: number
+  onPlayFromPosition: (position: number) => void
+}
 
 const Cues = (props: PropsT) => {
-  const [triggerReset, setTriggerReset] = useState(false);
+  const [triggerReset, setTriggerReset] = useState(false)
 
   const displayResetConfirmation = () =>
     Alert.alert('Are you sure?', 'This will clear all your cues', [
@@ -24,18 +24,18 @@ const Cues = (props: PropsT) => {
         text: 'Reset',
         style: 'destructive',
         onPress: () => {
-          setTriggerReset(true);
-          setTriggerReset(false);
+          setTriggerReset(true)
+          setTriggerReset(false)
 
           Toast.show({
             type: 'success',
             position: 'top',
             text1: 'Cues cleared!',
             visibilityTime: 1000,
-          });
+          })
         },
       },
-    ]);
+    ])
   return (
     <View
       style={
@@ -56,8 +56,8 @@ const Cues = (props: PropsT) => {
         }}
       >
         <Text
-          style={{
-            fontSize: 24,
+          sx={{
+            fontSize: [18, 24],
             fontWeight: 'bold',
           }}
         >
@@ -111,7 +111,7 @@ const Cues = (props: PropsT) => {
         </Button>
       </View>
     </View>
-  );
-};
+  )
+}
 
-export default Cues;
+export default Cues

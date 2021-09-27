@@ -1,21 +1,22 @@
-import 'react-native-gesture-handler';
-import React from 'react';
-import { StyleSheet, View, Easing, SafeAreaView } from 'react-native';
-import Spinner from 'react-native-loading-spinner-overlay';
-import TextTicker from 'react-native-text-ticker';
-import { useKeepAwake } from 'expo-keep-awake';
+import 'react-native-gesture-handler'
+import React from 'react'
+import { StyleSheet, View, Easing, SafeAreaView } from 'react-native'
+import Spinner from 'react-native-loading-spinner-overlay'
+import TextTicker from 'react-native-text-ticker'
+import { useKeepAwake } from 'expo-keep-awake'
 
-import TrackSlider from './components/TrackSlider';
-import Cues from './components/CuesContainer/Cues';
-import Controls from './components/Controls/Controls';
-import Tempo from './components/Tempo';
-import useMusicPlayer from 'hooks/useMusicPlayer';
-import { ScreenPropsT } from 'App';
+import TrackSlider from './components/TrackSlider'
+import Cues from './components/CuesContainer/Cues'
+import Controls from './components/Controls/Controls'
+import Tempo from './components/Tempo'
+import useMusicPlayer from 'hooks/useMusicPlayer'
+import { ScreenPropsT } from 'App'
+import { Box } from 'design'
 
-export type PropsT = ScreenPropsT<'Player'>;
+export type PropsT = ScreenPropsT<'Player'>
 
 const MusicPlayer = (props: PropsT) => {
-  useKeepAwake();
+  useKeepAwake()
   const {
     playAudio,
     pauseAudio,
@@ -25,18 +26,20 @@ const MusicPlayer = (props: PropsT) => {
     currentPosition,
     duration,
     details,
-  } = useMusicPlayer(props.route.params.musicData);
+  } = useMusicPlayer(props.route.params.musicData)
 
   return (
     <>
       <SafeAreaView style={styles.safeContainer}>
         <View style={styles.container}>
           <View style={{ alignItems: 'flex-start', width: '100%' }}>
-            <TextTicker
+            <Box
+              as={TextTicker}
+              // @ts-ignore TODO: Fix TS typing for Dripsy on "as" prop
               loop={false}
               bounce={false}
-              style={{
-                fontSize: 32,
+              sx={{
+                fontSize: [18, 32],
                 fontWeight: 'bold',
               }}
               repeatSpacer={20}
@@ -45,7 +48,7 @@ const MusicPlayer = (props: PropsT) => {
               marqueeDelay={1000}
             >
               {details.trackName}
-            </TextTicker>
+            </Box>
           </View>
 
           <Controls
@@ -74,8 +77,8 @@ const MusicPlayer = (props: PropsT) => {
 
       <Spinner visible={false} />
     </>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   safeContainer: {
@@ -90,6 +93,6 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     paddingBottom: 32,
   },
-});
+})
 
-export default MusicPlayer;
+export default MusicPlayer

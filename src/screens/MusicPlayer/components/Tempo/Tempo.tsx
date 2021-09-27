@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { View, Dimensions, Text } from 'react-native';
-import { ButtonGroup } from 'react-native-elements';
+import React, { useState } from 'react'
+import { View, Dimensions } from 'react-native'
+import { ButtonGroup } from 'react-native-elements'
+import { Text } from 'design'
 
 const TEMPOS: { [key: number]: { rate: number; display: string } } = {
   0: {
@@ -19,31 +20,31 @@ const TEMPOS: { [key: number]: { rate: number; display: string } } = {
     rate: 1.25,
     display: '1.25x',
   },
-};
+}
 
 export type PropsT = {
-  setRate: (tempo: number) => void;
-};
+  setRate: (tempo: number) => void
+}
 
 export default function Tempo({ setRate }: PropsT) {
-  const [tempoIndex, setTempoIndex] = useState(2);
+  const [tempoIndex, setTempoIndex] = useState(2)
 
   return (
     <View style={{ width: '100%', justifyContent: 'flex-start' }}>
       <Text
-        style={{
-          fontSize: 24,
+        sx={{
+          fontSize: [18, 24],
           fontWeight: 'bold',
           alignSelf: 'flex-start',
-          marginTop: 16,
+          marginTop: [3, 5],
         }}
       >
         Tempo
       </Text>
       <ButtonGroup
         onPress={(index) => {
-          setTempoIndex(index);
-          setRate(TEMPOS[index].rate);
+          setTempoIndex(index)
+          setRate(TEMPOS[index].rate)
         }}
         selectedIndex={tempoIndex}
         buttons={Object.values(TEMPOS).map((tempo) => tempo.display)}
@@ -57,5 +58,5 @@ export default function Tempo({ setRate }: PropsT) {
         selectedButtonStyle={{ backgroundColor: '#ccc' }}
       />
     </View>
-  );
+  )
 }

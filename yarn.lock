@@ -1780,10 +1780,10 @@
     enabled "2.0.x"
     kuler "^2.0.0"
 
-"@dripsy/core@^2.2.0":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@dripsy/core/-/core-2.2.0.tgz#8cd1d2dcde4d066a29d4b049ec7a8ca07b65fb40"
-  integrity sha512-daIcQp2WDsbgXglDY/2nz2N3NELirXAsn8Bjf5Q9QXQUfBCLJdQDS3faVpNClAGYOAOwkhCaOBd+yIqV+lUaGA==
+"@dripsy/core@^2.3.6":
+  version "2.3.6"
+  resolved "https://registry.yarnpkg.com/@dripsy/core/-/core-2.3.6.tgz#bab3f569b5b5b58c8fc40eb73e8e07d71e117a27"
+  integrity sha512-nkGexyd+u1adtHYGLu6b3f+L1KURPbhl2Fzn2VmWpOE7qV6lp9wEJx6UDQd/IYbkN8bZPp0fKNczU2s0LoGdfQ==
   dependencies:
     "@artsy/fresnel" "^1.2.0"
     "@expo/html-elements" "^0.0.1"
@@ -7837,12 +7837,12 @@ dotenv@^10.0.0:
   resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-10.0.0.tgz#3d4227b8fb95f81096cdd2b66653fb2c7085ba81"
   integrity sha512-rlBi9d8jpv9Sf1klPjNfFAuWDjKLwTIJJ/VxtoTwIR6hnZxcEOQCZg2oIL3MWBYw5GpUDKOEnND7LXTbIpQ03Q==
 
-dripsy@2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/dripsy/-/dripsy-2.2.0.tgz#554512d3cfa8b3effd885f31d839158b7c0075aa"
-  integrity sha512-SDOvonwZrUYf201aZY+pL8UCBGjToIAdEfW9qB2Ei/QsoH7NkYGGD837lmptQkTqmChn59/aZqan6EpaIGkSbg==
+dripsy@2.3.6:
+  version "2.3.6"
+  resolved "https://registry.yarnpkg.com/dripsy/-/dripsy-2.3.6.tgz#1abe23cc7dd21f22e3f4047c160c37d60b8d4c71"
+  integrity sha512-uun0NA0gwQJhnRvH7ficbMBPlLKwwjEhRZTww/Jtiyx9r1eGVMc9j70t91oYBOCQuTYSzInqHnZdSUAD5ukMwA==
   dependencies:
-    "@dripsy/core" "^2.2.0"
+    "@dripsy/core" "^2.3.6"
 
 duplexer2@~0.1.0:
   version "0.1.4"
