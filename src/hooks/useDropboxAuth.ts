@@ -1,21 +1,23 @@
-import { useEffect } from 'react';
-import { Platform } from 'react-native';
-import { useAuthRequest } from 'expo-auth-session';
-import { DROPBOX_CLIENT_ID } from 'react-native-dotenv';
+import { useEffect } from 'react'
+import { Platform } from 'react-native'
+import { useAuthRequest } from 'expo-auth-session'
+import { DROPBOX_CLIENT_ID } from 'react-native-dotenv'
 
-import * as SecureStore from 'expo-secure-store';
-import { checkDropboxAuth, dropboxAddAuth } from 'api/dropboxClient';
+import { makeUrl } from 'expo-linking'
 
-export const DROPBOX_AUTH_STATE_KEY = 'ChoreoCue_Dropbox';
+import * as SecureStore from 'expo-secure-store'
+import { checkDropboxAuth, dropboxAddAuth } from 'api/dropboxClient'
+
+export const DROPBOX_AUTH_STATE_KEY = 'ChoreoCue_Dropbox'
 
 type PropsT = {
-  onCheckAuth: (authenticated: boolean) => void;
-};
+  onCheckAuth: (authenticated: boolean) => void
+}
 
 const discovery = {
   authorizationEndpoint: 'https://www.dropbox.com/oauth2/authorize',
   tokenEndpoint: 'https://www.dropbox.com/oauth2/token',
-};
+}
 
 const useDropBoxAuth = ({ onCheckAuth }: PropsT) => {
   const [, response, promptAsync] = useAuthRequest(
@@ -26,43 +28,43 @@ const useDropBoxAuth = ({ onCheckAuth }: PropsT) => {
       // Dropbox doesn't support PKCE
       usePKCE: false,
       responseType: 'token',
-      redirectUri: 'exp://expo.io/@pnarielwala/choreo-cue',
+      redirectUri: makeUrl('/redirect'),
     },
-    discovery,
-  );
+    discovery
+  )
 
   useEffect(() => {
     if (response && response.type === 'success') {
-      const auth = response.params;
-      const storageValue = JSON.stringify(auth);
+      const auth = response.params
+      const storageValue = JSON.stringify(auth)
 
       if (Platform.OS !== 'web') {
         // Securely store the auth on your device
-        SecureStore.setItemAsync(DROPBOX_AUTH_STATE_KEY, storageValue);
+        SecureStore.setItemAsync(DROPBOX_AUTH_STATE_KEY, storageValue)
       }
 
-      dropboxAddAuth(auth.access_token);
-      onCheckAuth(true);
+      dropboxAddAuth(auth.access_token)
+      onCheckAuth(true)
     }
-  }, [response]);
+  }, [response])
 
   const authenticate = async () => {
     try {
       const storageValue = await SecureStore.getItemAsync(
-        DROPBOX_AUTH_STATE_KEY,
-      );
-      const auth = JSON.parse(storageValue ?? '{}');
-      dropboxAddAuth(auth.access_token);
-      await checkDropboxAuth();
-      onCheckAuth(true);
+        DROPBOX_AUTH_STATE_KEY
+      )
+      const auth = JSON.parse(storageValue ?? '{}')
+      dropboxAddAuth(auth.access_token)
+      await checkDropboxAuth()
+      onCheckAuth(true)
     } catch (e) {
-      promptAsync();
+      promptAsync()
     }
-  };
+  }
 
   return {
     authenticate,
-  };
-};
+  }
+}
 
-export default useDropBoxAuth;
+export default useDropBoxAuth
