@@ -84,7 +84,7 @@
     "prettier": "2.4.1",
     "react-native-svg-transformer": "0.14.3",
     "react-test-renderer": "16.13.1",
-    "semantic-release": "^17.4.7",
+    "semantic-release": "^18.0.0",
     "semantic-release-expo": "2.2.3",
     "ts-jest": "27.0.4",
     "typescript": "~4.0.0"
@@ -102,46 +102,5 @@
   },
   "publishConfig": {
     "access": "restricted"
-  },
-  "release": {
-    "branches": [
-      {
-        "name": "main",
-        "channel": "prod-v1"
-      }
-    ],
-    "plugins": [
-      "semantic-release-expo"
-    ],
-    "verifyConditions": [
-      "semantic-release-expo",
-      "@semantic-release/changelog",
-      "@semantic-release/git"
-    ],
-    "prepare": [
-      "semantic-release-expo",
-      "@semantic-release/changelog",
-      {
-        "path": "@semantic-release/git",
-        "assets": [
-          "CHANGELOG.md",
-          "app.json"
-        ]
-      },
-      [
-        "@semantic-release/exec",
-        {
-          "prepareCmd": "yarn expo login -u $EXPO_USERNAME -p $EXPO_PASSWORD"
-        }
-      ]
-    ],
-    "publish": [
-      [
-        "@semantic-release/exec",
-        {
-          "publishCmd": "yarn expo publish --release-channel ${options.channel}"
-        }
-      ]
-    ]
   }
 }
