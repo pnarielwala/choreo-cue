@@ -4,7 +4,7 @@ const makeTheme = <T extends Theme>(t: T) => t
 
 const theme = makeTheme({
   colors: {
-    background: '#000',
+    background: '#fff',
     text: '#000',
     divider: '#C8C8C8',
     primary: '#32E0C4',
@@ -16,6 +16,7 @@ const theme = makeTheme({
     yellow: '##fff591',
     blue: '#05dfd7',
     orange: '#F8A978',
+    black: '#000',
   },
   space: [2, 4, 8, 16, 20, 32, 48, 56],
   // @ts-ignore FIXME: can be numbers too

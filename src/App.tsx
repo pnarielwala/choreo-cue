@@ -1,40 +1,36 @@
-import 'react-native-gesture-handler';
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import Toast, { BaseToast, BaseToastProps } from 'react-native-toast-message';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import 'react-native-gesture-handler'
+import React from 'react'
+import { NavigationContainer } from '@react-navigation/native'
+import Toast, { BaseToast, BaseToastProps } from 'react-native-toast-message'
+import { QueryClient, QueryClientProvider } from 'react-query'
 import {
   StackScreenProps,
   createStackNavigator,
   StackNavigationOptions,
-} from '@react-navigation/stack';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
+} from '@react-navigation/stack'
 
-import { DripsyProvider, Icon, Pressable } from 'design';
-import theme from './design/theme';
-import Close from 'assets/xmark.svg';
+import { DripsyProvider, Icon } from 'design'
+import theme from './design/theme'
+import LeftArrow from 'assets/left_arrow.svg'
 
-import Main from 'screens/Main';
-import MusicPlayer from 'screens/MusicPlayer';
-import DropboxNavigator from 'screens/DropboxNavigator';
+import Main from 'screens/Main'
+import MusicPlayer from 'screens/MusicPlayer'
+import DropboxNavigator from 'screens/DropboxNavigator'
 
 export type StacksT = {
-  Home: undefined;
+  Home: undefined
   Player: {
-    musicData: { uri: string; name: string };
-  };
+    musicData: { uri: string; name: string }
+  }
   DropboxNavigator: {
-    path: string;
-    name: string;
-  };
-};
+    path: string
+    name: string
+  }
+}
 
-export type ScreenPropsT<T extends keyof StacksT> = StackScreenProps<
-  StacksT,
-  T
->;
+export type ScreenPropsT<T extends keyof StacksT> = StackScreenProps<StacksT, T>
 
-const RootStack = createStackNavigator<StacksT>();
+const RootStack = createStackNavigator<StacksT>()
 
 const App = () => {
   const screenOptions: StackNavigationOptions = {
@@ -42,22 +38,15 @@ const App = () => {
     headerTransparent: true,
     headerBackTitleVisible: false,
     headerBackImage: () => (
-      <FontAwesome
-        name="angle-left"
-        size={32}
-        color="#3D425C"
-        style={{
-          marginHorizontal: 12,
-        }}
-      />
+      <Icon as={LeftArrow} sx={{ color: 'black', ml: 3 }} />
     ),
-  };
+  }
   const modalOptions: StackNavigationOptions = {
     presentation: 'modal',
     headerTitle: '',
     headerTransparent: true,
     headerBackTitleVisible: false,
-  };
+  }
   return (
     <DripsyProvider theme={theme}>
       <QueryClientProvider client={new QueryClient()}>
@@ -105,7 +94,7 @@ const App = () => {
         </NavigationContainer>
       </QueryClientProvider>
     </DripsyProvider>
-  );
-};
+  )
+}
 
-export default App;
+export default App

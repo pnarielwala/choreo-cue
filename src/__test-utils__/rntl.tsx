@@ -1,26 +1,27 @@
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { render, RenderOptions } from '@testing-library/react-native';
-import { ReactTestInstance } from 'react-test-renderer';
+import React from 'react'
+import { NavigationContainer } from '@react-navigation/native'
+import { render, RenderOptions } from '@testing-library/react-native'
+import { ReactTestInstance } from 'react-test-renderer'
 import {
   DefaultOptions,
   MutationCache,
   QueryCache,
   QueryClient,
   QueryClientProvider,
-} from 'react-query';
-import { DripsyProvider } from 'dripsy';
+} from 'react-query'
+import { DripsyProvider } from 'dripsy'
 
-import theme from '../design/theme';
+import theme from '../design/theme'
+import Toast from 'react-native-toast-message'
 
 type WithProvidersPropsT = {
-  children?: any;
+  children?: any
   reactQueryConfigOverride?: {
-    queryCache?: QueryCache;
-    mutationCache?: MutationCache;
-    defaultOptions?: DefaultOptions;
-  };
-};
+    queryCache?: QueryCache
+    mutationCache?: MutationCache
+    defaultOptions?: DefaultOptions
+  }
+}
 
 const withProviders =
   ({ reactQueryConfigOverride = {} }: WithProvidersPropsT) =>
@@ -28,11 +29,15 @@ const withProviders =
     return (
       <DripsyProvider theme={theme}>
         <QueryClientProvider client={new QueryClient(reactQueryConfigOverride)}>
-          <NavigationContainer>{children}</NavigationContainer>
+          <NavigationContainer>
+            {children}
+
+            <Toast ref={(ref) => Toast.setRef(ref)} topOffset={45} />
+          </NavigationContainer>
         </QueryClientProvider>
       </DripsyProvider>
-    );
-  };
+    )
+  }
 
 /**
  * Custom render method that wraps unit under test with some app level wrappers
@@ -44,9 +49,9 @@ function renderWithProviders(
    * 'queries' option is omitted because this method already extends for us.
    * When included, had some issues getting type information for extended queries
    */
-  options?: Omit<RenderOptions, 'queries'> & WithProvidersPropsT,
+  options?: Omit<RenderOptions, 'queries'> & WithProvidersPropsT
 ) {
-  const { reactQueryConfigOverride, ...restOptions } = options ?? {};
+  const { reactQueryConfigOverride, ...restOptions } = options ?? {}
 
   const result = render(
     withProviders({
@@ -54,29 +59,29 @@ function renderWithProviders(
     })({ children: ui }),
     {
       ...restOptions,
-    },
-  );
+    }
+  )
 
   const rerender = (
     children: React.ReactNode,
-    newOptions: WithProvidersPropsT = {},
+    newOptions: WithProvidersPropsT = {}
   ) =>
     result.rerender(
       withProviders({
         ...options,
         ...newOptions,
-      })({ children }),
-    );
+      })({ children })
+    )
 
-  return { ...result, rerender };
+  return { ...result, rerender }
 }
 
 const debug = (instance: ReactTestInstance) => {
-  const { debug } = render(React.createElement(instance.type, instance.props));
+  const { debug } = render(React.createElement(instance.type, instance.props))
 
-  return debug();
-};
+  return debug()
+}
 
-export * from '@testing-library/react-native';
+export * from '@testing-library/react-native'
 
-export { renderWithProviders, debug };
+export { renderWithProviders, debug }

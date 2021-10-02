@@ -1,40 +1,43 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import Slider from 'react-native-slider';
-import format from 'format-duration';
+import React, { useEffect, useState } from 'react'
+import { View, Text, StyleSheet } from 'react-native'
+import Slider from '@sharcoux/slider'
+import format from 'format-duration'
 
 export type PropsT = {
-  duration: number;
-  currentPosition: number;
-  onPositionChange: (value: number) => void;
-  disabled: boolean;
-};
+  duration: number
+  currentPosition: number
+  onPositionChange: (value: number) => void
+  disabled: boolean
+}
 
 const TrackSlider = (props: PropsT) => {
   const [adjustedCurrPosition, setSliderValue] = useState(
-    Math.floor(props.currentPosition / 1000) * 1000,
-  );
-  const [isSliding, setIsSliding] = useState(false);
+    Math.floor(props.currentPosition / 1000) * 1000
+  )
+  const [isSliding, setIsSliding] = useState(false)
 
-  const adjustedDuration = Math.floor(props.duration / 1000) * 1000;
+  const adjustedDuration = Math.floor(props.duration / 1000) * 1000
 
   useEffect(() => {
     if (!isSliding) {
-      setSliderValue(Math.floor(props.currentPosition / 1000) * 1000);
+      setSliderValue(Math.floor(props.currentPosition / 1000) * 1000)
     }
-  }, [props.currentPosition]);
+  }, [props.currentPosition])
 
-  const formatedCurrentTime = format(adjustedCurrPosition);
-  const formattedRemaining = format(adjustedDuration - adjustedCurrPosition);
+  const formatedCurrentTime = format(adjustedCurrPosition)
+  const formattedRemaining = format(adjustedDuration - adjustedCurrPosition)
   return (
     <View style={styles.container}>
       <Slider
         style={styles.slider}
         thumbStyle={styles.thumb}
         trackStyle={styles.track}
+        minimumTrackTintColor="black"
+        maximumTrackTintColor="lightgrey"
+        thumbTintColor="black"
         minimumValue={0}
         maximumValue={1}
-        disabled={props.disabled}
+        enabled={!props.disabled}
         value={
           adjustedDuration > 0 ? adjustedCurrPosition / adjustedDuration : 0
         }
@@ -43,9 +46,9 @@ const TrackSlider = (props: PropsT) => {
         }
         onSlidingStart={() => setIsSliding(true)}
         onSlidingComplete={(value: number) => {
-          const newPosition = value * props.duration;
-          props.onPositionChange(newPosition);
-          setIsSliding(false);
+          const newPosition = value * props.duration
+          props.onPositionChange(newPosition)
+          setIsSliding(false)
         }}
       />
       <View
@@ -58,8 +61,8 @@ const TrackSlider = (props: PropsT) => {
         <Text>-{formattedRemaining}</Text>
       </View>
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -76,6 +79,6 @@ const styles = StyleSheet.create({
   track: {
     height: 2,
   },
-});
+})
 
-export default TrackSlider;
+export default TrackSlider
