@@ -49,7 +49,7 @@ jobs:
           path: '**/node_modules'
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
       - name: Run unit tests
-        run: yarn jest --runInBand
+        run: yarn jest --coverage=false --detectOpenHandles --forceExit
   publish:
     name: Publish expo version
     needs: [test, typecheck]
