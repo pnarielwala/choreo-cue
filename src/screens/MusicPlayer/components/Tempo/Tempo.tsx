@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
-import { View, Dimensions } from 'react-native'
 import { ButtonGroup } from 'react-native-elements'
-import { H2 } from 'design'
+import { View, H2, useSx } from 'design'
 
 const TEMPOS: { [key: number]: { rate: number; display: string } } = {
   0: {
@@ -29,8 +28,10 @@ export type PropsT = {
 export default function Tempo({ setRate }: PropsT) {
   const [tempoIndex, setTempoIndex] = useState(2)
 
+  const sx = useSx()
+
   return (
-    <View style={{ width: '100%', justifyContent: 'flex-start' }}>
+    <View sx={{ width: '100%', justifyContent: 'flex-start' }}>
       <H2
         sx={{
           alignSelf: 'flex-start',
@@ -45,13 +46,19 @@ export default function Tempo({ setRate }: PropsT) {
         }}
         selectedIndex={tempoIndex}
         buttons={Object.values(TEMPOS).map((tempo) => tempo.display)}
-        containerStyle={{
+        containerStyle={sx({
           width: '100%',
           maxWidth: 500,
-          marginLeft: 0,
-          height: Math.min(Dimensions.get('screen').height * 0.05, 40),
-        }}
-        selectedButtonStyle={{ backgroundColor: '#ccc' }}
+          mx: 'auto',
+          height: [32, 40],
+        })}
+        selectedButtonStyle={sx({ bg: 'black' })}
+        textStyle={sx({
+          // @ts-ignore FIXME: variants can be an array
+          variant: ['text.bodySmall', 'text.body'],
+          fontFamily: 'nunito',
+          fontWeight: 500,
+        })}
       />
     </View>
   )
