@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Button, View, Alert } from 'react-native'
 import Toast from 'react-native-toast-message'
 
-import { Text } from 'design'
+import { H2 } from 'design'
 
 import CueButton from './CueButton'
 
@@ -50,19 +50,10 @@ const Cues = (props: PropsT) => {
           display: 'flex',
           justifyContent: 'space-between',
           flexDirection: 'row',
-          marginTop: 8,
-          marginBottom: 8,
           alignItems: 'baseline',
         }}
       >
-        <Text
-          sx={{
-            fontSize: [18, 24],
-            fontWeight: 'bold',
-          }}
-        >
-          Cues
-        </Text>
+        <H2>Cues</H2>
       </View>
       <View
         style={{

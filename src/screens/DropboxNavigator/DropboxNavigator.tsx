@@ -1,56 +1,55 @@
-import React, { useEffect, useState } from 'react';
-import { FlatList, TouchableOpacity, Alert } from 'react-native';
-import { useMutation, useQuery } from 'react-query';
+import React, { useEffect, useState } from 'react'
+import { Alert } from 'react-native'
+import { useMutation, useQuery } from 'react-query'
 
 import {
   SafeAreaView,
   Flex,
   Box,
-  View,
+  Text,
+  H1,
   Icon,
   ScrollView,
   Pressable,
-} from 'design';
-import Folder from 'assets/folder.svg';
-import File from 'assets/file.svg';
-import Close from 'assets/xmark.svg';
-import LeftArrow from 'assets/left_arrow.svg';
+} from 'design'
+import Folder from 'assets/folder.svg'
+import File from 'assets/file.svg'
+import Close from 'assets/xmark.svg'
+import LeftArrow from 'assets/left_arrow.svg'
 
-import { Text } from 'dripsy';
+import Spinner from 'react-native-loading-spinner-overlay'
 
-import Spinner from 'react-native-loading-spinner-overlay';
+import { downloadFile, getFolderContents } from 'api/dropboxClient'
 
-import { downloadFile, getFolderContents } from 'api/dropboxClient';
+import { ScreenPropsT } from 'App'
+import { DropboxEntryT } from 'types/Dropbox'
 
-import { ScreenPropsT } from 'App';
-import { DropboxEntryT } from 'types/Dropbox';
-
-export type PropsT = ScreenPropsT<'DropboxNavigator'>;
+export type PropsT = ScreenPropsT<'DropboxNavigator'>
 
 const DropboxNavigator = (props: PropsT) => {
-  const [paramsQueue, setParamsQueue] = useState([props.route.params]);
+  const [paramsQueue, setParamsQueue] = useState([props.route.params])
 
-  const params = paramsQueue[paramsQueue.length - 1];
+  const params = paramsQueue[paramsQueue.length - 1]
 
   const pushParams = (params: PropsT['route']['params']) =>
-    setParamsQueue([...paramsQueue, params]);
+    setParamsQueue([...paramsQueue, params])
   const popParams = () => {
-    const newParamsQueue = [...paramsQueue];
-    newParamsQueue.pop();
-    setParamsQueue(newParamsQueue);
-  };
+    const newParamsQueue = [...paramsQueue]
+    newParamsQueue.pop()
+    setParamsQueue(newParamsQueue)
+  }
 
-  const path = params.path;
-  const folderName = params.name;
+  const path = params.path
+  const folderName = params.name
 
   useEffect(() => {
-    const firstPage = path === '';
+    const firstPage = path === ''
     props.navigation.setOptions({
       headerLeft: !firstPage
         ? () => (
             <Pressable
               onPress={() => {
-                popParams();
+                popParams()
               }}
               hitSlop={48}
               accessibilityLabel="Back"
@@ -87,50 +86,50 @@ const DropboxNavigator = (props: PropsT) => {
           />
         </Pressable>
       ),
-    });
-  }, [paramsQueue, path, popParams]);
+    })
+  }, [paramsQueue, path, popParams])
 
   const { data } = useQuery(['dropbox-contents', path], () =>
-    getFolderContents(path),
-  );
+    getFolderContents(path)
+  )
 
   const { mutate: doDownloadFile, isLoading } = useMutation(downloadFile, {
     onSuccess: (response) => {
       if (response) {
         if (props.navigation.canGoBack()) {
-          props.navigation.popToTop();
+          props.navigation.popToTop()
         }
         props.navigation.push('Player', {
           musicData: {
             name: response.name,
             uri: response.uri,
           },
-        });
+        })
       }
     },
-  });
+  })
 
   const entryClick = (entry: DropboxEntryT, isDownloadable: boolean) => {
-    const { path_display: path, name } = entry;
+    const { path_display: path, name } = entry
     if (entry['.tag'] === 'folder') {
       pushParams({
         path,
         name,
-      });
+      })
     } else {
       if (isDownloadable) {
         doDownloadFile({
           path: entry.path_display,
           name: entry.name,
-        });
+        })
       } else {
         Alert.alert(
           'Unsupported file type',
-          'Unable to download this file. Please select an .mp3 file',
-        );
+          'Unable to download this file. Please select an .mp3 file'
+        )
       }
     }
-  };
+  }
 
   return (
     <SafeAreaView
@@ -138,24 +137,28 @@ const DropboxNavigator = (props: PropsT) => {
         bg: 'white',
       }}
     >
-      <Box sx={{ height: '100%', m: 2 }}>
-        <Flex sx={{ alignItems: 'center', flexDirection: 'column', py: 6 }}>
+      <Box sx={{ height: '100%', mx: 2, mt: 6 }}>
+        <Flex sx={{ alignItems: 'center', flexDirection: 'column' }}>
           <Text>Dropbox</Text>
-          <Text variant="heading1" sx={{ mt: 3 }}>
-            {folderName}
-          </Text>
+          <H1 sx={{ mt: 3 }}>{folderName}</H1>
         </Flex>
         <Box
-          sx={{ height: 3, backgroundColor: 'divider', borderRadius: 8, mx: 3 }}
+          sx={{
+            height: 3,
+            backgroundColor: 'divider',
+            borderRadius: 8,
+            mx: 3,
+            mt: 2,
+          }}
         />
         <ScrollView bounces showsVerticalScrollIndicator={false}>
           <Flex sx={{ flexWrap: 'wrap' }}>
             {(data?.data.entries ?? []).map((entry) => {
-              const isFile = entry['.tag'] === 'file';
+              const isFile = entry['.tag'] === 'file'
               const isDownloadable =
                 entry['.tag'] === 'file'
                   ? /.mp3$/.test(entry.name) && entry.is_downloadable
-                  : false;
+                  : false
               return (
                 <Pressable
                   key={entry.id}
@@ -205,14 +208,14 @@ const DropboxNavigator = (props: PropsT) => {
                     </>
                   )}
                 </Pressable>
-              );
+              )
             })}
           </Flex>
         </ScrollView>
       </Box>
       <Spinner visible={isLoading} />
     </SafeAreaView>
-  );
-};
+  )
+}
 
-export default DropboxNavigator;
+export default DropboxNavigator

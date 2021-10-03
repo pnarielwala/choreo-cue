@@ -21,10 +21,32 @@ const theme = makeTheme({
   space: [2, 4, 8, 16, 20, 32, 48, 56],
   // @ts-ignore FIXME: can be numbers too
   breakpoints: [325, 500],
+  fonts: {
+    root: 'nunito',
+  },
+  customFonts: {
+    nunito: {
+      bold: 'nunitoBold',
+      default: 'nunito',
+      normal: 'nunito',
+      400: 'nunito',
+      500: 'nunitoSemiBold',
+      600: 'nunitoBold',
+      700: 'nunitoBold',
+      800: 'nunitoExtraBold',
+      900: 'nunitoBlack',
+    },
+  },
   text: {
-    heading1: {
+    h1: {
       fontWeight: 'bold',
-      fontSize: 32,
+      fontSize: [24, 32],
+    },
+    h2: {
+      fontWeight: 'bold',
+      fontSize: [20, 24],
+      mt: [2, 3],
+      mb: [1, 2],
     },
     body: {
       fontSize: 18,

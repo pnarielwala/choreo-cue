@@ -9,6 +9,9 @@ import {
   StackNavigationOptions,
 } from '@react-navigation/stack'
 
+import { useFonts } from 'expo-font'
+import AppLoading from 'expo-app-loading'
+
 import { DripsyProvider, Icon } from 'design'
 import theme from './design/theme'
 import LeftArrow from 'assets/left_arrow.svg'
@@ -33,6 +36,20 @@ export type ScreenPropsT<T extends keyof StacksT> = StackScreenProps<StacksT, T>
 const RootStack = createStackNavigator<StacksT>()
 
 const App = () => {
+  let [fontsLoaded] = useFonts({
+    ['nunito']: require('assets/fonts/Nunito-Regular.ttf'),
+    ['nunitoBold']: require('assets/fonts/Nunito-Bold.ttf'),
+    ['nunitoSemiBold']: require('assets/fonts/Nunito-SemiBold.ttf'),
+    ['nunitoExtraBold']: require('assets/fonts/Nunito-ExtraBold.ttf'),
+    ['nunitoLight']: require('assets/fonts/Nunito-Light.ttf'),
+    ['nunitoExtraLight']: require('assets/fonts/Nunito-ExtraLight.ttf'),
+    ['nunitoBlack']: require('assets/fonts/Nunito-Black.ttf'),
+  })
+
+  if (!fontsLoaded) {
+    return <AppLoading />
+  }
+
   const screenOptions: StackNavigationOptions = {
     headerTitle: '',
     headerTransparent: true,

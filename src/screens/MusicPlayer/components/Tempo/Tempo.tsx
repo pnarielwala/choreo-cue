@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { View, Dimensions } from 'react-native'
 import { ButtonGroup } from 'react-native-elements'
-import { Text } from 'design'
+import { H2 } from 'design'
 
 const TEMPOS: { [key: number]: { rate: number; display: string } } = {
   0: {
@@ -31,16 +31,13 @@ export default function Tempo({ setRate }: PropsT) {
 
   return (
     <View style={{ width: '100%', justifyContent: 'flex-start' }}>
-      <Text
+      <H2
         sx={{
-          fontSize: [18, 24],
-          fontWeight: 'bold',
           alignSelf: 'flex-start',
-          marginTop: [3, 5],
         }}
       >
         Tempo
-      </Text>
+      </H2>
       <ButtonGroup
         onPress={(index) => {
           setTempoIndex(index)
@@ -49,7 +46,6 @@ export default function Tempo({ setRate }: PropsT) {
         selectedIndex={tempoIndex}
         buttons={Object.values(TEMPOS).map((tempo) => tempo.display)}
         containerStyle={{
-          marginTop: 8,
           width: '100%',
           maxWidth: 500,
           marginLeft: 0,
