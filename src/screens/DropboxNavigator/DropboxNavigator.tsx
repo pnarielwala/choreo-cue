@@ -135,9 +135,10 @@ const DropboxNavigator = (props: PropsT) => {
     <SafeAreaView
       sx={{
         bg: 'white',
+        height: '100%',
       }}
     >
-      <Box sx={{ height: '100%', mx: 2, mt: 6 }}>
+      <Box sx={{ height: '100%', mx: 2, mt: 6, pb: 6 }}>
         <Flex sx={{ alignItems: 'center', flexDirection: 'column' }}>
           <Text>Dropbox</Text>
           <H1 sx={{ mt: 3 }}>{folderName}</H1>
@@ -152,7 +153,7 @@ const DropboxNavigator = (props: PropsT) => {
           }}
         />
         <ScrollView bounces showsVerticalScrollIndicator={false}>
-          <Flex sx={{ flexWrap: 'wrap' }}>
+          <Flex sx={{ flexWrap: 'wrap', my: 3 }}>
             {(data?.data.entries ?? []).map((entry) => {
               const isFile = entry['.tag'] === 'file'
               const isDownloadable =
