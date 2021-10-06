@@ -1,7 +1,8 @@
 import { Client, Configuration } from 'rollbar-react-native'
 import * as Updates from 'expo-updates'
+import { ROLLBAR_ACCESS_TOKEN } from 'react-native-dotenv'
 
-const config = new Configuration('e6e701d6c69a4fa3a024dc2316c0bc4e', {
+const config = new Configuration(ROLLBAR_ACCESS_TOKEN, {
   environment: String(process.env.NODE_ENV),
   appVersion: Updates.updateId ?? 'development',
 })
