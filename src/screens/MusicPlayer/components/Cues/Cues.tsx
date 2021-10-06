@@ -45,7 +45,7 @@ const Cues = (props: PropsT) => {
   return (
     <View>
       <H2>Cues</H2>
-      <Flex sx={{ flexWrap: 'wrap', mx: -1 }}>
+      <Flex sx={{ flexWrap: 'wrap', mx: [-1, null, -2] }}>
         <CueButton
           currentPosition={props.currentPosition}
           onPress={props.onPlayFromPosition}
