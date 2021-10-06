@@ -19,6 +19,7 @@ import LeftArrow from 'assets/left_arrow.svg'
 import Main from 'screens/Main'
 import MusicPlayer from 'screens/MusicPlayer'
 import DropboxNavigator from 'screens/DropboxNavigator'
+import ErrorBoundary from 'components/ErrorBoundary'
 
 export type StacksT = {
   Home: undefined
@@ -68,26 +69,27 @@ const App = () => {
     <DripsyProvider theme={theme}>
       <QueryClientProvider client={new QueryClient()}>
         <NavigationContainer>
-          <RootStack.Navigator initialRouteName="Home">
-            {/* Normal Stack Screens */}
-            <RootStack.Group screenOptions={screenOptions}>
-              <RootStack.Screen name="Home" component={Main} />
-              <RootStack.Screen
-                name="Player"
-                component={MusicPlayer}
-                options={{ gestureEnabled: false }}
-              />
-            </RootStack.Group>
+          <ErrorBoundary>
+            <RootStack.Navigator initialRouteName="Home">
+              {/* Normal Stack Screens */}
+              <RootStack.Group screenOptions={screenOptions}>
+                <RootStack.Screen name="Home" component={Main} />
+                <RootStack.Screen
+                  name="Player"
+                  component={MusicPlayer}
+                  options={{ gestureEnabled: false }}
+                />
+              </RootStack.Group>
 
-            {/* Modal Stack Screens */}
-            <RootStack.Group screenOptions={modalOptions}>
-              <RootStack.Screen
-                name="DropboxNavigator"
-                component={DropboxNavigator}
-              />
-            </RootStack.Group>
-          </RootStack.Navigator>
-
+              {/* Modal Stack Screens */}
+              <RootStack.Group screenOptions={modalOptions}>
+                <RootStack.Screen
+                  name="DropboxNavigator"
+                  component={DropboxNavigator}
+                />
+              </RootStack.Group>
+            </RootStack.Navigator>
+          </ErrorBoundary>
           <Toast
             config={{
               success: ({ ...rest }: BaseToastProps) => (

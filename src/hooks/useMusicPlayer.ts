@@ -2,6 +2,8 @@ import { Audio } from 'expo-av'
 import { AVPlaybackSource, AVPlaybackStatus } from 'expo-av/build/AV'
 import { useEffect, useState } from 'react'
 
+import rollbar from 'resources/rollbar'
+
 const useAudioPlayer = (source: { uri: string; name: string } | undefined) => {
   const [sound, setSound] = useState<Audio.Sound>()
   const [isPlaying, setIsPlaying] = useState(false)
@@ -24,10 +26,14 @@ const useAudioPlayer = (source: { uri: string; name: string } | undefined) => {
     sound.setOnPlaybackStatusUpdate(onPlaybackStatusUpdate)
     setSound(sound)
 
-    const track = await sound.loadAsync(data)
+    try {
+      const track = await sound.loadAsync(data)
 
-    if (track.isLoaded) {
-      track.durationMillis && setDuration(track.durationMillis)
+      if (track.isLoaded) {
+        track.durationMillis && setDuration(track.durationMillis)
+      }
+    } catch (error: any) {
+      rollbar.error('Expo Audio loadAsync failed', error)
     }
   }
 
@@ -46,7 +52,7 @@ const useAudioPlayer = (source: { uri: string; name: string } | undefined) => {
     await sound?.setRateAsync(tempo, true)
 
   useEffect(() => {
-    source ? loadSoundFromData(source) : console.log('Sound missing!')
+    source ? loadSoundFromData(source) : rollbar.error('Sound missing!')
   }, [])
 
   useEffect(() => {

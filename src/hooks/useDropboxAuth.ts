@@ -8,6 +8,8 @@ import { makeUrl } from 'expo-linking'
 import * as SecureStore from 'expo-secure-store'
 import { checkDropboxAuth, dropboxAddAuth } from 'api/dropboxClient'
 
+import rollbar from 'resources/rollbar'
+
 export const DROPBOX_AUTH_STATE_KEY = 'ChoreoCue_Dropbox'
 
 type PropsT = {
@@ -34,7 +36,7 @@ const useDropBoxAuth = ({ onCheckAuth }: PropsT) => {
   )
 
   useEffect(() => {
-    if (response && response.type === 'success') {
+    if (response?.type === 'success') {
       const auth = response.params
       const storageValue = JSON.stringify(auth)
 
@@ -45,6 +47,8 @@ const useDropBoxAuth = ({ onCheckAuth }: PropsT) => {
 
       dropboxAddAuth(auth.access_token)
       onCheckAuth(true)
+    } else if (response?.type === 'error') {
+      rollbar.error('[Dropbox Authentication] Unhandled error')
     }
   }, [response])
 
