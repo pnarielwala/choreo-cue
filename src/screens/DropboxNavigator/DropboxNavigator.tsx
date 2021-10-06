@@ -134,7 +134,7 @@ const DropboxNavigator = (props: PropsT) => {
   return (
     <SafeAreaView
       sx={{
-        bg: 'white',
+        bg: 'background',
         height: '100%',
       }}
     >

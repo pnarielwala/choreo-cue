@@ -51,7 +51,10 @@ export default function Tempo({ setRate }: PropsT) {
           maxWidth: 500,
           mx: 'auto',
           height: [32, 40],
+          borderColor: 'divider',
         })}
+        buttonStyle={sx({ bg: 'background' })}
+        innerBorderStyle={sx({ color: 'divider' })}
         selectedButtonStyle={sx({ bg: 'black' })}
         textStyle={sx({
           // @ts-ignore FIXME: variants can be an array

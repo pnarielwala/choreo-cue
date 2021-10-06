@@ -7,7 +7,7 @@ import TextTicker from 'react-native-text-ticker'
 import { useKeepAwake } from 'expo-keep-awake'
 
 import TrackSlider from './components/TrackSlider'
-import Cues from './components/CuesContainer/Cues'
+import Cues from './components/Cues'
 import Controls from './components/Controls/Controls'
 import Tempo from './components/Tempo'
 import useMusicPlayer from 'hooks/useMusicPlayer'

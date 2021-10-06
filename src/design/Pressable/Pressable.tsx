@@ -1,28 +1,28 @@
-import React, { ComponentProps, useState } from 'react';
+import React, { ComponentProps, useState } from 'react'
 
-import { Pressable as DripsyPressable } from 'dripsy';
+import { Pressable as DripsyPressable } from 'dripsy'
 
-type PropsT = ComponentProps<typeof DripsyPressable>;
+type PropsT = ComponentProps<typeof DripsyPressable>
 
 const Pressable = (props: PropsT) => {
-  const [pressed, setPressed] = useState(false);
+  const [pressed, setPressed] = useState(false)
   return (
     <DripsyPressable
       {...props}
       onPressIn={(event) => {
-        props.onPressIn?.(event);
-        setPressed(true);
+        props.onPressIn?.(event)
+        setPressed(true)
       }}
       onPressOut={(event) => {
-        props.onPressOut?.(event);
-        setPressed(false);
+        props.onPressOut?.(event)
+        setPressed(false)
       }}
       sx={{
         ...props.sx,
-        opacity: pressed ? 0.2 : 1,
+        opacity: pressed ? 0.2 : props.sx?.['opacity'] ?? 1,
       }}
     />
-  );
-};
+  )
+}
 
-export default Pressable;
+export default Pressable

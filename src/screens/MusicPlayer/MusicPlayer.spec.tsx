@@ -113,7 +113,7 @@ it('should navigate to the correct time after pressing a cue', async () => {
 
   expect(getByText('0:20')).toBeDefined()
 
-  const cues = queryAllByText('Press & Hold to Set')
+  const cues = queryAllByText('Hold to Set')
 
   const firstCue = cues[0]
 
