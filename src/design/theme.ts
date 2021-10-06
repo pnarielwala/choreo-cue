@@ -1,6 +1,6 @@
 import { Theme } from 'dripsy'
 
-const makeTheme = <T extends Theme>(t: T) => t
+const makeTheme = <T extends Theme>(t: T): T => t
 
 const theme = makeTheme({
   colors: {
@@ -19,8 +19,7 @@ const theme = makeTheme({
     black: '#000',
   },
   space: [2, 4, 8, 16, 20, 32, 48, 56],
-  // @ts-ignore FIXME: can be numbers too
-  breakpoints: [325, 500],
+  breakpoints: [325, 500] as unknown as Array<string>,
   fonts: {
     root: 'nunito',
   },

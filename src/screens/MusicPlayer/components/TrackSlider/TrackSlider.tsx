@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { View, Text, StyleSheet } from 'react-native'
+import { View, Text, Flex, useSx, useTheme } from 'design'
 import Slider from '@sharcoux/slider'
 import format from 'format-duration'
 
@@ -24,17 +24,33 @@ const TrackSlider = (props: PropsT) => {
     }
   }, [props.currentPosition])
 
+  const sx = useSx()
+  const theme = useTheme()
+
   const formatedCurrentTime = format(adjustedCurrPosition)
   const formattedRemaining = format(adjustedDuration - adjustedCurrPosition)
+
   return (
-    <View style={styles.container}>
+    <View
+      sx={{
+        width: '100%',
+        mt: 3,
+      }}
+    >
       <Slider
-        style={styles.slider}
-        thumbStyle={styles.thumb}
-        trackStyle={styles.track}
-        minimumTrackTintColor="black"
-        maximumTrackTintColor="lightgrey"
-        thumbTintColor="black"
+        style={sx({
+          width: '100%',
+        })}
+        thumbStyle={sx({
+          width: 10,
+          height: 10,
+        })}
+        trackStyle={sx({
+          height: 2,
+        })}
+        minimumTrackTintColor={theme.colors.black}
+        maximumTrackTintColor={theme.colors.divider}
+        thumbTintColor={theme.colors.black}
         minimumValue={0}
         maximumValue={1}
         enabled={!props.disabled}
@@ -51,34 +67,17 @@ const TrackSlider = (props: PropsT) => {
           setIsSliding(false)
         }}
       />
-      <View
-        style={{
+      <Flex
+        sx={{
           justifyContent: 'space-between',
           flexDirection: 'row',
         }}
       >
-        <Text>{formatedCurrentTime}</Text>
-        <Text>-{formattedRemaining}</Text>
-      </View>
+        <Text variant="bodySmall">{formatedCurrentTime}</Text>
+        <Text variant="bodySmall">-{formattedRemaining}</Text>
+      </Flex>
     </View>
   )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-  },
-  slider: {
-    width: '100%',
-    height: 50,
-  },
-  thumb: {
-    width: 8,
-    height: 8,
-  },
-  track: {
-    height: 2,
-  },
-})
 
 export default TrackSlider
