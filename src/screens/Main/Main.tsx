@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { View, Image, SafeAreaView, Pressable, Icon } from 'design'
 
 import Dropbox from 'assets/dropbox.svg'
@@ -32,27 +32,39 @@ const Main = (props: PropsT) => {
     },
   })
 
+  useEffect(() => {
+    props.navigation.setOptions({
+      headerTransparent: true,
+    })
+  }, [])
+
   return (
-    <View sx={{ position: 'relative', height: '100%' }}>
-      <SafeAreaView
-        sx={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
-      >
-        <Image
-          sx={{
-            width: '100%',
-            position: 'absolute',
-            zIndex: -1,
-          }}
-          resizeMode="contain"
-          source={require('assets/splash.png')}
-          testID="logo-image"
-        />
+    <View
+      sx={{
+        position: 'relative',
+        height: '100%',
+        backgroundColor: 'background',
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <Image
+        sx={{
+          width: '100%',
+          position: 'absolute',
+          zIndex: -1,
+        }}
+        resizeMode="contain"
+        source={require('assets/splash.png')}
+        testID="logo-image"
+      />
+      <SafeAreaView sx={{ flex: 1, justifyContent: 'flex-end' }}>
         <View
           sx={{
-            position: 'absolute',
-            bottom: 50,
             flexDirection: 'row',
             width: '100%',
+            my: 5,
             justifyContent: 'space-evenly',
           }}
         >

@@ -45,6 +45,7 @@ const theme = makeTheme({
       fontWeight: 'bold',
       fontSize: [24, 32],
       color: 'text',
+      my: 3,
     },
     h2: {
       fontWeight: 'bold',

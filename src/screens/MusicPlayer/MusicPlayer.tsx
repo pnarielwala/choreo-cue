@@ -1,10 +1,12 @@
 import 'react-native-gesture-handler'
 import React, { useEffect } from 'react'
 import { Easing } from 'react-native'
-import { View, SafeAreaView, H1 } from 'design'
+import { View, SafeAreaView, H1, Pressable, Icon } from 'design'
 import Spinner from 'react-native-loading-spinner-overlay'
 import TextTicker from 'react-native-text-ticker'
 import { useKeepAwake } from 'expo-keep-awake'
+
+import LeftArrow from 'assets/left_arrow.svg'
 
 import TrackSlider from './components/TrackSlider'
 import Cues from './components/Cues'
@@ -35,6 +37,30 @@ const MusicPlayer = (props: PropsT) => {
     }
   }, [])
 
+  useEffect(() => {
+    props.navigation.setOptions({
+      headerLeft: () => (
+        <Pressable
+          onPress={() => {
+            props.navigation.goBack()
+          }}
+          hitSlop={48}
+          accessibilityLabel="Back"
+        >
+          <Icon
+            as={LeftArrow}
+            width={24}
+            height={24}
+            sx={{
+              // ml: 3,
+              color: 'secondary',
+            }}
+          />
+        </Pressable>
+      ),
+    })
+  }, [props])
+
   return (
     <>
       <SafeAreaView
@@ -43,7 +69,7 @@ const MusicPlayer = (props: PropsT) => {
           bg: 'background',
         }}
       >
-        <View sx={{ px: 3, pt: 6 }}>
+        <View sx={{ px: 3 }}>
           <View sx={{ alignItems: 'flex-start', width: '100%' }}>
             <H1
               as={TextTicker}

@@ -51,19 +51,38 @@ const App = () => {
     return <AppLoading />
   }
 
+  const headerStyles = {
+    headerLeftContainerStyle: {
+      paddingHorizontal: theme.space[3],
+    },
+    headerRightContainerStyle: {
+      paddingHorizontal: theme.space[3],
+    },
+    headerStyle: {
+      backgroundColor: theme.colors.background,
+      shadowRadius: 0,
+      shadowOffset: {
+        height: 0,
+        width: 0,
+      },
+      shadowColor: theme.colors.background,
+      elevation: 0,
+    },
+  }
+
   const screenOptions: StackNavigationOptions = {
     headerTitle: '',
-    headerTransparent: true,
+    ...headerStyles,
     headerBackTitleVisible: false,
     headerBackImage: () => (
-      <Icon as={LeftArrow} sx={{ color: 'black', ml: 3 }} />
+      <Icon as={LeftArrow} sx={{ color: theme.colors.black, ml: 2 }} />
     ),
   }
   const modalOptions: StackNavigationOptions = {
     presentation: 'modal',
     headerTitle: '',
-    headerTransparent: true,
     headerBackTitleVisible: false,
+    ...headerStyles,
   }
   return (
     <DripsyProvider theme={theme}>
@@ -90,6 +109,7 @@ const App = () => {
               </RootStack.Group>
             </RootStack.Navigator>
           </ErrorBoundary>
+
           <Toast
             config={{
               success: ({ ...rest }: BaseToastProps) => (

@@ -7,11 +7,11 @@ import {
   Flex,
   Box,
   Text,
-  H1,
   Icon,
   ScrollView,
   Pressable,
 } from 'design'
+import { H1 } from 'dripsy'
 import Folder from 'assets/folder.svg'
 import File from 'assets/file.svg'
 import Close from 'assets/xmark.svg'
@@ -59,9 +59,7 @@ const DropboxNavigator = (props: PropsT) => {
                 width={24}
                 height={24}
                 sx={{
-                  position: 'absolute',
-                  left: 0,
-                  ml: 4,
+                  mt: 2,
                   color: 'secondary',
                 }}
               />
@@ -79,9 +77,7 @@ const DropboxNavigator = (props: PropsT) => {
             width={24}
             height={24}
             sx={{
-              position: 'absolute',
-              right: 0,
-              mr: 4,
+              mt: 2,
             }}
           />
         </Pressable>
@@ -138,17 +134,23 @@ const DropboxNavigator = (props: PropsT) => {
         height: '100%',
       }}
     >
-      <Box sx={{ height: '100%', mx: 2, mt: 6, pb: 6 }}>
+      <Box sx={{ height: '100%', mx: 3, pb: 6 }}>
         <Flex sx={{ alignItems: 'center', flexDirection: 'column' }}>
           <Text>Dropbox</Text>
-          <H1 sx={{ mt: 3 }}>{folderName}</H1>
+          <H1
+            as={Text}
+            sx={{
+              mt: 3,
+            }}
+          >
+            {folderName}
+          </H1>
         </Flex>
         <Box
           sx={{
             height: 3,
             backgroundColor: 'divider',
             borderRadius: 8,
-            mx: 3,
             mt: 2,
           }}
         />
