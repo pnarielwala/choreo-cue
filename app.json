@@ -2,7 +2,7 @@
   "expo": {
     "name": "Choreo Cue",
     "slug": "choreo-cue",
-    "version": "1.4.3",
+    "version": "1.4.4",
     "entryPoint": "./src/index.tsx",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -14,12 +14,14 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "scheme": "choreo-cue",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.pnarielwala.choreo-cue",
-      "buildNumber": "1.4.3"
+      "buildNumber": "1.4.4"
     },
     "android": {
       "adaptiveIcon": {
