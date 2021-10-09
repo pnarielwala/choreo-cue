@@ -28,7 +28,8 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "versionCode": 0
+      "versionCode": 0,
+      "package": "com.pnarielwala.choreocue"
     },
     "web": {
       "favicon": "./assets/favicon.png"
