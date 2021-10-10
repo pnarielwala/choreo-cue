@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { ButtonGroup } from 'react-native-elements'
-import { View, H2, useSx } from 'design'
+import { View, H2, useSx, Text } from 'design'
 
 const TEMPOS: { [key: number]: { rate: number; display: string } } = {
   0: {
@@ -33,6 +33,7 @@ export default function Tempo({ setRate }: PropsT) {
   return (
     <View sx={{ width: '100%', justifyContent: 'flex-start' }}>
       <H2
+        as={Text}
         sx={{
           alignSelf: 'flex-start',
         }}

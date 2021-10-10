@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Alert } from 'react-native'
 import Toast from 'react-native-toast-message'
 
-import { H2, Button, View, Flex } from 'design'
+import { H2, Button, View, Flex, Text } from 'design'
 
 import CueButton from './components/CueButton'
 
@@ -43,9 +43,11 @@ const Cues = (props: PropsT) => {
     ])
 
   return (
-    <View>
-      <H2>Cues</H2>
-      <Flex sx={{ flexWrap: 'wrap', mx: [-1, null, -2] }}>
+    <View sx={{ flex: 1, justifyContent: 'flex-start' }}>
+      <H2 as={Text} sx={{ height: 'auto' }}>
+        Cues
+      </H2>
+      <Flex sx={{ flexWrap: 'wrap', mx: [-1, null, -2], flex: 2 }}>
         <CueButton
           currentPosition={props.currentPosition}
           onPress={props.onPlayFromPosition}
@@ -72,7 +74,7 @@ const Cues = (props: PropsT) => {
         />
       </Flex>
 
-      <View sx={{ mt: 2 }}>
+      <View sx={{ mt: 2, flex: 1 }}>
         <Button
           onPress={() => displayResetConfirmation()}
           title="Reset Cues"

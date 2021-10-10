@@ -65,47 +65,50 @@ const MusicPlayer = (props: PropsT) => {
     <>
       <SafeAreaView
         sx={{
-          height: '100%',
+          flex: 1,
           bg: 'background',
         }}
       >
-        <View sx={{ px: 3 }}>
-          <View sx={{ alignItems: 'flex-start', width: '100%' }}>
-            <H1
-              as={TextTicker}
-              // @ts-ignore TODO: Fix TS typing for Dripsy on "as" prop
-              loop={false}
-              bounce={false}
-              repeatSpacer={20}
-              scrollSpeed={200}
-              easing={Easing.linear}
-              marqueeDelay={1000}
-            >
-              {details.trackName}
-            </H1>
+        <View sx={{ px: 3, flex: 1 }}>
+          <View sx={{ height: 'auto' }}>
+            <View sx={{ alignItems: 'flex-start', width: '100%' }}>
+              <H1
+                as={TextTicker}
+                // @ts-ignore TODO: Fix TS typing for Dripsy on "as" prop
+                loop={false}
+                bounce={false}
+                repeatSpacer={20}
+                scrollSpeed={200}
+                easing={Easing.linear}
+                marqueeDelay={1000}
+              >
+                {details.trackName}
+              </H1>
+            </View>
+
+            <Controls
+              playSound={playAudio}
+              pauseSound={pauseAudio}
+              currentPosition={currentPosition}
+              isPlaying={isPlaying}
+              setPosition={setAudioPosition}
+            />
+
+            <TrackSlider
+              duration={duration}
+              currentPosition={currentPosition}
+              onPositionChange={setAudioPosition}
+              disabled={false}
+            />
+
+            <Tempo setRate={setAudioSpeed} />
           </View>
-
-          <Controls
-            playSound={playAudio}
-            pauseSound={pauseAudio}
-            currentPosition={currentPosition}
-            isPlaying={isPlaying}
-            setPosition={setAudioPosition}
-          />
-
-          <TrackSlider
-            duration={duration}
-            currentPosition={currentPosition}
-            onPositionChange={setAudioPosition}
-            disabled={false}
-          />
-
-          <Tempo setRate={setAudioSpeed} />
-
-          <Cues
-            currentPosition={currentPosition}
-            onPlayFromPosition={setAudioPosition}
-          />
+          <View sx={{ flex: 1, alignItems: 'flex-start' }}>
+            <Cues
+              currentPosition={currentPosition}
+              onPlayFromPosition={setAudioPosition}
+            />
+          </View>
         </View>
       </SafeAreaView>
 

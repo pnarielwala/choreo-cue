@@ -29,7 +29,7 @@ const Controls = ({
         sx={{
           flexDirection: 'row',
           alignItems: 'center',
-          mt: 4,
+          mt: [2, 4],
           justifyContent: 'space-between',
           width: '80%',
           maxWidth: 250,

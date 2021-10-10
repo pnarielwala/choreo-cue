@@ -25,12 +25,14 @@ const CueButton = ({
   }, [triggerReset])
 
   return (
-    <Box sx={{ width: '50%', p: [1, null, 2] }}>
+    <Box
+      sx={{ width: '50%', p: [1, null, 2], height: '100%', maxHeight: '50%' }}
+    >
       <Pressable
         sx={{
           width: '100%',
           bg: color,
-          height: [50, 80, 200],
+          height: '100%',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
