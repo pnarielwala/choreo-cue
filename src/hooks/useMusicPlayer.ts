@@ -1,8 +1,23 @@
 import { Audio } from 'expo-av'
 import { AVPlaybackSource, AVPlaybackStatus } from 'expo-av/build/AV'
 import { useEffect, useState } from 'react'
+import { Platform } from 'react-native'
 
 import rollbar from 'resources/rollbar'
+
+// TODO: Remove when expo sdk updated to v43
+const adjustURIForAndroid = (sound: Exclude<AVPlaybackSource, number>) => {
+  let uri = sound.uri
+  if (uri.includes('%40')) {
+    uri = uri.replace('%40', '%2540')
+  }
+  if (uri.includes('%2F')) {
+    uri = uri.replace('%2F', '%252F')
+  }
+  uri = 'file://' + uri
+
+  return { ...sound, uri }
+}
 
 const useAudioPlayer = (source: { uri: string; name: string } | undefined) => {
   const [sound, setSound] = useState<Audio.Sound>()
@@ -17,7 +32,7 @@ const useAudioPlayer = (source: { uri: string; name: string } | undefined) => {
     }
   }
 
-  const loadSoundFromData = async (data: AVPlaybackSource) => {
+  const loadSoundFromData = async (data: Exclude<AVPlaybackSource, number>) => {
     Audio.setAudioModeAsync({
       playsInSilentModeIOS: true,
       staysActiveInBackground: true,
@@ -27,7 +42,10 @@ const useAudioPlayer = (source: { uri: string; name: string } | undefined) => {
     setSound(sound)
 
     try {
-      const track = await sound.loadAsync(data)
+      const track =
+        Platform.OS === 'android'
+          ? await sound.loadAsync(adjustURIForAndroid(data))
+          : await sound.loadAsync(data)
 
       if (track.isLoaded) {
         track.durationMillis && setDuration(track.durationMillis)
