@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { View, Text, Flex, useSx, useTheme } from 'design'
-import Slider from '@sharcoux/slider'
+import Slider from '@react-native-community/slider'
 import format from 'format-duration'
 
 export type PropsT = {
@@ -38,39 +38,32 @@ const TrackSlider = (props: PropsT) => {
       }}
     >
       <Slider
-        style={sx({
-          width: '100%',
-        })}
-        thumbStyle={sx({
-          width: 10,
-          height: 10,
-        })}
-        trackStyle={sx({
-          height: 2,
-        })}
         minimumTrackTintColor={theme.colors.black}
         maximumTrackTintColor={theme.colors.divider}
         thumbTintColor={theme.colors.black}
         minimumValue={0}
         maximumValue={1}
-        enabled={!props.disabled}
         value={
           adjustedDuration > 0 ? adjustedCurrPosition / adjustedDuration : 0
         }
-        onValueChange={(value: number) =>
+        onValueChange={(value: number) => {
           setSliderValue(value * adjustedDuration)
-        }
-        onSlidingStart={() => setIsSliding(true)}
+        }}
+        onSlidingStart={() => {
+          setIsSliding(true)
+        }}
         onSlidingComplete={(value: number) => {
           const newPosition = value * props.duration
           props.onPositionChange(newPosition)
           setIsSliding(false)
         }}
+        tapToSeek
       />
       <Flex
         sx={{
           justifyContent: 'space-between',
           flexDirection: 'row',
+          width: '100%',
         }}
       >
         <Text variant="bodySmall">{formatedCurrentTime}</Text>

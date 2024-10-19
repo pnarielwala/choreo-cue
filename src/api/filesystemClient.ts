@@ -5,9 +5,11 @@ export const deleteAllLocalFiles = async () => {
     String(FileSystem.documentDirectory)
   )
 
-  const promises = contents.map((fileName) =>
-    FileSystem.deleteAsync(FileSystem.documentDirectory + encodeURI(fileName))
-  )
+  if (contents) {
+    const promises = contents.map((fileName) =>
+      FileSystem.deleteAsync(FileSystem.documentDirectory + encodeURI(fileName))
+    )
 
-  await Promise.all(promises)
+    await Promise.all(promises)
+  }
 }

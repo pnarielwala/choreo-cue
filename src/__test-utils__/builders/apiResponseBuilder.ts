@@ -1,18 +1,20 @@
-import { AxiosResponse } from 'axios';
+import { AxiosHeaders, AxiosResponse } from 'axios'
 
 const baseApiResponse: AxiosResponse<any> = {
   data: {},
   status: 200,
-  config: {},
+  config: {
+    headers: {} as AxiosHeaders,
+  },
   statusText: '',
   headers: {},
-};
+}
 
 export function anApiResponse<T>(
-  overrides: Partial<AxiosResponse<T>> = {},
+  overrides: Partial<AxiosResponse<T>> = {}
 ): AxiosResponse<T> {
   return {
     ...baseApiResponse,
     ...overrides,
-  };
+  }
 }

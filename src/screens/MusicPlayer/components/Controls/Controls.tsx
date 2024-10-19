@@ -1,10 +1,7 @@
 import React from 'react'
-import { Icon, Pressable, View, Flex } from 'design'
+import { Pressable, View, Flex } from 'design'
 
-import SkipBack from 'assets/skip_back.svg'
-import SkipForward from 'assets/skip_forward.svg'
-import Play from 'assets/play.svg'
-import Pause from 'assets/pause.svg'
+import { MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons'
 
 const SKIP_STEP = 10 * 1000 // 10 seconds
 
@@ -41,7 +38,7 @@ const Controls = ({
           }}
           accessibilityLabel={`Skip back ${SKIP_STEP / 1000} seconds`}
         >
-          <Icon as={SkipBack} width={48} sx={{ color: 'black' }} />
+          <MaterialCommunityIcons name="rewind-10" size={48} color="black" />
         </Pressable>
 
         <Pressable
@@ -50,7 +47,11 @@ const Controls = ({
           }}
           accessibilityLabel={`${isPlaying ? 'Pause' : 'Play'} button`}
         >
-          <Icon as={isPlaying ? Pause : Play} sx={{ color: 'black' }} />
+          <FontAwesome5
+            name={isPlaying ? 'pause-circle' : 'play-circle'}
+            size={64}
+            color="black"
+          />
         </Pressable>
 
         <Pressable
@@ -59,7 +60,11 @@ const Controls = ({
           }}
           accessibilityLabel={`Skip forward ${SKIP_STEP / 1000} seconds`}
         >
-          <Icon as={SkipForward} width={48} sx={{ color: 'black' }} />
+          <MaterialCommunityIcons
+            name="fast-forward-10"
+            size={48}
+            color="black"
+          />
         </Pressable>
       </View>
     </Flex>

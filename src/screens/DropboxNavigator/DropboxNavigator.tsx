@@ -1,21 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { Alert } from 'react-native'
-import { useMutation, useQuery } from 'react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 
-import {
-  SafeAreaView,
-  Flex,
-  Box,
-  Text,
-  Icon,
-  ScrollView,
-  Pressable,
-} from 'design'
-import { H1 } from 'dripsy'
-import Folder from 'assets/folder.svg'
-import File from 'assets/file.svg'
-import Close from 'assets/xmark.svg'
-import LeftArrow from 'assets/left_arrow.svg'
+import { AntDesign } from '@expo/vector-icons'
+
+import { SafeAreaView, Flex, Box, Text, ScrollView, Pressable } from 'design'
+import { H1, useSx } from 'dripsy'
 
 import Spinner from 'react-native-loading-spinner-overlay'
 
@@ -27,6 +17,7 @@ import { DropboxEntryT } from 'types/Dropbox'
 export type PropsT = ScreenPropsT<'DropboxNavigator'>
 
 const DropboxNavigator = (props: PropsT) => {
+  const sx = useSx()
   const [paramsQueue, setParamsQueue] = useState([props.route.params])
 
   const params = paramsQueue[paramsQueue.length - 1]
@@ -53,16 +44,11 @@ const DropboxNavigator = (props: PropsT) => {
               }}
               hitSlop={48}
               accessibilityLabel="Back"
+              sx={{
+                mt: 2,
+              }}
             >
-              <Icon
-                as={LeftArrow}
-                width={24}
-                height={24}
-                sx={{
-                  mt: 2,
-                  color: 'secondary',
-                }}
-              />
+              <AntDesign name="arrowleft" size={24} />
             </Pressable>
           )
         : () => null,
@@ -72,24 +58,19 @@ const DropboxNavigator = (props: PropsT) => {
           hitSlop={48}
           accessibilityLabel="Close"
         >
-          <Icon
-            as={Close}
-            width={24}
-            height={24}
-            sx={{
-              mt: 2,
-            }}
-          />
+          <AntDesign name="close" size={24} />
         </Pressable>
       ),
     })
   }, [paramsQueue, path, popParams])
 
-  const { data } = useQuery(['dropbox-contents', path], () =>
-    getFolderContents(path)
-  )
+  const { data } = useQuery({
+    queryKey: ['dropbox-contents', path],
+    queryFn: () => getFolderContents(path),
+  })
 
-  const { mutate: doDownloadFile, isLoading } = useMutation(downloadFile, {
+  const { mutate: doDownloadFile, isPending: isLoading } = useMutation({
+    mutationFn: downloadFile,
     onSuccess: (response) => {
       if (response) {
         if (props.navigation.canGoBack()) {
@@ -177,13 +158,12 @@ const DropboxNavigator = (props: PropsT) => {
                 >
                   {isFile ? (
                     <>
-                      <Icon
-                        as={File}
-                        width={64}
-                        height={64}
-                        sx={{
+                      <AntDesign
+                        name="file1"
+                        size={64}
+                        style={sx({
                           color: isDownloadable ? 'primary' : 'muted',
-                        }}
+                        })}
                       />
                       <Text
                         variant="bodySmall"
@@ -198,7 +178,13 @@ const DropboxNavigator = (props: PropsT) => {
                     </>
                   ) : (
                     <>
-                      <Icon as={Folder} width={64} height={64} fill="orange" />
+                      <AntDesign
+                        name="folder1"
+                        size={64}
+                        style={sx({
+                          color: 'orange',
+                        })}
+                      />
                       <Text
                         variant="bodySmall"
                         sx={{

@@ -1,5 +1,5 @@
-const path = require('path');
-const fs = require('fs');
+const path = require('path')
+const fs = require('fs')
 
 const alias = fs
   .readdirSync('./src', { withFileTypes: true })
@@ -8,11 +8,11 @@ const alias = fs
   .reduce((itr, value, index) => {
     return Object.assign({}, itr, {
       [value]: `./src/${value}`,
-    });
-  }, {});
+    })
+  }, {})
 
 module.exports = function (api) {
-  api.cache(true);
+  api.cache(true)
   return {
     presets: ['babel-preset-expo', '@babel/preset-typescript'],
     plugins: [
@@ -30,5 +30,5 @@ module.exports = function (api) {
         },
       ],
     ],
-  };
-};
+  }
+}

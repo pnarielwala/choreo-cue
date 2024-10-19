@@ -3,7 +3,9 @@ import React from 'react'
 
 import rollbar from 'resources/rollbar'
 
-type PropsT = {}
+type PropsT = {
+  children: React.ReactNode
+}
 
 type StateT = {
   hasError: boolean

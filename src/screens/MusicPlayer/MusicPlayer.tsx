@@ -6,7 +6,7 @@ import Spinner from 'react-native-loading-spinner-overlay'
 import TextTicker from 'react-native-text-ticker'
 import { useKeepAwake } from 'expo-keep-awake'
 
-import LeftArrow from 'assets/left_arrow.svg'
+import { AntDesign } from '@expo/vector-icons'
 
 import TrackSlider from './components/TrackSlider'
 import Cues from './components/Cues'
@@ -47,15 +47,7 @@ const MusicPlayer = (props: PropsT) => {
           hitSlop={48}
           accessibilityLabel="Back"
         >
-          <Icon
-            as={LeftArrow}
-            width={24}
-            height={24}
-            sx={{
-              // ml: 3,
-              color: 'secondary',
-            }}
-          />
+          <AntDesign name="arrowleft" size={32} />
         </Pressable>
       ),
     })

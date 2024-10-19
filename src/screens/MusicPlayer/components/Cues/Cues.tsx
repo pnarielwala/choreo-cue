@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Alert } from 'react-native'
 import Toast from 'react-native-toast-message'
 
-import { H2, Button, View, Flex, Text } from 'design'
+import { H2, Pressable, View, Flex, Text } from 'design'
 
 import CueButton from './components/CueButton'
 
@@ -74,15 +74,17 @@ const Cues = (props: PropsT) => {
         />
       </Flex>
 
-      <View sx={{ mt: 2, flex: 1 }}>
-        <Button
-          onPress={() => displayResetConfirmation()}
-          title="Reset Cues"
-          color="red"
-        >
-          Reset
-        </Button>
-      </View>
+      <Flex sx={{ mt: 2, flex: 1, width: '100%', justifyContent: 'center' }}>
+        <Pressable onPress={displayResetConfirmation}>
+          <Text
+            sx={{
+              color: 'red',
+            }}
+          >
+            Reset Cues
+          </Text>
+        </Pressable>
+      </Flex>
     </View>
   )
 }

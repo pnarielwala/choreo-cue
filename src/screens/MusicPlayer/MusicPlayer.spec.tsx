@@ -58,7 +58,7 @@ it('should display audio title', async () => {
 })
 
 it('should play and pause audio', async () => {
-  const { getByA11yLabel, getByText } = doRenderWithProviders({
+  const { getByLabelText, getByText } = doRenderWithProviders({
     musicData: { name: 'Toosie Slide - Drake.mp3', uri: '' },
   })
 
@@ -66,19 +66,19 @@ it('should play and pause audio', async () => {
 
   expect(getByText('0:00')).toBeDefined()
   await act(async () => {
-    fireEvent.press(getByA11yLabel('Play button'))
+    fireEvent.press(getByLabelText('Play button'))
 
     await new Promise((res) => {
       setTimeout(() => res({}), 1500)
     })
-    fireEvent.press(getByA11yLabel('Pause button'))
+    fireEvent.press(getByLabelText('Pause button'))
   })
 
   await waitFor(() => expect(getByText('0:01')).toBeDefined())
 }, 10000)
 
 it('should change tempo of the audio', async () => {
-  const { getByA11yLabel, getByText } = doRenderWithProviders({
+  const { getByLabelText, getByText } = doRenderWithProviders({
     musicData: { name: 'Toosie Slide - Drake.mp3', uri: '' },
   })
 
@@ -88,19 +88,19 @@ it('should change tempo of the audio', async () => {
 
   fireEvent.press(getByText('0.5x'))
   await act(async () => {
-    fireEvent.press(getByA11yLabel('Play button'))
+    fireEvent.press(getByLabelText('Play button'))
 
     await new Promise((res) => {
       setTimeout(() => res({}), 2200)
     })
-    fireEvent.press(getByA11yLabel('Pause button'))
+    fireEvent.press(getByLabelText('Pause button'))
   })
 
   await waitFor(() => expect(getByText('0:01')).toBeDefined())
 }, 10000)
 
 it('should navigate to the correct time after pressing a cue', async () => {
-  const { getByA11yLabel, getByText, queryAllByText } = doRenderWithProviders({
+  const { getByLabelText, getByText, queryAllByText } = doRenderWithProviders({
     musicData: { name: 'Toosie Slide - Drake.mp3', uri: '' },
   })
 
@@ -108,8 +108,8 @@ it('should navigate to the correct time after pressing a cue', async () => {
 
   expect(getByText('0:00')).toBeDefined()
 
-  fireEvent.press(getByA11yLabel('Skip forward 10 seconds'))
-  fireEvent.press(getByA11yLabel('Skip forward 10 seconds'))
+  fireEvent.press(getByLabelText('Skip forward 10 seconds'))
+  fireEvent.press(getByLabelText('Skip forward 10 seconds'))
 
   expect(getByText('0:20')).toBeDefined()
 
@@ -119,7 +119,7 @@ it('should navigate to the correct time after pressing a cue', async () => {
 
   fireEvent(firstCue, 'onLongPress')
 
-  fireEvent.press(getByA11yLabel('Skip forward 10 seconds'))
+  fireEvent.press(getByLabelText('Skip forward 10 seconds'))
   expect(getByText('0:30')).toBeDefined()
 
   fireEvent.press(getByText('0:20'))

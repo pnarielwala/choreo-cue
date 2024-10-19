@@ -1,6 +1,6 @@
-import { Theme } from 'dripsy'
+import { makeTheme, Theme } from 'dripsy'
 
-const makeTheme = <T extends Theme>(t: T): T => t
+// const makeTheme = <T extends Theme>(t: T): T => t
 
 const theme = makeTheme({
   colors: {
@@ -64,5 +64,11 @@ const theme = makeTheme({
     },
   },
 })
+
+type MyTheme = typeof theme
+declare module 'dripsy' {
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface
+  interface DripsyCustomTheme extends MyTheme {}
+}
 
 export default theme
