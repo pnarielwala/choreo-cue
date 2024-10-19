@@ -8,7 +8,7 @@ import {
   QueryCache,
   QueryClient,
   QueryClientProvider,
-} from 'react-query'
+} from '@tanstack/react-query'
 import { DripsyProvider } from 'dripsy'
 
 import theme from '../design/theme'
@@ -32,7 +32,7 @@ const withProviders =
           <NavigationContainer>
             {children}
 
-            <Toast ref={(ref) => Toast.setRef(ref)} topOffset={45} />
+            <Toast topOffset={45} />
           </NavigationContainer>
         </QueryClientProvider>
       </DripsyProvider>

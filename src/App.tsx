@@ -1,20 +1,28 @@
 import 'react-native-gesture-handler'
-import React from 'react'
-import { NavigationContainer } from '@react-navigation/native'
+import React, { useCallback, useEffect, useState } from 'react'
+import { StatusBar } from 'expo-status-bar'
+
+import {
+  ParamListBase,
+  StackNavigationState,
+  NavigationContainer,
+} from '@react-navigation/native'
 import Toast, { BaseToast, BaseToastProps } from 'react-native-toast-message'
-import { QueryClient, QueryClientProvider } from 'react-query'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
   StackScreenProps,
   createStackNavigator,
   StackNavigationOptions,
+  StackNavigationEventMap,
 } from '@react-navigation/stack'
 
 import { useFonts } from 'expo-font'
-import AppLoading from 'expo-app-loading'
+import { withLayoutContext } from 'expo-router'
+import * as SplashScreen from 'expo-splash-screen'
 
-import { DripsyProvider, Icon } from 'design'
+import { DripsyProvider, View } from 'design'
+import { Text } from 'react-native'
 import theme from './design/theme'
-import LeftArrow from 'assets/left_arrow.svg'
 
 import Main from 'screens/Main'
 import MusicPlayer from 'screens/MusicPlayer'
@@ -34,9 +42,14 @@ export type StacksT = {
 
 export type ScreenPropsT<T extends keyof StacksT> = StackScreenProps<StacksT, T>
 
-const RootStack = createStackNavigator<StacksT>()
+const Stack = createStackNavigator<StacksT>()
+
+// Keep the splash screen visible while we fetch resources
+SplashScreen.preventAutoHideAsync()
 
 const App = () => {
+  const [appIsReady, setAppIsReady] = useState(false)
+
   let [fontsLoaded] = useFonts({
     ['nunito']: require('assets/fonts/Nunito-Regular.ttf'),
     ['nunitoBold']: require('assets/fonts/Nunito-Bold.ttf'),
@@ -47,8 +60,25 @@ const App = () => {
     ['nunitoBlack']: require('assets/fonts/Nunito-Black.ttf'),
   })
 
-  if (!fontsLoaded) {
-    return <AppLoading />
+  useEffect(() => {
+    if (fontsLoaded) {
+      setAppIsReady(true)
+    }
+  }, [fontsLoaded])
+
+  const onLayoutRootView = useCallback(async () => {
+    if (appIsReady) {
+      // This tells the splash screen to hide immediately! If we call this after
+      // `setAppIsReady`, then we may see a blank screen while the app is
+      // loading its initial state and rendering its first pixels. So instead,
+      // we hide the splash screen once we know the root view has already
+      // performed layout.
+      await SplashScreen.hideAsync()
+    }
+  }, [appIsReady])
+
+  if (!appIsReady) {
+    return null
   }
 
   const headerStyles = {
@@ -74,9 +104,6 @@ const App = () => {
     headerTitle: '',
     ...headerStyles,
     headerBackTitleVisible: false,
-    headerBackImage: () => (
-      <Icon as={LeftArrow} sx={{ color: theme.colors.black, ml: 2 }} />
-    ),
   }
   const modalOptions: StackNavigationOptions = {
     presentation: 'modal',
@@ -84,30 +111,32 @@ const App = () => {
     headerBackTitleVisible: false,
     ...headerStyles,
   }
+
   return (
     <DripsyProvider theme={theme}>
       <QueryClientProvider client={new QueryClient()}>
         <NavigationContainer>
           <ErrorBoundary>
-            <RootStack.Navigator initialRouteName="Home">
+            <View onLayout={onLayoutRootView} />
+            <Stack.Navigator initialRouteName="Home">
               {/* Normal Stack Screens */}
-              <RootStack.Group screenOptions={screenOptions}>
-                <RootStack.Screen name="Home" component={Main} />
-                <RootStack.Screen
+              <Stack.Group screenOptions={screenOptions}>
+                <Stack.Screen name="Home" component={Main} />
+                <Stack.Screen
                   name="Player"
                   component={MusicPlayer}
                   options={{ gestureEnabled: false }}
                 />
-              </RootStack.Group>
+              </Stack.Group>
 
               {/* Modal Stack Screens */}
-              <RootStack.Group screenOptions={modalOptions}>
-                <RootStack.Screen
+              <Stack.Group screenOptions={modalOptions}>
+                <Stack.Screen
                   name="DropboxNavigator"
                   component={DropboxNavigator}
                 />
-              </RootStack.Group>
-            </RootStack.Navigator>
+              </Stack.Group>
+            </Stack.Navigator>
           </ErrorBoundary>
 
           <Toast
@@ -127,12 +156,38 @@ const App = () => {
                 />
               ),
             }}
-            ref={(ref) => Toast.setRef(ref)}
             topOffset={45}
           />
         </NavigationContainer>
       </QueryClientProvider>
     </DripsyProvider>
+  )
+}
+
+const Main2 = () => {
+  const onLayoutRootView = useCallback(async () => {
+    if (true) {
+      // This tells the splash screen to hide immediately! If we call this after
+      // `setAppIsReady`, then we may see a blank screen while the app is
+      // loading its initial state and rendering its first pixels. So instead,
+      // we hide the splash screen once we know the root view has already
+      // performed layout.
+      await SplashScreen.hideAsync()
+    }
+  }, [])
+
+  return (
+    <View
+      sx={{
+        flex: 1,
+        backgroundColor: 'blue',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+      onLayout={onLayoutRootView}
+    >
+      <Text>Hello world</Text>
+    </View>
   )
 }
 

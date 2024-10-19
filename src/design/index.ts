@@ -1,6 +1,7 @@
-export * from 'dripsy';
+export * from 'dripsy'
 
-export { default as Icon } from './Icon';
-export { default as Pressable } from './Pressable';
+export { default as Icon } from './Icon'
+export { default as Pressable } from './Pressable'
+export { default as ButtonGroup } from './ButtonGroup'
 
-export { default as useTheme } from './useTheme';
+export { default as useTheme } from './useTheme'

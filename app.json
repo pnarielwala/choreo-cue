@@ -2,26 +2,27 @@
   "expo": {
     "name": "Choreo Cue",
     "slug": "choreo-cue",
-    "version": "1.4.6",
-    "entryPoint": "./src/index.tsx",
+    "version": "1.4.8",
+    "scheme": "choreo-cue",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./src/assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
-    "scheme": "choreo-cue",
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.pnarielwala.choreo-cue",
-      "buildNumber": "1.4.6"
+      "buildNumber": "1.4.6",
+      "infoPlist": {
+        "UIBackgroundModes": ["audio"]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -34,6 +35,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "67b74356-e2b9-428a-8388-c05d0629a0be"
+      }
+    },
+    "plugins": ["expo-router"]
   }
 }

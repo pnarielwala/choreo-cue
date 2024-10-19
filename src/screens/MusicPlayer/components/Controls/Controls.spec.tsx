@@ -17,42 +17,42 @@ const doRender = (overrides: Partial<PropsT> = {}) =>
 
 it('plays sound when Play button pressed', () => {
   const mockPlaySound = jest.fn()
-  const { getByA11yLabel } = doRender({ playSound: mockPlaySound })
+  const { getByLabelText } = doRender({ playSound: mockPlaySound })
 
-  fireEvent.press(getByA11yLabel('Play button'))
+  fireEvent.press(getByLabelText('Play button'))
 
   expect(mockPlaySound).toHaveBeenCalled()
 })
 it('pauses sound when Pause button pressed', () => {
   const mockPauseSound = jest.fn()
-  const { getByA11yLabel } = doRender({
+  const { getByLabelText } = doRender({
     isPlaying: true,
     pauseSound: mockPauseSound,
   })
 
-  fireEvent.press(getByA11yLabel('Pause button'))
+  fireEvent.press(getByLabelText('Pause button'))
 
   expect(mockPauseSound).toHaveBeenCalled()
 })
 it('setPosition called when skipped forward', () => {
   const mockSetPosition = jest.fn()
-  const { getByA11yLabel } = doRender({
+  const { getByLabelText } = doRender({
     setPosition: mockSetPosition,
     currentPosition: 25000,
   })
 
-  fireEvent.press(getByA11yLabel('Skip forward 10 seconds'))
+  fireEvent.press(getByLabelText('Skip forward 10 seconds'))
 
   expect(mockSetPosition).toHaveBeenCalledWith(35000)
 })
 it('setPosition called when skipped backward', () => {
   const mockSetPosition = jest.fn()
-  const { getByA11yLabel } = doRender({
+  const { getByLabelText } = doRender({
     setPosition: mockSetPosition,
     currentPosition: 25000,
   })
 
-  fireEvent.press(getByA11yLabel('Skip back 10 seconds'))
+  fireEvent.press(getByLabelText('Skip back 10 seconds'))
 
   expect(mockSetPosition).toHaveBeenCalledWith(15000)
 })

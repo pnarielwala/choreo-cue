@@ -7,6 +7,7 @@ import Main from './Main'
 
 import { useAuthRequest } from 'expo-auth-session'
 import mock from '__test-utils__/mock'
+import { StacksT } from 'App'
 
 jest.mock('assets/splash.png', () => ({ uri: 'assets/splash.png' }))
 jest.mock('expo-auth-session')
@@ -25,9 +26,9 @@ beforeEach(() => {
 
 afterEach(cleanup)
 
-const Stack = createStackNavigator()
+const Stack = createStackNavigator<StacksT>()
 
-const doRenderWithProviders = (initialRouteName: string = 'Home') => {
+const doRenderWithProviders = (initialRouteName: keyof StacksT = 'Home') => {
   return renderWithProviders(
     <Stack.Navigator initialRouteName={initialRouteName}>
       <Stack.Screen name="Home" component={Main} />

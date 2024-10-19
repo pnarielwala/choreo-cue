@@ -1,13 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="25.975" height="26" viewBox="0 0 25.975 26">
+<svg width="25.975" height="26" viewBox="0 0 25.975 26" fill="black">
   <defs>
     <rect id="rect-1" width="25.975" height="26" x="0" y="0"/>
     <mask id="mask-2" maskContentUnits="userSpaceOnUse" maskUnits="userSpaceOnUse">
       <rect width="25.975" height="26" x="0" y="0" fill="currentColor"/>
-      <use fill="white" xlink:href="#rect-1"/>
     </mask>
   </defs>
   <g>
-    <use fill="none" xlink:href="#rect-1"/>
     <g mask="url(#mask-2)">
       <path fill="currentColor" fill-rule="evenodd" d="M25.25491683 12.28122594H2.45761718l6.18738128-6.19333642c.28269932-.2829714.28269932-.73679347 0-1.01976487s-.73608501-.2829714-1.01878433 0L.21202449 12.48945018c-.28269932.2829714-.28269932.73679347 0 1.01976487l7.41418964 7.42132553c.13868268.13881616.32537091.21356333.50672519.21356333.18135428 0 .3680425-.06940808.50672519-.21356333.28269932-.2829714.28269932-.73679347 0-1.01976487l-6.18738128-6.19333642h22.8026336c.4000462 0 .72008317-.32034498.72008317-.72077622 0-.40043123-.32003696-.71543713-.72008317-.71543713z"/>
     </g>

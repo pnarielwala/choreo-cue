@@ -1,9 +1,8 @@
 import { useEffect } from 'react'
 import { Platform } from 'react-native'
 import { useAuthRequest } from 'expo-auth-session'
-import { DROPBOX_CLIENT_ID } from 'react-native-dotenv'
 
-import { makeUrl } from 'expo-linking'
+import * as Linking from 'expo-linking'
 
 import * as SecureStore from 'expo-secure-store'
 import { checkDropboxAuth, dropboxAddAuth } from 'api/dropboxClient'
@@ -24,13 +23,13 @@ const discovery = {
 const useDropBoxAuth = ({ onCheckAuth }: PropsT) => {
   const [, response, promptAsync] = useAuthRequest(
     {
-      clientId: DROPBOX_CLIENT_ID,
+      clientId: process.env.EXPO_DROPBOX_CLIENT_ID || '',
       // There are no scopes so just pass an empty array
       scopes: [],
       // Dropbox doesn't support PKCE
       usePKCE: false,
       responseType: 'token',
-      redirectUri: makeUrl('/redirect'),
+      redirectUri: Linking.createURL('/redirect'),
     },
     discovery
   )
