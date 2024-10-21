@@ -51,6 +51,9 @@
     "@expo/config-plugins": "8.0.8",
     "@expo/prebuild-config": "7.0.8",
     "@faker-js/faker": "8.4.1",
+    "@google/semantic-release-replace-plugin": "1.2.7",
+    "@semantic-release/changelog": "6.0.3",
+    "@semantic-release/git": "10.0.1",
     "@testing-library/jest-native": "5.4.3",
     "@testing-library/react-native": "12.6.0",
     "@types/faker": "6.6.9",
@@ -69,6 +72,7 @@
     "react-native-svg-transformer": "^1.5.0",
     "semantic-release": "^24.1.0",
     "semantic-release-expo": "^2.2.3",
+    "semantic-release-replace-plugin": "1.2.7",
     "ts-jest": "^29.2.5"
   },
   "private": true,
@@ -80,7 +84,7 @@
   "version": "0.0.0-development",
   "repository": {
     "type": "git",
-    "url": "https://github.com/pnarielwala/choreo-cue.git"
+    "url": "git@github.com:pnarielwala/choreo-cue.git"
   },
   "publishConfig": {
     "access": "restricted"

@@ -1,36 +1,29 @@
 module.exports = {
-  branches: ['main'],
-  plugins: ['semantic-release-expo'],
-  verifyConditions: [
-    'semantic-release-expo',
-    '@semantic-release/changelog',
-    '@semantic-release/git',
+  branches: ['main', { name: 'add-build-to-ci', prerelease: true }],
+  plugins: [
+    '@semantic-release/commit-analyzer',
+    '@semantic-release/release-notes-generator',
     [
-      '@semantic-release/exec',
+      '@google/semantic-release-replace-plugin',
       {
-        verifyCmd: 'echo ${options.channel}',
+        replacements: [
+          {
+            files: ['app.json'],
+            from: '"version": ".*",',
+            to: '"version": "${nextRelease.version}",',
+          },
+        ],
       },
     ],
-  ],
-  prepare: [
-    'semantic-release-expo',
     '@semantic-release/changelog',
-    {
-      path: '@semantic-release/git',
-      assets: ['CHANGELOG.md', 'app.json'],
-    },
+    '@semantic-release/github',
+
     [
-      '@semantic-release/exec',
+      '@semantic-release/git',
       {
-        prepareCmd: 'yarn expo login -u $EXPO_USERNAME -p $EXPO_PASSWORD',
-      },
-    ],
-  ],
-  publish: [
-    [
-      '@semantic-release/exec',
-      {
-        publishCmd: 'yarn expo publish --release-channel=$RELEASE_CHANNEL',
+        message:
+          'chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}',
+        assets: ['app.json'],
       },
     ],
   ],
