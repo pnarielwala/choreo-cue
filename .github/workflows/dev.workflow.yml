@@ -9,7 +9,7 @@ on:
 jobs:
   setup:
     name: Install dependencies
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@main
       - uses: actions/setup-node@v4
@@ -24,7 +24,7 @@ jobs:
   typecheck:
     name: Run Typescript typecheck
     needs: setup
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@main
       - uses: actions/setup-node@v4
@@ -39,7 +39,7 @@ jobs:
   test:
     name: Run unit tests
     needs: setup
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@main
       - uses: actions/setup-node@v4

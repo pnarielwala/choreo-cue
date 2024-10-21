@@ -1,9 +1,9 @@
-name: Production workflow
+name: Release workflow
 
 on:
   push:
-    branches:
-      - 'main'
+    tags:
+      - 'v*.*.*'
 
 jobs:
   setup:
@@ -20,53 +20,48 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
       - name: Install dependencies
         run: yarn install
-  typecheck:
-    name: Run Typescript typecheck
+  build:
+    name: Build expo version
     if: ${{!startsWith(github.event.head_commit.message, 'chore(release):')}}
-    needs: setup
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@main
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v2
         with:
           node-version: 'lts/*'
-      - uses: actions/cache@v4
+      - uses: actions/cache@v2
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-      - name: Run tsc
-        run: yarn tsc
-  test:
-    name: Run unit tests
-    if: ${{!startsWith(github.event.head_commit.message, 'chore(release):')}}
-    needs: setup
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@main
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 'lts/*'
-      - uses: actions/cache@v4
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-      - name: Run unit tests
-        run: yarn jest --coverage=false --detectOpenHandles --forceExit
-  publish:
-    name: Publish version
-    if: ${{!startsWith(github.event.head_commit.message, 'chore(release):')}}
-    needs: [typecheck, test]
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@main
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 'lts/*'
-      - uses: actions/cache@v4
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-      - name: Run semantic-release
+      - name: Build expo version
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: yarn semantic-release --debug
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: yarn build:ios --non-interactive
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build-artifact
+          path: '*.ipa'
+  upload-assets:
+    name: Upload build to release
+    if: ${{!startsWith(github.event.head_commit.message, 'chore(release):')}}
+    needs: build
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+      - uses: actions/cache@v4
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+      - name: Download all workflow run artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ios-build-artifact
+      - name: Upload ios-build-artifact
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: '*.ipa'
