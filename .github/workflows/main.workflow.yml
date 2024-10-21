@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@main
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
-      - uses: actions/cache@v2
+      - uses: actions/cache@v4
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
@@ -22,14 +22,15 @@ jobs:
         run: yarn install
   typecheck:
     name: Run Typescript typecheck
+    if: ${{!startsWith(github.event.head_commit.message, 'chore(release):')}}
     needs: setup
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@main
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
-      - uses: actions/cache@v2
+      - uses: actions/cache@v4
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
@@ -37,35 +38,35 @@ jobs:
         run: yarn tsc
   test:
     name: Run unit tests
+    if: ${{!startsWith(github.event.head_commit.message, 'chore(release):')}}
     needs: setup
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@main
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
-      - uses: actions/cache@v2
+      - uses: actions/cache@v4
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
       - name: Run unit tests
         run: yarn jest --coverage=false --detectOpenHandles --forceExit
   publish:
-    name: Publish expo version
-    needs: [test, typecheck]
+    name: Publish version
+    if: ${{!startsWith(github.event.head_commit.message, 'chore(release):')}}
+    needs: [typecheck, test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@main
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
-      - uses: actions/cache@v2
+      - uses: actions/cache@v4
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-      - name: Publish
+      - name: Run semantic-release
         env:
-          EXPO_USERNAME: ${{ secrets.EXPO_USERNAME }}
-          EXPO_PASSWORD: ${{ secrets.EXPO_PASSWORD }}
-          RELEASE_CHANNEL: prod-v1
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: yarn semantic-release --debug
