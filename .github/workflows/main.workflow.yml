@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - 'main'
+    tags-ignore:
+      - '**'
 
 jobs:
   setup:
@@ -22,7 +24,6 @@ jobs:
         run: yarn install
   typecheck:
     name: Run Typescript typecheck
-    if: ${{!startsWith(github.event.head_commit.message, 'chore(release):')}}
     needs: setup
     runs-on: macos-latest
     steps:
@@ -38,7 +39,6 @@ jobs:
         run: yarn tsc
   test:
     name: Run unit tests
-    if: ${{!startsWith(github.event.head_commit.message, 'chore(release):')}}
     needs: setup
     runs-on: macos-latest
     steps:
@@ -54,7 +54,6 @@ jobs:
         run: yarn jest --coverage=false --detectOpenHandles --forceExit
   publish:
     name: Publish version
-    if: ${{!startsWith(github.event.head_commit.message, 'chore(release):')}}
     needs: [typecheck, test]
     runs-on: macos-latest
     steps:
