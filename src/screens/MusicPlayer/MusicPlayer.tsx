@@ -1,12 +1,16 @@
 import 'react-native-gesture-handler'
 import React, { useEffect } from 'react'
-import { Easing } from 'react-native'
-import { View, SafeAreaView, H1, Pressable, Icon } from 'design'
+import {
+  Easing,
+  NativeSyntheticEvent,
+  TextInputChangeEventData,
+} from 'react-native'
+import { View, SafeAreaView, H1, Pressable, Icon, Text, Input } from 'design'
 import Spinner from 'react-native-loading-spinner-overlay'
 import TextTicker from 'react-native-text-ticker'
 import { useKeepAwake } from 'expo-keep-awake'
 
-import { AntDesign } from '@expo/vector-icons'
+import { AntDesign, FontAwesome5 } from '@expo/vector-icons'
 
 import TrackSlider from './components/TrackSlider'
 import Cues from './components/Cues'
@@ -15,10 +19,13 @@ import Tempo from './components/Tempo'
 import useMusicPlayer from 'hooks/useMusicPlayer'
 import { ScreenPropsT } from 'App'
 import { deleteAllLocalFiles } from 'api/filesystemClient'
+import { Dialog } from 'react-native-elements'
+import { updateAudioName } from 'api/db/audio'
 
 export type PropsT = ScreenPropsT<'Player'>
 
 const MusicPlayer = (props: PropsT) => {
+  const { id: audioId } = props.route.params.musicData
   useKeepAwake()
   const {
     playAudio,
@@ -31,11 +38,28 @@ const MusicPlayer = (props: PropsT) => {
     details,
   } = useMusicPlayer(props.route.params.musicData)
 
-  useEffect(() => {
-    return () => {
-      deleteAllLocalFiles()
-    }
-  }, [])
+  const [trackName, setTrackName] = React.useState(details.trackName)
+
+  const [isVisible, setIsVisible] = React.useState(false)
+  const [inputValue, setInputValue] = React.useState(
+    props.route.params.musicData.name
+  )
+
+  const onInputValueChange = (
+    event: NativeSyntheticEvent<TextInputChangeEventData>
+  ) => {
+    setInputValue(event.nativeEvent.text)
+  }
+
+  const onRenameAudio = async () => {
+    await updateAudioName(audioId, inputValue)
+    setTrackName(inputValue)
+    closeDialog()
+  }
+
+  const closeDialog = () => {
+    setIsVisible(false)
+  }
 
   useEffect(() => {
     props.navigation.setOptions({
@@ -47,7 +71,19 @@ const MusicPlayer = (props: PropsT) => {
           hitSlop={48}
           accessibilityLabel="Back"
         >
-          <AntDesign name="arrowleft" size={32} />
+          <FontAwesome5 name="chevron-left" size={24} />
+        </Pressable>
+      ),
+      headerTitle: 'Music Player',
+      headerRight: () => (
+        <Pressable
+          onPress={() => {
+            setIsVisible(true)
+          }}
+          hitSlop={48}
+          accessibilityLabel="Rename audio"
+        >
+          <FontAwesome5 name="pencil-alt" size={24} />
         </Pressable>
       ),
     })
@@ -74,7 +110,7 @@ const MusicPlayer = (props: PropsT) => {
                 easing={Easing.linear}
                 marqueeDelay={1000}
               >
-                {details.trackName}
+                {trackName}
               </H1>
             </View>
 
@@ -99,12 +135,37 @@ const MusicPlayer = (props: PropsT) => {
             <Cues
               currentPosition={currentPosition}
               onPlayFromPosition={setAudioPosition}
+              audioId={audioId}
             />
           </View>
         </View>
       </SafeAreaView>
 
-      <Spinner visible={false} />
+      <Dialog isVisible={isVisible} onBackdropPress={closeDialog}>
+        <Dialog.Title title="Rename audio" />
+        <Input
+          placeholder="New name"
+          sx={{ mt: 3 }}
+          value={inputValue}
+          onChange={onInputValueChange}
+        />
+        <View
+          sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            mt: 3,
+            justifyContent: 'flex-end',
+            gap: 3,
+          }}
+        >
+          <Pressable onPress={closeDialog}>
+            <Text>Cancel</Text>
+          </Pressable>
+          <Pressable onPress={onRenameAudio}>
+            <Text>Save</Text>
+          </Pressable>
+        </View>
+      </Dialog>
     </>
   )
 }

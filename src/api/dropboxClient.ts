@@ -29,35 +29,39 @@ export const downloadFile = async (params: {
 }): Promise<{ name: string; uri: string } | undefined> => {
   const { name, path } = params
   const results = await FileSystem.getInfoAsync(
-    String(FileSystem.documentDirectory)
+    String(FileSystem.documentDirectory) + encodeURI(name)
   )
 
-  if (results.isDirectory) {
+  let version: string = ''
+  if (results.exists && !results.isDirectory) {
     const contents = await FileSystem.readDirectoryAsync(
       String(FileSystem.documentDirectory)
     )
 
-    const promises = contents.map((fileName) =>
-      FileSystem.deleteAsync(FileSystem.documentDirectory + encodeURI(fileName))
-    )
-    await Promise.all(promises)
-  }
-  if (results.exists) {
-    const headers = {
-      Authorization: dropboxClient.defaults.headers.Authorization,
-      'Dropbox-API-Arg': JSON.stringify({ path }),
-    } as Record<string, string>
+    // find how many files have the same name
+    const count = contents.filter(
+      (fileName) => fileName === encodeURI(name) || fileName === name
+    ).length
 
-    const dlResults = await FileSystem.downloadAsync(
-      'https://content.dropboxapi.com/2/files/download',
-      FileSystem.documentDirectory + encodeURI(name),
-      {
-        headers,
-      }
-    )
-
-    return { name, uri: dlResults.uri }
+    if (count > 0) {
+      version = `(${count + 1})`
+    }
   }
+
+  const headers = {
+    Authorization: dropboxClient.defaults.headers.Authorization,
+    'Dropbox-API-Arg': JSON.stringify({ path }),
+  } as Record<string, string>
+
+  const dlResults = await FileSystem.downloadAsync(
+    'https://content.dropboxapi.com/2/files/download',
+    FileSystem.documentDirectory + encodeURI(name) + version,
+    {
+      headers,
+    }
+  )
+
+  return { name, uri: dlResults.uri }
 }
 
 export const getFolderContents = async (

@@ -14,7 +14,11 @@ const alias = fs
 module.exports = function (api) {
   api.cache(true)
   return {
-    presets: ['babel-preset-expo', '@babel/preset-typescript'],
+    presets: [
+      'babel-preset-expo',
+      '@babel/preset-typescript',
+      'module:@expo/knex-expo-sqlite-dialect/babel-preset',
+    ],
     plugins: [
       [
         'module:react-native-dotenv',

@@ -4,26 +4,18 @@ import Toast from 'react-native-toast-message'
 import { Pressable, Text, Box } from 'design'
 
 type PropsT = {
-  currentPosition: number
+  savedPosition: number | undefined
   onPress: (position: number) => void
-  triggerReset: boolean
+  onSaveCue: () => Promise<void>
   color: string
 }
 
 const CueButton = ({
-  currentPosition,
+  savedPosition: position,
   onPress,
-  triggerReset,
+  onSaveCue,
   color,
 }: PropsT) => {
-  const [position, setPosition] = useState<number | undefined>()
-
-  useEffect(() => {
-    if (triggerReset) {
-      setPosition(undefined)
-    }
-  }, [triggerReset])
-
   return (
     <Box
       sx={{ width: '50%', p: [1, null, 2], height: '100%', maxHeight: '50%' }}
@@ -41,8 +33,8 @@ const CueButton = ({
           borderColor: 'black',
           opacity: position !== undefined ? 1 : 0.6,
         }}
-        onLongPress={() => {
-          setPosition(currentPosition)
+        onLongPress={async () => {
+          await onSaveCue()
           Toast.show({
             type: 'success',
             position: 'top',

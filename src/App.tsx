@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar'
 
 import * as Updates from 'expo-updates'
 
+import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite'
 import {
   ParamListBase,
   StackNavigationState,
@@ -22,7 +23,7 @@ import { useFonts } from 'expo-font'
 import { withLayoutContext } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
 
-import { DripsyProvider, View } from 'design'
+import { DripsyProvider, Pressable, View } from 'design'
 import { Text } from 'react-native'
 import theme from './design/theme'
 
@@ -30,16 +31,20 @@ import Main from 'screens/Main'
 import MusicPlayer from 'screens/MusicPlayer'
 import DropboxNavigator from 'screens/DropboxNavigator'
 import ErrorBoundary from 'components/ErrorBoundary'
+import SelectSource from 'screens/SelectSource'
+import { FontAwesome5 } from '@expo/vector-icons'
+import { migrateDbIfNeeded } from 'api/db/migrations'
 
 export type StacksT = {
   Home: undefined
   Player: {
-    musicData: { uri: string; name: string }
+    musicData: { uri: string; name: string; id: number }
   }
   DropboxNavigator: {
     path: string
     name: string
   }
+  SelectSource: undefined
 }
 
 export type ScreenPropsT<T extends keyof StacksT> = StackScreenProps<StacksT, T>
@@ -114,6 +119,19 @@ const App = () => {
     headerTitle: '',
     ...headerStyles,
     headerBackTitleVisible: false,
+
+    headerLeft: (props) =>
+      props.canGoBack && (
+        <Pressable
+          onPress={() => {
+            props.onPress?.()
+          }}
+          hitSlop={48}
+          accessibilityLabel="Back"
+        >
+          <FontAwesome5 name="chevron-left" size={24} />
+        </Pressable>
+      ),
   }
   const modalOptions: StackNavigationOptions = {
     presentation: 'modal',
@@ -123,81 +141,84 @@ const App = () => {
   }
 
   return (
-    <DripsyProvider theme={theme}>
-      <QueryClientProvider client={new QueryClient()}>
-        <NavigationContainer>
-          <ErrorBoundary>
-            <View onLayout={onLayoutRootView} />
-            <Stack.Navigator initialRouteName="Home">
-              {/* Normal Stack Screens */}
-              <Stack.Group screenOptions={screenOptions}>
-                <Stack.Screen name="Home" component={Main} />
-                <Stack.Screen
-                  name="Player"
-                  component={MusicPlayer}
-                  options={{ gestureEnabled: false }}
-                />
-              </Stack.Group>
+    <SQLiteProvider databaseName="choreo_cue.db" onInit={migrateDbIfNeeded}>
+      <DripsyProvider theme={theme}>
+        <QueryClientProvider client={new QueryClient()}>
+          <NavigationContainer>
+            <ErrorBoundary>
+              <View onLayout={onLayoutRootView} />
+              <Stack.Navigator initialRouteName="Home">
+                {/* Normal Stack Screens */}
+                <Stack.Group screenOptions={screenOptions}>
+                  <Stack.Screen name="Home" component={Main} />
+                  <Stack.Screen name="SelectSource" component={SelectSource} />
+                  <Stack.Screen
+                    name="Player"
+                    component={MusicPlayer}
+                    options={{ gestureEnabled: false }}
+                  />
+                </Stack.Group>
 
-              {/* Modal Stack Screens */}
-              <Stack.Group screenOptions={modalOptions}>
-                <Stack.Screen
-                  name="DropboxNavigator"
-                  component={DropboxNavigator}
-                />
-              </Stack.Group>
-            </Stack.Navigator>
-          </ErrorBoundary>
+                {/* Modal Stack Screens */}
+                <Stack.Group screenOptions={modalOptions}>
+                  <Stack.Screen
+                    name="DropboxNavigator"
+                    component={DropboxNavigator}
+                  />
+                </Stack.Group>
+              </Stack.Navigator>
+            </ErrorBoundary>
 
-          <Toast
-            config={{
-              success: ({ ...rest }: BaseToastProps) => (
-                <BaseToast
-                  {...rest}
-                  style={{ borderLeftColor: '#28df99' }}
-                  text1Style={{
-                    fontSize: 20,
-                    fontWeight: '600',
-                    marginBottom: 0,
-                  }}
-                  contentContainerStyle={{
-                    paddingHorizontal: 12,
-                  }}
-                />
-              ),
-            }}
-            topOffset={45}
-          />
-        </NavigationContainer>
-      </QueryClientProvider>
-    </DripsyProvider>
-  )
-}
+            <Toast
+              config={{
+                error: ({ ...rest }: BaseToastProps) => (
+                  <BaseToast
+                    {...rest}
+                    style={{
+                      borderLeftColor: theme.colors.red,
+                      height: 80,
+                      shadowOffset: { width: 0, height: 0 },
+                      shadowColor: theme.colors.black,
+                      shadowOpacity: 0.2,
+                    }}
+                    text1Style={{
+                      fontSize: 20,
+                      fontWeight: '600',
+                      marginBottom: 0,
+                    }}
+                    text2Style={{
+                      fontSize: 14,
+                      color: theme.colors.text,
+                      marginTop: 6,
+                    }}
+                    contentContainerStyle={{
+                      paddingHorizontal: 12,
+                    }}
+                    text2NumberOfLines={2}
+                  />
+                ),
 
-const Main2 = () => {
-  const onLayoutRootView = useCallback(async () => {
-    if (true) {
-      // This tells the splash screen to hide immediately! If we call this after
-      // `setAppIsReady`, then we may see a blank screen while the app is
-      // loading its initial state and rendering its first pixels. So instead,
-      // we hide the splash screen once we know the root view has already
-      // performed layout.
-      await SplashScreen.hideAsync()
-    }
-  }, [])
-
-  return (
-    <View
-      sx={{
-        flex: 1,
-        backgroundColor: 'blue',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-      onLayout={onLayoutRootView}
-    >
-      <Text>Hello world</Text>
-    </View>
+                success: ({ ...rest }: BaseToastProps) => (
+                  <BaseToast
+                    {...rest}
+                    style={{ borderLeftColor: '#28df99' }}
+                    text1Style={{
+                      fontSize: 20,
+                      fontWeight: '600',
+                      marginBottom: 0,
+                    }}
+                    contentContainerStyle={{
+                      paddingHorizontal: 12,
+                    }}
+                  />
+                ),
+              }}
+              topOffset={45}
+            />
+          </NavigationContainer>
+        </QueryClientProvider>
+      </DripsyProvider>
+    </SQLiteProvider>
   )
 }
 

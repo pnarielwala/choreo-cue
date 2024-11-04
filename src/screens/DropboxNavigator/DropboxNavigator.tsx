@@ -13,6 +13,9 @@ import { downloadFile, getFolderContents } from 'api/dropboxClient'
 
 import { ScreenPropsT } from 'App'
 import { DropboxEntryT } from 'types/Dropbox'
+import { saveFileToDirectory } from 'api/filesystemClient'
+import { addDropboxAudioFile, addICloudAudioFile } from 'api/db/audio'
+import rollbar from 'resources/rollbar'
 
 export type PropsT = ScreenPropsT<'DropboxNavigator'>
 
@@ -71,17 +74,33 @@ const DropboxNavigator = (props: PropsT) => {
 
   const { mutate: doDownloadFile, isPending: isLoading } = useMutation({
     mutationFn: downloadFile,
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       if (response) {
-        if (props.navigation.canGoBack()) {
-          props.navigation.popToTop()
-        }
-        props.navigation.push('Player', {
-          musicData: {
+        try {
+          // copy file to document directory
+          const file = await saveFileToDirectory({
             name: response.name,
             uri: response.uri,
-          },
-        })
+          })
+
+          const audioId = await addDropboxAudioFile(file)
+
+          console.log('audioId', audioId)
+
+          if (props.navigation.canGoBack()) {
+            props.navigation.popToTop()
+          }
+
+          props.navigation.push('Player', {
+            musicData: {
+              name: response.name,
+              uri: response.uri,
+              id: audioId,
+            },
+          })
+        } catch (error) {
+          rollbar.error('Error downloading dropbox file', error as any)
+        }
       }
     },
   })

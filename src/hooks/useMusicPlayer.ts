@@ -2,6 +2,7 @@ import { Audio } from 'expo-av'
 import { AVPlaybackSource, AVPlaybackStatus } from 'expo-av/build/AV'
 import { useEffect, useState } from 'react'
 import { Platform } from 'react-native'
+import Toast from 'react-native-toast-message'
 
 import rollbar from 'resources/rollbar'
 
@@ -51,6 +52,19 @@ const useAudioPlayer = (source: { uri: string; name: string } | undefined) => {
         track.durationMillis && setDuration(track.durationMillis)
       }
     } catch (error: any) {
+      Toast.show({
+        type: 'error',
+        position: 'top',
+        text1: 'Sorry! Unable to load audio.',
+        text2:
+          'Try deleting and re-adding the audio file. If the problem persists, please contact support.',
+        text2Style: {
+          fontSize: 12,
+          flexWrap: 'wrap',
+          display: 'flex',
+        },
+        autoHide: false,
+      })
       rollbar.error('Expo Audio loadAsync failed', error)
     }
   }
