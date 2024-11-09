@@ -51,3 +51,20 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
       - name: Run unit tests
         run: yarn jest --coverage=false --detectOpenHandles --forceExit
+  deploy-expo-update:
+    name: Deploy expo update
+    runs-on: macos-latest
+    needs: setup
+    steps:
+      - uses: actions/checkout@main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+      - uses: actions/cache@v4
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+      - name: Expo update
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: yarn eas update --auto

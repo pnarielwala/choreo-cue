@@ -1,0 +1,38 @@
+on:
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  setup:
+    if: github.event.pull_request.merged == true
+    name: Install dependencies
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+      - uses: actions/cache@v4
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+      - name: Install dependencies
+        run: yarn install
+  delete-expo-branch:
+    name: Delete expo branch
+    runs-on: macos-latest
+    needs: setup
+    steps:
+      - uses: actions/checkout@main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+      - uses: actions/cache@v4
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+      - name: Expo update
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: yarn eas branch:delete ${{ github.head_ref }}

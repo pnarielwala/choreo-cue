@@ -12,6 +12,11 @@ module.exports = {
             from: '"version": ".*",',
             to: '"version": "${nextRelease.version}",',
           },
+          {
+            files: ['app.json'],
+            from: '"buildNumber": ".*",',
+            to: '"buildNumber": "${nextRelease.version}",',
+          },
         ],
       },
     ],
