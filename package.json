@@ -61,7 +61,7 @@
     "@types/lodash": "4.17.11",
     "commitizen": "^4.3.0",
     "cz-conventional-changelog": "^3.3.0",
-    "eas-cli": "12.5.3",
+    "eas-cli": "13.1.1",
     "faker": "^6.6.6",
     "husky": "^9.1.5",
     "jest": "^29.7.0",

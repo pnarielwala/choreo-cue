@@ -1,5 +1,5 @@
 module.exports = {
-  branches: ['main', { name: 'add-build-to-ci', prerelease: true }],
+  branches: ['main'],
   plugins: [
     '@semantic-release/commit-analyzer',
     '@semantic-release/release-notes-generator',
@@ -9,13 +9,13 @@ module.exports = {
         replacements: [
           {
             files: ['app.json'],
-            from: '"version": ".*",',
-            to: '"version": "${nextRelease.version}",',
+            from: '"buildNumber": ".*",',
+            to: '"buildNumber": "${nextRelease.version}",',
           },
           {
             files: ['app.json'],
-            from: '"buildNumber": ".*",',
-            to: '"buildNumber": "${nextRelease.version}",',
+            from: '"versionCode": ".*",',
+            to: '"versionCode": "${nextRelease.version}",',
           },
         ],
       },

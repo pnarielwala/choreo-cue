@@ -16,17 +16,13 @@
       "fallbackToCacheTimeout": 0,
       "url": "https://u.expo.dev/67b74356-e2b9-428a-8388-c05d0629a0be"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.pnarielwala.choreo-cue",
-      "buildNumber": "1.4.8",
+      "buildNumber": "1.5.0",
       "infoPlist": {
-        "UIBackgroundModes": [
-          "audio"
-        ]
+        "UIBackgroundModes": ["audio"]
       }
     },
     "android": {
@@ -46,9 +42,7 @@
         "projectId": "67b74356-e2b9-428a-8388-c05d0629a0be"
       }
     },
-    "plugins": [
-      "expo-router"
-    ],
+    "plugins": ["expo-router"],
     "runtimeVersion": {
       "policy": "appVersion"
     }

@@ -35,4 +35,4 @@ jobs:
       - name: Expo update
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: yarn eas branch:delete ${{ github.head_ref }}
+        run: yarn eas branch:delete ${{ github.head_ref }} --non-interactive
