@@ -10,7 +10,10 @@ import {
   renderWithProviders,
   waitFor,
   cleanup,
+  screen,
+  within,
 } from '__test-utils__/rntl'
+import mockKnex from 'mock-knex'
 
 import { act } from 'react-test-renderer'
 
@@ -22,7 +25,7 @@ const Stack = createStackNavigator<StacksT>()
 
 const doRenderWithProviders = (
   initialParams: ScreenParamsT = {
-    musicData: { name: 'Hello world.mp3', uri: '' },
+    musicData: { name: 'Hello world.mp3', uri: '', id: 1 },
   },
   initialRouteName: keyof StacksT = 'Player'
 ) => {
@@ -44,9 +47,20 @@ const doRenderWithProviders = (
   )
 }
 
+const tracker = mockKnex.getTracker()
+tracker.install()
+
+beforeEach(() => {
+  tracker.on('query', (query) => {
+    if (query.method === 'select' && query.sql.includes('from `cues`')) {
+      query.response([])
+    }
+  })
+})
+
 it('should display audio title', async () => {
   const { queryAllByText } = doRenderWithProviders({
-    musicData: { name: 'Toosie Slide - Drake.mp3', uri: '' },
+    musicData: { name: 'Toosie Slide - Drake.mp3', uri: '', id: 1 },
   })
 
   await waitFor(() => {})
@@ -59,7 +73,7 @@ it('should display audio title', async () => {
 
 it('should play and pause audio', async () => {
   const { getByLabelText, getByText } = doRenderWithProviders({
-    musicData: { name: 'Toosie Slide - Drake.mp3', uri: '' },
+    musicData: { name: 'Toosie Slide - Drake.mp3', uri: '', id: 1 },
   })
 
   await waitFor(() => {})
@@ -79,7 +93,7 @@ it('should play and pause audio', async () => {
 
 it('should change tempo of the audio', async () => {
   const { getByLabelText, getByText } = doRenderWithProviders({
-    musicData: { name: 'Toosie Slide - Drake.mp3', uri: '' },
+    musicData: { name: 'Toosie Slide - Drake.mp3', uri: '', id: 1 },
   })
 
   await waitFor(() => {})
@@ -101,7 +115,7 @@ it('should change tempo of the audio', async () => {
 
 it('should navigate to the correct time after pressing a cue', async () => {
   const { getByLabelText, getByText, queryAllByText } = doRenderWithProviders({
-    musicData: { name: 'Toosie Slide - Drake.mp3', uri: '' },
+    musicData: { name: 'Toosie Slide - Drake.mp3', uri: '', id: 1 },
   })
 
   await waitFor(() => {})
@@ -117,7 +131,21 @@ it('should navigate to the correct time after pressing a cue', async () => {
 
   const firstCue = cues[0]
 
+  tracker.on('query', (query) => {
+    if (query.method === 'select' && query.sql.includes('from `cues`')) {
+      query.response([{ start: 20 * 1000, cue_number: 1 }])
+    } else if (query.method === 'insert' && query.sql.includes('into `cues`')) {
+      query.response([1])
+    } else if (query.method === 'update' && query.sql.includes('`cues`')) {
+      query.response([1])
+    }
+  })
+
   fireEvent(firstCue, 'onLongPress')
+
+  const cueGrid = screen.getByTestId('cue-grid')
+
+  await within(cueGrid).findByText('0:20')
 
   fireEvent.press(getByLabelText('Skip forward 10 seconds'))
   expect(getByText('0:30')).toBeDefined()

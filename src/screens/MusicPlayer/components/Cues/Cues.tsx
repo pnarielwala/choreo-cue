@@ -5,20 +5,41 @@ import Toast from 'react-native-toast-message'
 import { H2, Pressable, View, Flex, Text } from 'design'
 
 import CueButton from './components/CueButton'
+import { deleteAllCues, getAllCues, saveCue } from 'api/db/cues'
+import { useQuery } from '@tanstack/react-query'
 
 export type PropsT = {
   currentPosition: number
   onPlayFromPosition: (position: number) => void
+  audioId: number
 }
 
 const Cues = (props: PropsT) => {
-  const [triggerReset, setTriggerReset] = useState(false)
+  const { data, refetch } = useQuery({
+    queryKey: ['cues', props.audioId],
+    queryFn: () => getAllCues(props.audioId),
+    select: (data) =>
+      data.reduce(
+        (acc, cue) => ({ ...acc, [cue.cueNumber]: cue.start }),
+        {} as Record<number, number>
+      ),
+  })
 
-  useEffect(() => {
-    if (triggerReset) {
-      setTriggerReset(false)
-    }
-  }, [triggerReset, setTriggerReset])
+  const cues = data || {}
+
+  const setCue = async (cue: number) => {
+    await saveCue({
+      audioId: props.audioId,
+      start: props.currentPosition,
+      cueNumber: cue,
+    })
+    await refetch()
+  }
+
+  const resetAllCues = async () => {
+    await deleteAllCues(props.audioId)
+    await refetch()
+  }
 
   const displayResetConfirmation = () =>
     Alert.alert('Are you sure?', 'This will clear all your cues', [
@@ -29,8 +50,8 @@ const Cues = (props: PropsT) => {
       {
         text: 'Reset',
         style: 'destructive',
-        onPress: () => {
-          setTriggerReset(true)
+        onPress: async () => {
+          await resetAllCues()
 
           Toast.show({
             type: 'success',
@@ -47,29 +68,32 @@ const Cues = (props: PropsT) => {
       <H2 as={Text} sx={{ height: 'auto' }}>
         Cues
       </H2>
-      <Flex sx={{ flexWrap: 'wrap', mx: [-1, null, -2], flex: 2 }}>
+      <Flex
+        sx={{ flexWrap: 'wrap', mx: [-1, null, -2], flex: 2 }}
+        testID="cue-grid"
+      >
         <CueButton
-          currentPosition={props.currentPosition}
+          savedPosition={cues[1]}
           onPress={props.onPlayFromPosition}
-          triggerReset={triggerReset}
+          onSaveCue={() => setCue(1)}
           color="red"
         />
         <CueButton
-          currentPosition={props.currentPosition}
+          savedPosition={cues[2]}
           onPress={props.onPlayFromPosition}
-          triggerReset={triggerReset}
+          onSaveCue={() => setCue(2)}
           color="blue"
         />
         <CueButton
-          currentPosition={props.currentPosition}
+          savedPosition={cues[3]}
           onPress={props.onPlayFromPosition}
-          triggerReset={triggerReset}
+          onSaveCue={() => setCue(3)}
           color="green"
         />
         <CueButton
-          currentPosition={props.currentPosition}
+          savedPosition={cues[4]}
           onPress={props.onPlayFromPosition}
-          triggerReset={triggerReset}
+          onSaveCue={() => setCue(4)}
           color="yellow"
         />
       </Flex>

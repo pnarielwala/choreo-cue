@@ -21,6 +21,8 @@ import DropboxNavigator from './DropboxNavigator'
 import { ScreenPropsT, StacksT } from 'App'
 import { Pressable } from 'design'
 
+import mockKnex from 'mock-knex'
+
 jest.mock('api/dropboxClient')
 
 afterEach(cleanup)
@@ -69,6 +71,19 @@ beforeEach(() => {
       data: { cursor: '', entries: [aDropboxEntryFile()], has_more: false },
     })
   )
+})
+
+beforeEach(() => {
+  const tracker = mockKnex.getTracker()
+  tracker.install()
+  tracker.on('query', (query) => {
+    if (
+      query.method === 'insert' &&
+      query.sql.includes('insert into `audio`')
+    ) {
+      query.response([{ id: 1 }])
+    }
+  })
 })
 
 it('should have folder text', () => {

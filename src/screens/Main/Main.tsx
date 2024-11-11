@@ -1,5 +1,14 @@
-import React, { useEffect, useState } from 'react'
-import { View, Image, SafeAreaView, Pressable, Icon, Text } from 'design'
+import React, { Fragment, useEffect, useState } from 'react'
+import {
+  View,
+  Image,
+  SafeAreaView,
+  Pressable,
+  Icon,
+  Text,
+  Box,
+  useSx,
+} from 'design'
 
 import * as Updates from 'expo-updates'
 
@@ -9,12 +18,15 @@ import iCloud from 'assets/icloud.svg'
 import { FontAwesome5 } from '@expo/vector-icons'
 
 import * as DocumentPicker from 'expo-document-picker'
+import * as FileSystem from 'expo-file-system'
 
 import { getFolderContents } from 'api/dropboxClient'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ScreenPropsT } from 'App'
 import useDropBoxAuth from 'hooks/useDropboxAuth'
-import { Dialog } from 'react-native-elements'
+import { Divider, Dialog } from 'react-native-elements'
+import { deleteAudioFile, getAudioFiles } from 'api/db/audio'
+import { Alert } from 'react-native'
 
 export type PropsT = ScreenPropsT<'Home'>
 
@@ -27,6 +39,7 @@ const Main = (props: PropsT) => {
     checkError,
     initializationError,
   } = Updates.useUpdates()
+  const sx = useSx()
 
   const { authenticate } = useDropBoxAuth({
     onCheckAuth: async (authenticated) => {
@@ -55,6 +68,56 @@ const Main = (props: PropsT) => {
   useEffect(() => {
     Updates.checkForUpdateAsync()
   }, [])
+  const [isActiveScreen, setIsActiveScreen] = React.useState(false)
+
+  useEffect(() => {
+    const unsubscribe = props.navigation.addListener('focus', () => {
+      setIsActiveScreen(true)
+    })
+
+    return unsubscribe
+  }, [props.navigation])
+
+  useEffect(() => {
+    const unsubscribe = props.navigation.addListener('blur', () => {
+      setIsActiveScreen(false)
+    })
+
+    return unsubscribe
+  }, [props.navigation])
+
+  const { data, error, refetch } = useQuery({
+    queryKey: ['audio-files'],
+    queryFn: getAudioFiles,
+  })
+
+  const projects = data ?? []
+
+  useEffect(() => {
+    if (isActiveScreen) {
+      refetch()
+    }
+  }, [isActiveScreen])
+
+  const displayResetConfirmation = (audioId: number) =>
+    Alert.alert(
+      'Delete project?',
+      'This will also delete the configured cues.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            await deleteAudioFile(audioId)
+            await refetch()
+          },
+        },
+      ]
+    )
 
   useEffect(() => {
     props.navigation.setOptions({
@@ -64,6 +127,7 @@ const Main = (props: PropsT) => {
           <FontAwesome5 name="info-circle" size={24} color="black" />
         </Pressable>
       ),
+      headerTitle: 'Home',
     })
   }, [])
 
@@ -74,8 +138,6 @@ const Main = (props: PropsT) => {
         height: '100%',
         backgroundColor: 'background',
         flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
       }}
     >
       <Dialog isVisible={isInfoShown}>
@@ -129,74 +191,114 @@ const Main = (props: PropsT) => {
           </View>
         </View>
       </Dialog>
-      <Image
-        sx={{
-          width: '100%',
-          position: 'absolute',
-          zIndex: -1,
-        }}
-        resizeMode="contain"
-        source={require('assets/splash.png')}
-        testID="logo-image"
-      />
-      <SafeAreaView sx={{ flex: 1, justifyContent: 'flex-end' }}>
-        <View
+      <SafeAreaView sx={{ margin: 4 }}>
+        <Image
+          resizeMode="contain"
           sx={{
-            flexDirection: 'row',
-            my: 5,
-            justifyContent: 'center',
-            gap: 6,
+            height: 50,
+            width: 'auto',
+            marginTop: 7,
           }}
+          source={require('assets/logo.png')}
+          testID="logo-image"
+        />
+        <Pressable
+          sx={{
+            marginTop: 7,
+            padding: 10,
+            backgroundColor: 'black',
+            borderRadius: 8,
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          onPress={() => {
+            props.navigation.push('SelectSource')
+          }}
+          role="button"
         >
-          <Pressable
-            onPress={async () => {
-              const result = await DocumentPicker.getDocumentAsync({
-                type: 'audio/*',
-              })
-              if (result.assets?.[0]) {
-                props.navigation.push('Player', {
-                  musicData: result.assets[0],
-                })
-              }
-            }}
+          <Text
             sx={{
-              backgroundColor: 'black',
-              padding: 2,
-              borderRadius: 8,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              fontSize: 24,
+              textAlign: 'center',
+              fontWeight: 'bold',
+              color: 'white',
             }}
-            testID="icloud-source"
+            testID="title"
           >
-            <FontAwesome5
-              name="folder"
-              size={48}
-              color="white"
-              testID="icloud-image"
-            />
-          </Pressable>
-          <Pressable
-            onPress={() => {
-              authenticate()
-            }}
-            testID="dropbox-source"
-            sx={{
-              backgroundColor: 'black',
-              padding: 2,
-              borderRadius: 8,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <FontAwesome5
-              name="dropbox"
-              size={48}
-              color="white"
-              testID="dropbox-image"
-            />
-          </Pressable>
+            Create new project
+          </Text>
+          <Box sx={{ px: 1 }} />
+          <FontAwesome5 name="plus-circle" size={24} color="white" />
+        </Pressable>
+        <Text variant="h2" sx={{ marginTop: 5 }} id="projects-list" accessible>
+          Recent Projects
+        </Text>
+        <View role="list" aria-labelledby="projects-list" accessible>
+          {projects.map((project) => (
+            <Fragment key={project.name}>
+              <Pressable
+                onPress={() => {
+                  props.navigation.push('Player', {
+                    musicData: {
+                      uri: project.uri,
+                      name: project.name,
+                      id: project.id,
+                    },
+                  })
+                }}
+                sx={{
+                  py: 4,
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+                role="listitem"
+              >
+                <Text
+                  sx={{
+                    color: 'text',
+                    fontSize: 16,
+                    flex: 1,
+                  }}
+                >
+                  {project.name}
+                </Text>
+
+                <Pressable hitSlop={48}>
+                  <FontAwesome5
+                    name="trash-alt"
+                    size={24}
+                    style={sx({ color: 'red' })}
+                    onPress={() => displayResetConfirmation(project.id)}
+                  />
+                </Pressable>
+              </Pressable>
+              <Divider />
+            </Fragment>
+          ))}
+          {projects.length === 0 && (
+            <View
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexDirection: 'row',
+                marginTop: 5,
+              }}
+            >
+              <Text
+                sx={{
+                  color: 'text',
+                  fontSize: 16,
+                }}
+              >
+                No projects yet
+              </Text>
+            </View>
+          )}
         </View>
       </SafeAreaView>
     </View>

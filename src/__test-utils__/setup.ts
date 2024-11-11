@@ -6,8 +6,29 @@ import {
 import 'react-native-gesture-handler/jestSetup'
 // import '@testing-library/jest-native/extend-expect';
 
+import dbClient from '../api/db/client'
+
 jest.mock('rollbar-react-native')
 jest.mock('../resources/rollbar')
+
+jest.mock('../api/db/client', () => {
+  const knex = require('knex')
+  const mockKnex = require('mock-knex')
+
+  // Create a Knex instance with the Expo SQLite dialect
+  const db = knex({
+    client: 'sqlite3',
+    connection: {
+      filename: ':memory:', // Use in-memory database for testing
+    },
+    useNullAsDefault: true,
+  })
+
+  // Initialize mock-knex
+  mockKnex.mock(db)
+
+  return db
+})
 
 jest.mock('@expo/vector-icons', () => ({
   Feather: '',
