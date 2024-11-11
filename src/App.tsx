@@ -2,6 +2,8 @@ import 'react-native-gesture-handler'
 import React, { useCallback, useEffect, useState } from 'react'
 import { StatusBar } from 'expo-status-bar'
 
+import * as Updates from 'expo-updates'
+
 import {
   ParamListBase,
   StackNavigationState,
@@ -49,6 +51,14 @@ SplashScreen.preventAutoHideAsync()
 
 const App = () => {
   const [appIsReady, setAppIsReady] = useState(false)
+  const { isUpdatePending } = Updates.useUpdates()
+
+  useEffect(() => {
+    if (isUpdatePending) {
+      // Update has successfully downloaded; apply it now
+      Updates.reloadAsync()
+    }
+  }, [isUpdatePending])
 
   let [fontsLoaded] = useFonts({
     ['nunito']: require('assets/fonts/Nunito-Regular.ttf'),
