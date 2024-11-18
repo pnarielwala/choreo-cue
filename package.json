@@ -13,7 +13,7 @@
   "dependencies": {
     "@expo/knex-expo-sqlite-dialect": "0.0.1",
     "@expo/vector-icons": "^14.0.3",
-    "@react-native-assets/slider": "7.1.2",
+    "@react-native-assets/slider": "9.0.0",
     "@react-native-community/slider": "4.5.5",
     "@react-navigation/native": "^7.0.0",
     "@react-navigation/stack": "^6.4.1",
