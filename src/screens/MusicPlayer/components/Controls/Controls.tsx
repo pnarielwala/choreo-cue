@@ -11,6 +11,7 @@ export type PropsT = {
   currentPosition: number
   setPosition: (position: number) => void
   isPlaying: boolean
+  isEnabled?: boolean
 }
 
 const Controls = ({
@@ -19,6 +20,7 @@ const Controls = ({
   pauseSound,
   setPosition,
   currentPosition,
+  isEnabled = false,
 }: PropsT) => {
   return (
     <Flex sx={{ width: '100%', justifyContent: 'center' }}>
@@ -33,19 +35,23 @@ const Controls = ({
         }}
       >
         <Pressable
+          role="button"
           onPress={() => {
             setPosition(currentPosition - SKIP_STEP)
           }}
+          disabled={!isEnabled}
           accessibilityLabel={`Skip back ${SKIP_STEP / 1000} seconds`}
         >
           <MaterialCommunityIcons name="rewind-10" size={48} color="black" />
         </Pressable>
 
         <Pressable
+          role="button"
           onPress={() => {
             isPlaying ? pauseSound() : playSound()
           }}
           accessibilityLabel={`${isPlaying ? 'Pause' : 'Play'} button`}
+          disabled={!isEnabled}
         >
           <FontAwesome5
             name={isPlaying ? 'pause-circle' : 'play-circle'}
@@ -55,10 +61,12 @@ const Controls = ({
         </Pressable>
 
         <Pressable
+          role="button"
           onPress={() => {
             setPosition(currentPosition + SKIP_STEP)
           }}
           accessibilityLabel={`Skip forward ${SKIP_STEP / 1000} seconds`}
+          disabled={!isEnabled}
         >
           <MaterialCommunityIcons
             name="fast-forward-10"

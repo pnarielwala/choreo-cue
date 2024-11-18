@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
-// import { ButtonGroup } from 'react-native-elements'
-import { View, H2, useSx, Text, ButtonGroup } from 'design'
+import { View, H2, Text, ButtonGroup } from 'design'
 
 const TEMPOS: { [key: number]: { rate: number; display: string } } = {
   0: {
@@ -23,12 +22,11 @@ const TEMPOS: { [key: number]: { rate: number; display: string } } = {
 
 export type PropsT = {
   setRate: (tempo: number) => void
+  disabled?: boolean
 }
 
-export default function Tempo({ setRate }: PropsT) {
+export default function Tempo({ setRate, disabled }: PropsT) {
   const [tempoIndex, setTempoIndex] = useState(2)
-
-  const sx = useSx()
 
   return (
     <View sx={{ width: '100%', justifyContent: 'flex-start' }}>
@@ -36,6 +34,7 @@ export default function Tempo({ setRate }: PropsT) {
         as={Text}
         sx={{
           alignSelf: 'flex-start',
+          color: disabled ? 'muted' : 'black',
         }}
       >
         Tempo
@@ -50,31 +49,8 @@ export default function Tempo({ setRate }: PropsT) {
         }}
         selectedButton={TEMPOS[tempoIndex].display}
         buttons={Object.values(TEMPOS).map((tempo) => tempo.display)}
+        disabled={disabled}
       />
-      {/* <ButtonGroup
-        onPress={(index) => {
-          setTempoIndex(index)
-          setRate(TEMPOS[index].rate)
-        }}
-        selectedIndex={tempoIndex}
-        buttons={Object.values(TEMPOS).map((tempo) => tempo.display)}
-        containerStyle={sx({
-          width: '100%',
-          maxWidth: 500,
-          mx: 'auto',
-          height: [32, 40],
-          borderColor: 'divider',
-        })}
-        buttonStyle={sx({ bg: 'background' })}
-        innerBorderStyle={sx({ color: 'divider' })}
-        selectedButtonStyle={sx({ bg: 'black' })}
-        textStyle={sx({
-          // @ts-ignore FIXME: variants can be an array
-          variant: ['text.bodySmall', 'text.body'],
-          fontFamily: 'nunito',
-          fontWeight: 500,
-        })}
-      /> */}
     </View>
   )
 }

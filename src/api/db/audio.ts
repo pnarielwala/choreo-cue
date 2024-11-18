@@ -21,10 +21,20 @@ export const getAudioFiles = async () => {
     .select('*')
     .orderBy('created_at', 'desc')
   return (results ?? []).map((result) => ({
+    source: result.source,
     id: result.id,
     name: result.name,
     uri: result.path,
   }))
+}
+
+export const getAudioFileById = async (id: number) => {
+  try {
+    const result = await dbClient('audio').where({ id })?.first()
+    return result
+  } catch (error) {
+    console.error(error)
+  }
 }
 
 export const updateAudioName = async (id: number, name: string) => {
@@ -52,7 +62,7 @@ export const deleteAudioFile = async (id: number) => {
   const { uri } = audioFile
   await dbClient('audio').where({ id }).del()
   await dbClient('cues').where({ audio_id: id }).del()
-  await FileSystem.deleteAsync(uri)
+  await FileSystem.deleteAsync(uri).catch(() => {})
 }
 
 export const addICloudAudioFile = async (
@@ -80,6 +90,23 @@ export const addDropboxAudioFile = async (file: {
       name: file.name,
       path: file.uri,
       source: 'Dropbox',
+      created_at: new Date().toISOString(),
+    },
+    ['id']
+  )
+
+  return result[0].id
+}
+
+export const addSpotifyAudioFile = async (file: {
+  name: string
+  uri: string
+}) => {
+  const result = await dbClient('audio').insert(
+    {
+      name: file.name,
+      path: file.uri,
+      source: 'Spotify',
       created_at: new Date().toISOString(),
     },
     ['id']

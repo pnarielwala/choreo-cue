@@ -69,7 +69,7 @@ export const getFolderContents = async (
 ): Promise<
   AxiosResponse<{
     cursor: string
-    entries: Array<DropboxEntryT>
+    entries: DropboxEntryT[]
     has_more: boolean
   }>
 > =>

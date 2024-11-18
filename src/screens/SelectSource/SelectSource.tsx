@@ -13,6 +13,7 @@ import useDropBoxAuth from 'hooks/useDropboxAuth'
 import { getFolderContents } from 'api/dropboxClient'
 import { saveFileToDirectory } from 'api/filesystemClient'
 import { addICloudAudioFile } from 'api/db/audio'
+import useSpotifyAuth from 'hooks/useSpotifyAuth'
 
 export type PropsT = ScreenPropsT<'SelectSource'>
 
@@ -35,7 +36,7 @@ const SOURCES = {
   Spotify: {
     name: 'Spotify',
     icon: 'spotify',
-    enabled: false,
+    enabled: true,
   },
   YT: {
     name: 'YT Music',
@@ -75,11 +76,19 @@ const SelectSource = (props: PropsT) => {
     },
   })
 
+  const { authenticate: authSpotify } = useSpotifyAuth({
+    onCheckAuth: async (authenticated) => {
+      if (authenticated) {
+        props.navigation.push('SpotifySearch')
+      }
+    },
+  })
+
   useEffect(() => {
     props.navigation.setOptions({
       headerTitle: 'Select Source',
     })
-  }, [])
+  }, [props.navigation])
 
   const handlePress = async (source: keyof typeof SOURCES) => {
     switch (source) {
@@ -101,6 +110,9 @@ const SelectSource = (props: PropsT) => {
       case 'Dropbox':
         authenticate()
         break
+      case 'Spotify':
+        authSpotify()
+        break
       default:
         break
     }
@@ -115,57 +127,61 @@ const SelectSource = (props: PropsT) => {
       }}
     >
       <SafeAreaView sx={{ margin: 4 }}>
-        {Object.entries(SOURCES).map(([_key, value]) => {
-          const key = _key as keyof typeof SOURCES
-          return (
-            <Fragment key={key}>
-              <Pressable
-                key={key}
-                sx={{
-                  py: 4,
-                  display: 'flex',
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                }}
-                disabled={!value.enabled}
-                onPress={() => handlePress(key)}
-              >
-                <Box
+        {Object.entries(SOURCES)
+          .sort(([_key, value]) => {
+            return value.enabled ? -1 : 1
+          })
+          .map(([_key, value]) => {
+            const key = _key as keyof typeof SOURCES
+            return (
+              <Fragment key={key}>
+                <Pressable
+                  key={key}
                   sx={{
+                    py: 4,
                     display: 'flex',
                     flexDirection: 'row',
-                    gap: 2,
+                    justifyContent: 'space-between',
                   }}
+                  disabled={!value.enabled}
+                  onPress={() => handlePress(key)}
                 >
                   <Box
                     sx={{
-                      width: 32,
                       display: 'flex',
-                      alignItems: 'center',
+                      flexDirection: 'row',
+                      gap: 2,
                     }}
                   >
-                    <FontAwesome5
-                      name={value.icon}
-                      size={24}
-                      style={sx({ color: value.enabled ? 'text' : 'muted' })}
-                    />
+                    <Box
+                      sx={{
+                        width: 32,
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <FontAwesome5
+                        name={value.icon}
+                        size={24}
+                        style={sx({ color: value.enabled ? 'text' : 'muted' })}
+                      />
+                    </Box>
+                    <Text sx={{ color: value.enabled ? 'text' : 'muted' }}>
+                      {`${value.name}${value.enabled ? '' : ' (coming soon)'}`}
+                    </Text>
                   </Box>
-                  <Text sx={{ color: value.enabled ? 'text' : 'muted' }}>
-                    {`${value.name}${value.enabled ? '' : ' (coming soon)'}`}
-                  </Text>
-                </Box>
-                {value.enabled && (
-                  <FontAwesome5
-                    name="chevron-right"
-                    size={24}
-                    style={sx({ color: 'text' })}
-                  />
-                )}
-              </Pressable>
-              <Divider key={`${key}-divider`} />
-            </Fragment>
-          )
-        })}
+                  {value.enabled && (
+                    <FontAwesome5
+                      name="chevron-right"
+                      size={24}
+                      style={sx({ color: 'text' })}
+                    />
+                  )}
+                </Pressable>
+                <Divider key={`${key}-divider`} />
+              </Fragment>
+            )
+          })}
       </SafeAreaView>
     </View>
   )

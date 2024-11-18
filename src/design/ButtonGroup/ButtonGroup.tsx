@@ -5,12 +5,14 @@ interface ButtonGroupProps {
   buttons: string[]
   onPress: (button: string) => void
   selectedButton: string
+  disabled?: boolean
 }
 
 const ButtonGroup: React.FC<ButtonGroupProps> = ({
   buttons,
   onPress,
   selectedButton,
+  disabled,
 }) => {
   return (
     <View
@@ -21,12 +23,13 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({
         display: 'flex',
         width: '100%',
         borderRadius: 8,
-        borderColor: 'black',
+        borderColor: disabled ? 'muted' : 'black',
         borderWidth: 1,
       }}
     >
       {buttons.map((button, index) => (
         <Pressable
+          role="button"
           key={button}
           onPress={() => onPress(button)}
           sx={{
@@ -43,10 +46,25 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({
               borderTopRightRadius: 6,
               borderBottomRightRadius: 6,
             }),
-            backgroundColor: selectedButton === button ? 'black' : undefined,
+            backgroundColor:
+              selectedButton === button
+                ? disabled
+                  ? 'muted'
+                  : 'black'
+                : undefined,
           }}
+          disabled={disabled}
         >
-          <Text sx={{ color: selectedButton === button ? 'white' : 'black' }}>
+          <Text
+            sx={{
+              color:
+                selectedButton === button
+                  ? 'white'
+                  : disabled
+                    ? 'muted'
+                    : 'black',
+            }}
+          >
             {button}
           </Text>
         </Pressable>

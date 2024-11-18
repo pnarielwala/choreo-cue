@@ -1,23 +1,30 @@
 import React, { Fragment, useEffect, useState } from 'react'
-import { View, Image, SafeAreaView, Pressable, Text, Box, useSx } from 'design'
+import {
+  View,
+  Image,
+  SafeAreaView,
+  Pressable,
+  Text,
+  Box,
+  useSx,
+  ScrollView,
+} from 'design'
 
 import * as Updates from 'expo-updates'
 import Constants from 'expo-constants'
 
 import { FontAwesome5 } from '@expo/vector-icons'
 
-import { getFolderContents } from 'api/dropboxClient'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { ScreenPropsT } from 'App'
-import useDropBoxAuth from 'hooks/useDropboxAuth'
 import { Divider, Dialog } from 'react-native-elements'
 import { deleteAudioFile, getAudioFiles } from 'api/db/audio'
 import { Alert } from 'react-native'
+import useSpotifyAuth from 'hooks/useSpotifyAuth'
 
 export type PropsT = ScreenPropsT<'Home'>
 
 const Main = (props: PropsT) => {
-  const queryClient = useQueryClient()
   const {
     currentlyRunning,
     isUpdatePending,
@@ -26,28 +33,6 @@ const Main = (props: PropsT) => {
     initializationError,
   } = Updates.useUpdates()
   const sx = useSx()
-
-  const { authenticate } = useDropBoxAuth({
-    onCheckAuth: async (authenticated) => {
-      if (authenticated) {
-        if (!queryClient.getQueryData(['dropbox-contents', ''])) {
-          await queryClient.prefetchQuery({
-            queryKey: ['dropbox-contents', ''],
-            queryFn: () => getFolderContents(''),
-          })
-
-          await queryClient.prefetchQuery({
-            queryKey: ['dropbox-contents', ''],
-            queryFn: () => getFolderContents(''),
-          })
-        }
-        props.navigation.push('DropboxNavigator', {
-          path: '',
-          name: 'Home',
-        })
-      }
-    },
-  })
 
   const [isInfoShown, setIsInfoShown] = useState(false)
 
@@ -72,7 +57,7 @@ const Main = (props: PropsT) => {
     return unsubscribe
   }, [props.navigation])
 
-  const { data, error, refetch } = useQuery({
+  const { data, refetch } = useQuery({
     queryKey: ['audio-files'],
     queryFn: getAudioFiles,
   })
@@ -83,7 +68,7 @@ const Main = (props: PropsT) => {
     if (isActiveScreen) {
       refetch()
     }
-  }, [isActiveScreen])
+  }, [isActiveScreen, refetch])
 
   const displayResetConfirmation = (audioId: number) =>
     Alert.alert(
@@ -115,7 +100,29 @@ const Main = (props: PropsT) => {
       ),
       headerTitle: 'Home',
     })
-  }, [])
+  }, [props.navigation])
+
+  const { authenticate: authenticateSpotify } = useSpotifyAuth()
+
+  const onAudioFileSelected = async (data: {
+    type: string
+    uri: string
+    name: string
+    id: number
+  }) => {
+    if (data.type === 'iCloud' || data.type === 'Dropbox') {
+      props.navigation.push('Player', {
+        musicData: data,
+      })
+    } else if (data.type === 'Spotify') {
+      const type = await authenticateSpotify()
+      if (type === 'success') {
+        props.navigation.push('Player', {
+          musicData: data,
+        })
+      }
+    }
+  }
 
   return (
     <View
@@ -225,17 +232,21 @@ const Main = (props: PropsT) => {
         <Text variant="h2" sx={{ marginTop: 5 }} id="projects-list" accessible>
           Recent Projects
         </Text>
-        <View role="list" aria-labelledby="projects-list" accessible>
+        <ScrollView
+          role="list"
+          aria-labelledby="projects-list"
+          accessible
+          showsVerticalScrollIndicator={false}
+        >
           {projects.map((project) => (
             <Fragment key={project.name}>
               <Pressable
-                onPress={() => {
-                  props.navigation.push('Player', {
-                    musicData: {
-                      uri: project.uri,
-                      name: project.name,
-                      id: project.id,
-                    },
+                onPress={async () => {
+                  await onAudioFileSelected({
+                    type: project.source,
+                    uri: project.uri,
+                    name: project.name,
+                    id: project.id,
                   })
                 }}
                 sx={{
@@ -289,7 +300,8 @@ const Main = (props: PropsT) => {
               </Text>
             </View>
           )}
-        </View>
+          <View sx={{ height: 300 }} />
+        </ScrollView>
       </SafeAreaView>
     </View>
   )

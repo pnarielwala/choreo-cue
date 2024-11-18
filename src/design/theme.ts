@@ -19,7 +19,7 @@ const theme = makeTheme({
     black: '#000',
   },
   space: [2, 4, 8, 16, 20, 32, 48, 56],
-  breakpoints: [325, 500, 800] as unknown as Array<string>,
+  breakpoints: [325, 500, 800] as unknown as string[],
   fonts: {
     root: 'nunito',
   },

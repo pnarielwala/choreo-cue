@@ -1,99 +1,94 @@
-import { Audio } from 'expo-av'
-import { AVPlaybackSource, AVPlaybackStatus } from 'expo-av/build/AV'
+import { useQuery } from '@tanstack/react-query'
+import { getAudioFileById } from 'api/db/audio'
+import { getSpotifyTrack } from 'api/spotifyClient'
+import FileSound from 'classes/FileSound'
+import Sound from 'classes/Sound'
+import SpotifySound from 'classes/SpotifySound'
 import { useEffect, useState } from 'react'
-import { Platform } from 'react-native'
-import Toast from 'react-native-toast-message'
 
 import rollbar from 'resources/rollbar'
 
-// TODO: Remove when expo sdk updated to v43
-const adjustURIForAndroid = (sound: Exclude<AVPlaybackSource, number>) => {
-  let uri = sound.uri
-  if (uri.includes('%40')) {
-    uri = uri.replace('%40', '%2540')
-  }
-  if (uri.includes('%2F')) {
-    uri = uri.replace('%2F', '%252F')
-  }
-  uri = 'file://' + uri
-
-  return { ...sound, uri }
-}
-
-const useAudioPlayer = (source: { uri: string; name: string } | undefined) => {
-  const [sound, setSound] = useState<Audio.Sound>()
+const useAudioPlayer = (audioId: number) => {
+  const [sound, setSound] = useState<Sound>()
   const [isPlaying, setIsPlaying] = useState(false)
   const [duration, setDuration] = useState(0)
   const [currentPosition, setCurrentPosition] = useState(0)
 
-  const onPlaybackStatusUpdate = (status: AVPlaybackStatus) => {
+  const { data } = useQuery({
+    queryKey: ['audio', audioId],
+    queryFn: () => getAudioFileById(audioId),
+    enabled: !!audioId,
+  })
+
+  const source = data?.source
+  const name = data?.name
+  const path = data?.path
+
+  const { data: spotifyTrackData } = useQuery({
+    queryKey: ['spotify-track', path],
+    queryFn: () => getSpotifyTrack(path!),
+    enabled: source === 'Spotify' && !!path,
+  })
+
+  useEffect(() => {
+    if (spotifyTrackData && source === 'Spotify') {
+      setDuration(spotifyTrackData.data.duration_ms)
+      const sound = new SpotifySound(spotifyTrackData.data)
+      setSound(sound)
+
+      sound.loadAsync()
+      sound.playbackListener(onPlaybackStatusUpdate)
+      return () => {
+        sound.unloadAsync()
+      }
+    }
+  }, [spotifyTrackData, source])
+
+  useEffect(() => {
+    if (source === 'iCloud') {
+      if (name && path) {
+        const sound = new FileSound()
+        setSound(sound)
+        sound.playbackListener(onPlaybackStatusUpdate)
+        sound.loadAsync({ uri: path, name: name })
+        return () => {
+          sound.unloadAsync()
+        }
+      } else {
+        rollbar.error('Sound missing!')
+      }
+    }
+  }, [name, path, source])
+
+  const onPlaybackStatusUpdate = (status: {
+    isLoaded: boolean
+    isPlaying: boolean
+    positionMillis: number
+    durationMillis: number
+  }) => {
     if (status.isLoaded) {
       setIsPlaying(status.isPlaying)
+      setDuration(status.durationMillis)
       setCurrentPosition(status.positionMillis)
     }
   }
 
-  const loadSoundFromData = async (data: Exclude<AVPlaybackSource, number>) => {
-    Audio.setAudioModeAsync({
-      playsInSilentModeIOS: true,
-      staysActiveInBackground: true,
-    })
-    const sound = new Audio.Sound()
-    sound.setOnPlaybackStatusUpdate(onPlaybackStatusUpdate)
-    setSound(sound)
-
-    try {
-      const track =
-        Platform.OS === 'android'
-          ? await sound.loadAsync(adjustURIForAndroid(data))
-          : await sound.loadAsync(data)
-
-      if (track.isLoaded) {
-        track.durationMillis && setDuration(track.durationMillis)
-      }
-    } catch (error: any) {
-      Toast.show({
-        type: 'error',
-        position: 'top',
-        text1: 'Sorry! Unable to load audio.',
-        text2:
-          'Try deleting and re-adding the audio file. If the problem persists, please contact support.',
-        text2Style: {
-          fontSize: 12,
-          flexWrap: 'wrap',
-          display: 'flex',
-        },
-        autoHide: false,
-      })
-      rollbar.error('Expo Audio loadAsync failed', error)
-    }
-  }
-
   async function playSound() {
-    await sound?.playAsync()
+    sound?.playAsync()
   }
 
   async function pauseSound() {
-    await sound?.pauseAsync()
+    sound?.pauseAsync()
   }
 
   const setSoundPosition = async (position: number) =>
     await sound?.setPositionAsync(position)
 
   const setSoundSpeed = async (tempo: number) =>
-    await sound?.setRateAsync(tempo, true)
-
-  useEffect(() => {
-    source ? loadSoundFromData(source) : rollbar.error('Sound missing!')
-  }, [])
-
-  useEffect(() => {
-    return () => {
-      sound?.unloadAsync()
-    }
-  }, [sound])
+    await sound?.setRateAsync(tempo)
 
   return {
+    isSoundLoaded: !!sound,
     playAudio: playSound,
     pauseAudio: pauseSound,
     setAudioPosition: setSoundPosition,
@@ -102,7 +97,8 @@ const useAudioPlayer = (source: { uri: string; name: string } | undefined) => {
     currentPosition,
     duration,
     details: {
-      trackName: source?.name || 'Unnamed audio',
+      trackName: name || 'Unnamed audio',
+      source,
     },
   }
 }
