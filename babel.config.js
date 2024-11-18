@@ -30,7 +30,10 @@ module.exports = function (api) {
         require.resolve('babel-plugin-module-resolver'),
         {
           root: ['./src'],
-          alias,
+          alias: {
+            ...alias,
+            'expo-sqlite/next': require.resolve('expo-sqlite'),
+          },
         },
       ],
     ],
