@@ -5,7 +5,7 @@ on:
     branches:
       - main
     tags:
-      - '*.*.*'
+      - '**'
 
 jobs:
   setup:
@@ -24,8 +24,8 @@ jobs:
         run: yarn install
   deploy-expo-update:
     name: Update Expo Production channel
-    runs-on: ubuntu-latest
     needs: setup
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@main
       - uses: actions/setup-node@v4

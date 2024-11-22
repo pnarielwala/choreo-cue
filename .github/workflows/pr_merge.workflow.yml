@@ -1,3 +1,5 @@
+name: Merged PR cleanup workflow
+
 on:
   pull_request:
     types:
