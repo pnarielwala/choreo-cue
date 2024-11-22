@@ -20,7 +20,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.pnarielwala.choreo-cue",
-      "buildNumber": "1.8.0",
+      "buildNumber": "1.8.1",
       "infoPlist": {
         "UIBackgroundModes": ["audio"]
       }
