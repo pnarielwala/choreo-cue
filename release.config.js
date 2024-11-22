@@ -9,6 +9,11 @@ module.exports = {
         replacements: [
           {
             files: ['app.json'],
+            from: '"version": ".*",',
+            to: '"version": "${nextRelease.version}",',
+          },
+          {
+            files: ['app.json'],
             from: '"buildNumber": ".*",',
             to: '"buildNumber": "${nextRelease.version}",',
           },

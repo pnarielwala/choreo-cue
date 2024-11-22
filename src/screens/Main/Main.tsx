@@ -1,24 +1,10 @@
 import React, { Fragment, useEffect, useState } from 'react'
-import {
-  View,
-  Image,
-  SafeAreaView,
-  Pressable,
-  Icon,
-  Text,
-  Box,
-  useSx,
-} from 'design'
+import { View, Image, SafeAreaView, Pressable, Text, Box, useSx } from 'design'
 
 import * as Updates from 'expo-updates'
-
-import Dropbox from 'assets/dropbox.svg'
-import iCloud from 'assets/icloud.svg'
+import Constants from 'expo-constants'
 
 import { FontAwesome5 } from '@expo/vector-icons'
-
-import * as DocumentPicker from 'expo-document-picker'
-import * as FileSystem from 'expo-file-system'
 
 import { getFolderContents } from 'api/dropboxClient'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -143,13 +129,17 @@ const Main = (props: PropsT) => {
       <Dialog isVisible={isInfoShown}>
         <View sx={{ width: '100%' }}>
           <Dialog.Title title="Version" />
-          <Text variant="bodySmall">
+          <Text variant="bodySmall" selectable>
             Runtime: {currentlyRunning.runtimeVersion}
           </Text>
-          <Text variant="bodySmall">
+          <Text variant="bodySmall" selectable>
             Channel: {currentlyRunning.channel || 'Not set'}
           </Text>
-          <Text variant="bodySmall">
+          <Text variant="bodySmall" selectable>
+            Update group id:{' '}
+            {Constants.manifest2?.metadata?.['updateGroup'] || 'Not set'}
+          </Text>
+          <Text variant="bodySmall" selectable>
             Update Id: {currentlyRunning.updateId || 'Not set'}
           </Text>
           {downloadError && (
