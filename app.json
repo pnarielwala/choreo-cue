@@ -2,7 +2,7 @@
   "expo": {
     "name": "Choreo Cue",
     "slug": "choreo-cue",
-    "version": "1.7.2",
+    "version": "1.7.3",
     "scheme": "choreo-cue",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -20,7 +20,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.pnarielwala.choreo-cue",
-      "buildNumber": "1.7.2",
+      "buildNumber": "1.7.3",
       "infoPlist": {
         "UIBackgroundModes": ["audio"]
       }
