@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: yarn install
   deploy-expo-update:
-    name: Update Expo Production channel
+    name: Update Expo channel
     needs: setup
     runs-on: ubuntu-latest
     steps:
@@ -33,28 +33,7 @@ jobs:
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-      - name: Expo update main branch
+      - name: Expo update branch
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: yarn eas update --auto
-      - name: Expo update preview branch
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: yarn eas update --auto --branch preview
-  build:
-    name: Build iOS production version on EAS
-    runs-on: ubuntu-latest
-    needs: setup
-    steps:
-      - uses: actions/checkout@main
-      - uses: actions/setup-node@v2
-        with:
-          node-version: 'lts/*'
-      - uses: actions/cache@v2
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-      - name: Build expo version
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: yarn build:ios --non-interactive
