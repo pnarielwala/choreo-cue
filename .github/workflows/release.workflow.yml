@@ -35,4 +35,4 @@ jobs:
       - name: Expo update branch
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: yarn eas update --auto
+        run: yarn eas update --auto --branch main

@@ -9,6 +9,7 @@ on:
 
 jobs:
   setup:
+    if: ${{ !startsWith(github.event.head_commit.message, 'chore(release):') }}
     name: Install dependencies
     runs-on: ubuntu-latest
     steps:
