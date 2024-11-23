@@ -143,17 +143,17 @@ const Main = (props: PropsT) => {
             Update Id: {currentlyRunning.updateId || 'Not set'}
           </Text>
           {downloadError && (
-            <Text variant="bodySmall" sx={{ color: 'red' }}>
+            <Text variant="bodySmall" sx={{ color: 'red' }} selectable>
               Error downloading update: {downloadError.message}
             </Text>
           )}
           {checkError && (
-            <Text variant="bodySmall" sx={{ color: 'red' }}>
+            <Text variant="bodySmall" sx={{ color: 'red' }} selectable>
               Error checking for update: {checkError.message}
             </Text>
           )}
           {initializationError && (
-            <Text variant="bodySmall" sx={{ color: 'red' }}>
+            <Text variant="bodySmall" sx={{ color: 'red' }} selectable>
               Error initializing updates: {initializationError.message}
             </Text>
           )}
