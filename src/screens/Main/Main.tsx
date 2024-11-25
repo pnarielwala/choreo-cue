@@ -125,8 +125,8 @@ const Main = (props: PropsT) => {
     }
   }
 
-  const versionString = `${currentlyRunning.runtimeVersion} (${
-    Constants.platform?.[
+  const versionString = `${Constants.manifest2?.extra?.expoClient?.version} (${
+    Constants.manifest2?.extra?.expoClient?.[
       {
         ios: 'ios',
         android: 'android',
