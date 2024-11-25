@@ -5,6 +5,7 @@ import {
   seekToPosition,
   setRepeatMode,
   startPlayback,
+  transferPlayback,
 } from 'api/spotifyClient'
 import { AxiosError } from 'axios'
 import Sound from 'classes/Sound'
@@ -24,6 +25,7 @@ export default class SpotifySound extends Sound {
     durationMillis: number
   }) => void
   appListener: NativeEventSubscription
+  device_id?: string
 
   constructor(track: SpotifyApi.TrackObjectFull) {
     super()
@@ -67,6 +69,7 @@ export default class SpotifySound extends Sound {
               this.isPlaying = true
               this.currentPosition = res.data?.progress_ms || 0
             }
+            this.device_id = res.data.device?.id ?? undefined
             this.statusCallback?.({
               isPlaying: this.isPlaying,
               positionMillis: this.currentPosition,
@@ -110,10 +113,18 @@ export default class SpotifySound extends Sound {
    */
   async playAsync() {
     try {
-      await startPlayback({
-        uris: [this.track.uri],
-        position_ms: this.currentPosition,
-      })
+      if (this.device_id) {
+        await transferPlayback(this.device_id)
+      }
+      await startPlayback(
+        {
+          uris: [this.track.uri],
+          position_ms: this.currentPosition,
+        },
+        {
+          device_id: this.device_id,
+        }
+      )
       this.isPlaying = true
       this.statusCallback?.({
         isPlaying: this.isPlaying,

@@ -34,7 +34,7 @@ const SOURCES = {
     enabled: false,
   },
   Spotify: {
-    name: 'Spotify',
+    name: 'Spotify (app remote control) - BETA',
     icon: 'spotify',
     enabled: true,
   },

@@ -30,6 +30,7 @@ const useSpotifyAuth = ({ onCheckAuth }: PropsT = {}) => {
         'playlist-read-private',
         'playlist-read-collaborative',
         'playlist-modify-public',
+        'user-read-currently-playing',
         'user-read-playback-state',
         'user-modify-playback-state',
       ],
@@ -64,6 +65,9 @@ const useSpotifyAuth = ({ onCheckAuth }: PropsT = {}) => {
   const authenticate = async (): Promise<
     AuthSession.AuthSessionResult['type']
   > => {
+    // const { type } = await promptAsync()
+    // return type
+
     try {
       const storageValue = await SecureStore.getItemAsync(
         DROPBOX_AUTH_STATE_KEY

@@ -25,10 +25,18 @@ export const searchSpotifyTracks = async (query: string) =>
 export const getSpotifyTrack = async (id: string) =>
   await spotifyClient.get<SpotifyApi.TrackObjectFull>(`/tracks/${id}`)
 
-export const startPlayback = async (params: {
-  uris: string[]
-  position_ms: number
-}) => await spotifyClient.put('/me/player/play', params)
+export const startPlayback = async (
+  body: {
+    uris: string[]
+    position_ms: number
+  },
+  params?: {
+    device_id?: string
+  }
+) =>
+  await spotifyClient.put('/me/player/play', body, {
+    params,
+  })
 
 export const pausePlayback = async () =>
   await spotifyClient.put('/me/player/pause')
@@ -48,9 +56,10 @@ export const getAvailableDevices = async () =>
   await spotifyClient.get<SpotifyApi.UserDevicesResponse>('/me/player/devices')
 
 export const getCurrentlyPlaying = async () =>
-  await spotifyClient.get<SpotifyApi.CurrentPlaybackResponse>(
-    '/me/player/currently-playing'
-  )
+  await spotifyClient.get<SpotifyApi.CurrentPlaybackResponse>('/me/player')
 
 export const setRepeatMode = async (state: 'track' | 'context' | 'off') =>
   await spotifyClient.put('/me/player/repeat', {}, { params: { state } })
+
+export const transferPlayback = async (device_id: string) =>
+  await spotifyClient.put('/me/player', { device_ids: [device_id] })

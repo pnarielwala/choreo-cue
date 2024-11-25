@@ -54,11 +54,15 @@ describe('SpotifySound', () => {
   })
 
   it('should call startPlayback on playAsync', async () => {
+    spotifySound.device_id = '123'
     await spotifySound.playAsync()
-    expect(startPlayback).toHaveBeenCalledWith({
-      uris: [mockTrack.uri],
-      position_ms: 0,
-    })
+    expect(startPlayback).toHaveBeenCalledWith(
+      {
+        uris: [mockTrack.uri],
+        position_ms: 0,
+      },
+      { device_id: '123' }
+    )
   })
 
   it('should call pausePlayback on pauseAsync is already playing', async () => {
