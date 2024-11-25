@@ -14,41 +14,9 @@ import { getFolderContents } from 'api/dropboxClient'
 import { saveFileToDirectory } from 'api/filesystemClient'
 import { addICloudAudioFile } from 'api/db/audio'
 import useSpotifyAuth from 'hooks/useSpotifyAuth'
+import { SOURCES } from 'constants/audio.constants'
 
 export type PropsT = ScreenPropsT<'SelectSource'>
-
-const SOURCES = {
-  iCloud: {
-    name: 'iCloud',
-    icon: 'cloud',
-    enabled: true,
-  },
-  Dropbox: {
-    name: 'Dropbox',
-    icon: 'dropbox',
-    enabled: true,
-  },
-  Video: {
-    name: 'Extract from video',
-    icon: 'file-video',
-    enabled: false,
-  },
-  Spotify: {
-    name: 'Spotify (app remote control) - BETA',
-    icon: 'spotify',
-    enabled: true,
-  },
-  YT: {
-    name: 'YT Music',
-    icon: 'youtube',
-    enabled: false,
-  },
-  Apple: {
-    name: 'Apple Music',
-    icon: 'apple',
-    enabled: false,
-  },
-} as const
 
 const SelectSource = (props: PropsT) => {
   const sx = useSx()

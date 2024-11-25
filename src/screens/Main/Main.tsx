@@ -21,6 +21,7 @@ import { Divider, Dialog } from 'react-native-elements'
 import { deleteAudioFile, getAudioFiles } from 'api/db/audio'
 import { Alert } from 'react-native'
 import useSpotifyAuth from 'hooks/useSpotifyAuth'
+import { SOURCES } from 'constants/audio.constants'
 
 export type PropsT = ScreenPropsT<'Home'>
 
@@ -258,6 +259,20 @@ const Main = (props: PropsT) => {
                 }}
                 role="listitem"
               >
+                <Box
+                  sx={{
+                    width: 32,
+                    display: 'flex',
+                    alignItems: 'center',
+                    marginRight: 2,
+                  }}
+                >
+                  <FontAwesome5
+                    name={SOURCES[project.source].icon}
+                    size={24}
+                    style={sx({ color: 'text' })}
+                  />
+                </Box>
                 <Text
                   sx={{
                     color: 'text',
