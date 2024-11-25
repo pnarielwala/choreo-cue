@@ -103,7 +103,9 @@ const MusicPlayer = (props: PropsT) => {
         <View sx={{ px: 3, flex: 1 }}>
           <View sx={{ height: 'auto' }}>
             <View sx={{ alignItems: 'flex-start', width: '100%' }}>
-              <H1>{trackName}</H1>
+              <H1 numberOfLines={2} ellipsizeMode="tail">
+                {trackName}
+              </H1>
             </View>
 
             <Controls
