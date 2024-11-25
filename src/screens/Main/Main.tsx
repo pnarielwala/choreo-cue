@@ -19,7 +19,7 @@ import { useQuery } from '@tanstack/react-query'
 import { ScreenPropsT } from 'App'
 import { Divider, Dialog } from 'react-native-elements'
 import { deleteAudioFile, getAudioFiles } from 'api/db/audio'
-import { Alert } from 'react-native'
+import { Alert, Platform } from 'react-native'
 import useSpotifyAuth from 'hooks/useSpotifyAuth'
 import { SOURCES } from 'constants/audio.constants'
 
@@ -125,6 +125,22 @@ const Main = (props: PropsT) => {
     }
   }
 
+  const versionString = `${currentlyRunning.runtimeVersion} (${
+    Constants.platform?.[
+      {
+        ios: 'ios',
+        android: 'android',
+        web: 'web',
+      }[Platform.OS]
+    ]?.[
+      {
+        ios: 'buildNumber',
+        android: 'versionCode',
+        web: 'web',
+      }[Platform.OS]
+    ] || 'dev mode'
+  })`
+
   return (
     <View
       sx={{
@@ -138,7 +154,7 @@ const Main = (props: PropsT) => {
         <View sx={{ width: '100%' }}>
           <Dialog.Title title="Version" />
           <Text variant="bodySmall" selectable>
-            Runtime: {currentlyRunning.runtimeVersion}
+            Version: {versionString}
           </Text>
           <Text variant="bodySmall" selectable>
             Channel: {currentlyRunning.channel || 'Not set'}
