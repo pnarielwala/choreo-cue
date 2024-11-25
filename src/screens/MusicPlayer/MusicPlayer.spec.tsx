@@ -54,63 +54,90 @@ beforeEach(() => {
   tracker.on('query', (query) => {
     if (query.method === 'select' && query.sql.includes('from `cues`')) {
       query.response([])
+    } else if (query.sql.includes('select * from `audio`')) {
+      query.response([
+        {
+          id: 1,
+          name: 'Toosie Slide - Drake.mp3',
+          path: 'file://some-music.mp3',
+          source: 'iCloud',
+        },
+      ])
     }
   })
 })
 
 it('should display audio title', async () => {
-  const { queryAllByText } = doRenderWithProviders({
+  doRenderWithProviders({
     musicData: { name: 'Toosie Slide - Drake.mp3', uri: '', id: 1 },
   })
 
-  await waitFor(() => {})
-
-  // TextTicker renders Text twice as it's implementation
-  const elements = queryAllByText('Toosie Slide - Drake.mp3')
-
-  expect(elements[0]).toBeDefined()
+  await waitFor(() => {
+    expect(screen.getByText('Toosie Slide - Drake.mp3')).toBeOnTheScreen()
+  })
 })
 
 it('should play and pause audio', async () => {
-  const { getByLabelText, getByText } = doRenderWithProviders({
+  doRenderWithProviders({
     musicData: { name: 'Toosie Slide - Drake.mp3', uri: '', id: 1 },
   })
 
-  await waitFor(() => {})
+  await waitFor(() => {
+    expect(screen.getByText('0:00')).toBeDefined()
+  })
 
-  expect(getByText('0:00')).toBeDefined()
+  const playButton = await screen.findByRole('button', {
+    name: 'Play button',
+    disabled: false,
+  })
   await act(async () => {
-    fireEvent.press(getByLabelText('Play button'))
+    fireEvent.press(playButton)
 
     await new Promise((res) => {
       setTimeout(() => res({}), 1500)
     })
-    fireEvent.press(getByLabelText('Pause button'))
+    const pauseButton = await screen.findByRole('button', {
+      name: 'Pause button',
+      disabled: false,
+    })
+    fireEvent.press(pauseButton)
   })
 
-  await waitFor(() => expect(getByText('0:01')).toBeDefined())
+  await waitFor(() => expect(screen.getByText('0:01')).toBeDefined())
 }, 10000)
 
 it('should change tempo of the audio', async () => {
-  const { getByLabelText, getByText } = doRenderWithProviders({
+  doRenderWithProviders({
     musicData: { name: 'Toosie Slide - Drake.mp3', uri: '', id: 1 },
   })
 
-  await waitFor(() => {})
+  await waitFor(() => {
+    expect(screen.getByText('0:00')).toBeDefined()
+  })
 
-  expect(getByText('0:00')).toBeDefined()
+  fireEvent.press(
+    await screen.findByRole('button', { name: '0.5x', disabled: false })
+  )
 
-  fireEvent.press(getByText('0.5x'))
+  const playButton = await screen.findByRole('button', {
+    name: 'Play button',
+    disabled: false,
+  })
   await act(async () => {
-    fireEvent.press(getByLabelText('Play button'))
+    fireEvent.press(playButton)
 
     await new Promise((res) => {
       setTimeout(() => res({}), 2200)
     })
-    fireEvent.press(getByLabelText('Pause button'))
+
+    const pauseButton = await screen.findByRole('button', {
+      name: 'Pause button',
+      disabled: false,
+    })
+    fireEvent.press(pauseButton)
   })
 
-  await waitFor(() => expect(getByText('0:01')).toBeDefined())
+  await waitFor(() => expect(screen.getByText('0:01')).toBeDefined())
 }, 10000)
 
 it('should navigate to the correct time after pressing a cue', async () => {
@@ -122,8 +149,13 @@ it('should navigate to the correct time after pressing a cue', async () => {
 
   expect(getByText('0:00')).toBeDefined()
 
-  fireEvent.press(getByLabelText('Skip forward 10 seconds'))
-  fireEvent.press(getByLabelText('Skip forward 10 seconds'))
+  const skipForwardButton = await screen.findByRole('button', {
+    name: 'Skip forward 10 seconds',
+    disabled: false,
+  })
+
+  fireEvent.press(skipForwardButton)
+  fireEvent.press(skipForwardButton)
 
   expect(getByText('0:20')).toBeDefined()
 

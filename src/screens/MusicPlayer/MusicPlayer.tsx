@@ -5,12 +5,11 @@ import {
   NativeSyntheticEvent,
   TextInputChangeEventData,
 } from 'react-native'
-import { View, SafeAreaView, H1, Pressable, Icon, Text, Input } from 'design'
-import Spinner from 'react-native-loading-spinner-overlay'
+import { View, SafeAreaView, H1, Pressable, Text, Input } from 'design'
 import TextTicker from 'react-native-text-ticker'
 import { useKeepAwake } from 'expo-keep-awake'
 
-import { AntDesign, FontAwesome5 } from '@expo/vector-icons'
+import { FontAwesome5 } from '@expo/vector-icons'
 
 import TrackSlider from './components/TrackSlider'
 import Cues from './components/Cues'
@@ -18,7 +17,6 @@ import Controls from './components/Controls/Controls'
 import Tempo from './components/Tempo'
 import useMusicPlayer from 'hooks/useMusicPlayer'
 import { ScreenPropsT } from 'App'
-import { deleteAllLocalFiles } from 'api/filesystemClient'
 import { Dialog } from 'react-native-elements'
 import { updateAudioName } from 'api/db/audio'
 
@@ -28,6 +26,7 @@ const MusicPlayer = (props: PropsT) => {
   const { id: audioId } = props.route.params.musicData
   useKeepAwake()
   const {
+    isSoundLoaded,
     playAudio,
     pauseAudio,
     setAudioPosition,
@@ -36,9 +35,13 @@ const MusicPlayer = (props: PropsT) => {
     currentPosition,
     duration,
     details,
-  } = useMusicPlayer(props.route.params.musicData)
+  } = useMusicPlayer(audioId)
 
   const [trackName, setTrackName] = React.useState(details.trackName)
+
+  useEffect(() => {
+    setTrackName(details.trackName)
+  }, [details.trackName])
 
   const [isVisible, setIsVisible] = React.useState(false)
   const [inputValue, setInputValue] = React.useState(
@@ -100,16 +103,7 @@ const MusicPlayer = (props: PropsT) => {
         <View sx={{ px: 3, flex: 1 }}>
           <View sx={{ height: 'auto' }}>
             <View sx={{ alignItems: 'flex-start', width: '100%' }}>
-              <H1
-                as={TextTicker}
-                // @ts-ignore TODO: Fix TS typing for Dripsy on "as" prop
-                loop={false}
-                bounce={false}
-                repeatSpacer={20}
-                scrollSpeed={200}
-                easing={Easing.linear}
-                marqueeDelay={1000}
-              >
+              <H1 numberOfLines={2} ellipsizeMode="tail">
                 {trackName}
               </H1>
             </View>
@@ -120,6 +114,7 @@ const MusicPlayer = (props: PropsT) => {
               currentPosition={currentPosition}
               isPlaying={isPlaying}
               setPosition={setAudioPosition}
+              isEnabled={isSoundLoaded}
             />
 
             <TrackSlider
@@ -129,7 +124,10 @@ const MusicPlayer = (props: PropsT) => {
               disabled={false}
             />
 
-            <Tempo setRate={setAudioSpeed} />
+            <Tempo
+              setRate={setAudioSpeed}
+              disabled={details.source === 'Spotify' || !isSoundLoaded}
+            />
           </View>
           <View sx={{ flex: 1, alignItems: 'flex-start' }}>
             <Cues

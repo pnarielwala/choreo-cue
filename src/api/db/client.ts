@@ -7,7 +7,7 @@ const knex = Knex({
     filename: 'choreo_cue.db',
   },
   useNullAsDefault: true,
-  debug: true,
+  // debug: true,
 })
 
 export default knex

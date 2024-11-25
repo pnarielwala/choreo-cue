@@ -1,30 +1,22 @@
 import 'react-native-gesture-handler'
 import React, { useCallback, useEffect, useState } from 'react'
-import { StatusBar } from 'expo-status-bar'
 
 import * as Updates from 'expo-updates'
 
-import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite'
-import {
-  ParamListBase,
-  StackNavigationState,
-  NavigationContainer,
-} from '@react-navigation/native'
+import { SQLiteProvider } from 'expo-sqlite'
+import { NavigationContainer } from '@react-navigation/native'
 import Toast, { BaseToast, BaseToastProps } from 'react-native-toast-message'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
   StackScreenProps,
   createStackNavigator,
   StackNavigationOptions,
-  StackNavigationEventMap,
 } from '@react-navigation/stack'
 
 import { useFonts } from 'expo-font'
-import { withLayoutContext } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
 
 import { DripsyProvider, Pressable, View } from 'design'
-import { Text } from 'react-native'
 import theme from './design/theme'
 
 import Main from 'screens/Main'
@@ -34,6 +26,7 @@ import ErrorBoundary from 'components/ErrorBoundary'
 import SelectSource from 'screens/SelectSource'
 import { FontAwesome5 } from '@expo/vector-icons'
 import { migrateDbIfNeeded } from 'api/db/migrations'
+import SpotifySearch from 'screens/SpotifySearch'
 
 export type StacksT = {
   Home: undefined
@@ -45,6 +38,7 @@ export type StacksT = {
     name: string
   }
   SelectSource: undefined
+  SpotifySearch: undefined
 }
 
 export type ScreenPropsT<T extends keyof StacksT> = StackScreenProps<StacksT, T>
@@ -65,7 +59,7 @@ const App = () => {
     }
   }, [isUpdatePending])
 
-  let [fontsLoaded] = useFonts({
+  const [fontsLoaded] = useFonts({
     ['nunito']: require('assets/fonts/Nunito-Regular.ttf'),
     ['nunitoBold']: require('assets/fonts/Nunito-Bold.ttf'),
     ['nunitoSemiBold']: require('assets/fonts/Nunito-SemiBold.ttf'),
@@ -152,6 +146,10 @@ const App = () => {
                 <Stack.Group screenOptions={screenOptions}>
                   <Stack.Screen name="Home" component={Main} />
                   <Stack.Screen name="SelectSource" component={SelectSource} />
+                  <Stack.Screen
+                    name="SpotifySearch"
+                    component={SpotifySearch}
+                  />
                   <Stack.Screen
                     name="Player"
                     component={MusicPlayer}

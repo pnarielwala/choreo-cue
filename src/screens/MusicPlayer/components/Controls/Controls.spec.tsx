@@ -10,6 +10,7 @@ const defaultProps: PropsT = {
   pauseSound: jest.fn(),
   playSound: jest.fn(),
   setPosition: jest.fn(),
+  isEnabled: true,
 }
 
 const doRender = (overrides: Partial<PropsT> = {}) =>
