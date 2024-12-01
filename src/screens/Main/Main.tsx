@@ -13,6 +13,7 @@ import useDropBoxAuth from 'hooks/useDropboxAuth'
 import { Divider, Dialog } from 'react-native-elements'
 import { deleteAudioFile, getAudioFiles } from 'api/db/audio'
 import { Alert } from 'react-native'
+import { Platform } from 'react-native'
 
 export type PropsT = ScreenPropsT<'Home'>
 
@@ -113,7 +114,7 @@ const Main = (props: PropsT) => {
           <FontAwesome5 name="info-circle" size={24} color="black" />
         </Pressable>
       ),
-      headerTitle: 'Home',
+      headerTitle: Platform.OS === 'android' ? '' : 'Home',
     })
   }, [])
 

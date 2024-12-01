@@ -6,7 +6,7 @@
     "start": "NODE_ENV=development expo start",
     "build:ios": "NODE_ENV=production eas build --platform ios",
     "build:ios:local": "NODE_ENV=production eas build --platform ios --local",
-    "build:android": "NODE_ENV=production expo build:android",
+    "build:android": "NODE_ENV=production eas build --platform android",
     "test": "jest --watch --coverage=false",
     "eject": "expo eject",
     "prepare": "husky"
