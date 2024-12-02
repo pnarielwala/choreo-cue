@@ -18,8 +18,8 @@ export type PropsT = ScreenPropsT<'SelectSource'>
 
 const SOURCES = {
   iCloud: {
-    name: 'iCloud',
-    icon: 'cloud',
+    name: 'File System',
+    icon: 'folder-open',
     enabled: true,
   },
   Dropbox: {

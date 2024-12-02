@@ -24,7 +24,7 @@ import { withLayoutContext } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
 
 import { DripsyProvider, Pressable, View } from 'design'
-import { Text } from 'react-native'
+import { Platform, Text } from 'react-native'
 import theme from './design/theme'
 
 import Main from 'screens/Main'
@@ -119,7 +119,7 @@ const App = () => {
     headerTitle: '',
     ...headerStyles,
     headerBackTitleVisible: false,
-
+    headerStatusBarHeight: Platform.OS === 'android' ? 40 : undefined,
     headerLeft: (props) =>
       props.canGoBack && (
         <Pressable

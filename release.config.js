@@ -13,8 +13,8 @@ module.exports = {
           },
           {
             files: ['app.json'],
-            from: '"versionCode": ".*",',
-            to: '"versionCode": "${nextRelease.version}",',
+            from: '"versionCode": \\d*,',
+            to: '"versionCode": ${parseInt(nextRelease.version.replace(/./g, ""))},',
           },
         ],
       },
