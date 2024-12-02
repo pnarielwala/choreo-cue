@@ -8,13 +8,14 @@ module.exports = {
         replacements: [
           {
             files: ['app.json'],
-            from: '"buildNumber": ".*",',
-            to: '"buildNumber": "${nextRelease.version}",',
+            from: '"buildNumber": ".*"',
+            to: '"buildNumber": "${nextRelease.version}"',
           },
           {
             files: ['app.json'],
-            from: '"versionCode": \\d*,',
-            to: '"versionCode": ${parseInt(nextRelease.version.replace(\\/.\\/g, ""))},',
+            from: '"versionCode": \\d*',
+            to: (matched) =>
+              `"versionCode": ${parseInt(matched.split(': ')[1].trim()) + 1}`,
           },
         ],
       },

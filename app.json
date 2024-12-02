@@ -30,7 +30,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "versionCode": NaN,
+      "versionCode": 1,
       "package": "com.pnarielwala.choreocue",
       "permissions": []
     },
