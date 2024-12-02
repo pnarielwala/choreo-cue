@@ -20,7 +20,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.pnarielwala.choreo-cue",
-      "buildNumber": "1.8.6",
+      "buildNumber": "1.8.7",
       "infoPlist": {
         "UIBackgroundModes": ["audio"]
       }
@@ -30,7 +30,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "versionCode": 186,
+      "versionCode": NaN,
       "package": "com.pnarielwala.choreocue",
       "permissions": []
     },
