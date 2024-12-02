@@ -118,6 +118,22 @@ const Main = (props: PropsT) => {
     })
   }, [])
 
+  const versionString = `${Constants.manifest2?.extra?.expoClient?.version} (${
+    Constants.manifest2?.extra?.expoClient?.[
+      {
+        ios: 'ios',
+        android: 'android',
+        web: 'web',
+      }[Platform.OS]
+    ]?.[
+      {
+        ios: 'buildNumber',
+        android: 'versionCode',
+        web: 'web',
+      }[Platform.OS]
+    ] || 'dev mode'
+  })`
+
   return (
     <View
       sx={{
@@ -131,7 +147,7 @@ const Main = (props: PropsT) => {
         <View sx={{ width: '100%' }}>
           <Dialog.Title title="Version" />
           <Text variant="bodySmall" selectable>
-            Runtime: {currentlyRunning.runtimeVersion}
+            Version: {versionString}
           </Text>
           <Text variant="bodySmall" selectable>
             Channel: {currentlyRunning.channel || 'Not set'}
