@@ -14,7 +14,7 @@ module.exports = {
           {
             files: ['app.json'],
             from: '"versionCode": \\d*,',
-            to: '"versionCode": ${parseInt(nextRelease.version.replace(/./g, ""))},',
+            to: '"versionCode": ${parseInt(nextRelease.version.replace(\\/.\\/g, ""))},',
           },
         ],
       },
