@@ -118,7 +118,7 @@ const App = () => {
   const screenOptions: StackNavigationOptions = {
     headerTitle: '',
     ...headerStyles,
-    headerBackTitleVisible: false,
+    headerBackButtonDisplayMode: 'minimal',
     headerStatusBarHeight: Platform.OS === 'android' ? 40 : undefined,
     headerLeft: (props) =>
       props.canGoBack && (
@@ -136,7 +136,7 @@ const App = () => {
   const modalOptions: StackNavigationOptions = {
     presentation: 'modal',
     headerTitle: '',
-    headerBackTitleVisible: false,
+    headerBackButtonDisplayMode: 'minimal',
     ...headerStyles,
   }
 
