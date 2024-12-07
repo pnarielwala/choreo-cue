@@ -1,6 +1,6 @@
 import * as FileSystem from 'expo-file-system'
 import * as DocumentPicker from 'expo-document-picker'
-import rollbar from 'resources/rollbar'
+import analytics from 'resources/analytics'
 
 export const deleteAllLocalFiles = async () => {
   const contents = await FileSystem.readDirectoryAsync(
@@ -34,7 +34,7 @@ export const saveFileToDirectory = async (
 
     // save file path to sqlite
   } else {
-    rollbar.error('FileSystem.documentDirectory is undefined')
+    analytics.error('FileSystem.documentDirectory is undefined')
   }
 
   return {

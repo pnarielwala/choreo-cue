@@ -15,7 +15,7 @@ import { ScreenPropsT } from 'App'
 import { DropboxEntryT } from 'types/Dropbox'
 import { saveFileToDirectory } from 'api/filesystemClient'
 import { addDropboxAudioFile, addICloudAudioFile } from 'api/db/audio'
-import rollbar from 'resources/rollbar'
+import analytics from 'resources/analytics'
 
 export type PropsT = ScreenPropsT<'DropboxNavigator'>
 
@@ -99,7 +99,7 @@ const DropboxNavigator = (props: PropsT) => {
             },
           })
         } catch (error) {
-          rollbar.error('Error downloading dropbox file', error as any)
+          analytics.error('Error downloading dropbox file', error as any)
         }
       }
     },

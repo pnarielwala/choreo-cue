@@ -3,7 +3,7 @@ import { AVPlaybackSource, AVPlaybackStatus } from 'expo-av/build/AV'
 import { useEffect, useState } from 'react'
 import Toast from 'react-native-toast-message'
 
-import rollbar from 'resources/rollbar'
+import analytics from 'resources/analytics'
 
 const useAudioPlayer = (source: { uri: string; name: string } | undefined) => {
   const [sound, setSound] = useState<Audio.Sound>()
@@ -47,7 +47,7 @@ const useAudioPlayer = (source: { uri: string; name: string } | undefined) => {
         },
         autoHide: false,
       })
-      rollbar.error('Expo Audio loadAsync failed', error)
+      analytics.error('Expo Audio loadAsync failed', error)
     }
   }
 
@@ -66,7 +66,7 @@ const useAudioPlayer = (source: { uri: string; name: string } | undefined) => {
     await sound?.setRateAsync(tempo, true)
 
   useEffect(() => {
-    source ? loadSoundFromData(source) : rollbar.error('Sound missing!')
+    source ? loadSoundFromData(source) : analytics.error('Sound missing!')
   }, [])
 
   useEffect(() => {

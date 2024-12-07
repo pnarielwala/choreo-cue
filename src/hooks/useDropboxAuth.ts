@@ -7,7 +7,7 @@ import * as Linking from 'expo-linking'
 import * as SecureStore from 'expo-secure-store'
 import { checkDropboxAuth, dropboxAddAuth } from 'api/dropboxClient'
 
-import rollbar from 'resources/rollbar'
+import analytics from 'resources/analytics'
 
 export const DROPBOX_AUTH_STATE_KEY = 'ChoreoCue_Dropbox'
 
@@ -47,7 +47,7 @@ const useDropBoxAuth = ({ onCheckAuth }: PropsT) => {
       dropboxAddAuth(auth.access_token)
       onCheckAuth(true)
     } else if (response?.type === 'error') {
-      rollbar.error('[Dropbox Authentication] Unhandled error')
+      analytics.error('[Dropbox Authentication] Unhandled error')
     }
   }, [response])
 
