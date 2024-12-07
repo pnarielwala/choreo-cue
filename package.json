@@ -25,6 +25,7 @@
     "expo": "52.0.17",
     "expo-auth-session": "^6.0.0",
     "expo-av": "~15.0.0",
+    "expo-device": "7.0.1",
     "expo-document-picker": "^13.0.0",
     "expo-file-system": "~18.0.0",
     "expo-router": "~4.0.0",
@@ -48,6 +49,8 @@
     "react-native-safe-area-context": "5.0.0",
     "react-native-text-ticker": "^1.14.0",
     "react-native-toast-message": "^2.2.0",
+    "rollbar": "2.26.4",
+    "rollbar-react-native": "1.0.0-beta.5",
     "typescript": "~5.7.0"
   },
   "devDependencies": {

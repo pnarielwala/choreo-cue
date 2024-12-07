@@ -1,15 +1,7 @@
-import {
-  FontAwesome5,
-  FontAwesome6,
-  MaterialCommunityIcons,
-} from '@expo/vector-icons'
 import 'react-native-gesture-handler/jestSetup'
-// import '@testing-library/jest-native/extend-expect';
 
-import dbClient from '../api/db/client'
-
-jest.mock('rollbar-react-native')
-jest.mock('../resources/rollbar')
+// jest.mock('rollbar-react-native')
+// jest.mock('../resources/rollbar')
 
 jest.mock('../api/db/client', () => {
   const knex = require('knex')

@@ -14,11 +14,15 @@ import { Divider, Dialog } from 'react-native-elements'
 import { deleteAudioFile, getAudioFiles } from 'api/db/audio'
 import { Alert } from 'react-native'
 import { Platform } from 'react-native'
+import analytics from 'resources/analytics'
+import useIsScreenActive from 'hooks/useIsScreenActive'
 
 export type PropsT = ScreenPropsT<'Home'>
 
 const Main = (props: PropsT) => {
-  const queryClient = useQueryClient()
+  const isScreenActive = useIsScreenActive({
+    navigation: props.navigation,
+  })
   const {
     currentlyRunning,
     isUpdatePending,
@@ -28,50 +32,19 @@ const Main = (props: PropsT) => {
   } = Updates.useUpdates()
   const sx = useSx()
 
-  const { authenticate } = useDropBoxAuth({
-    onCheckAuth: async (authenticated) => {
-      if (authenticated) {
-        if (!queryClient.getQueryData(['dropbox-contents', ''])) {
-          await queryClient.prefetchQuery({
-            queryKey: ['dropbox-contents', ''],
-            queryFn: () => getFolderContents(''),
-          })
-
-          await queryClient.prefetchQuery({
-            queryKey: ['dropbox-contents', ''],
-            queryFn: () => getFolderContents(''),
-          })
-        }
-        props.navigation.push('DropboxNavigator', {
-          path: '',
-          name: 'Home',
-        })
-      }
-    },
-  })
+  useEffect(() => {
+    if (isScreenActive) {
+      analytics.info('Screen viewed', {
+        screen: 'Main',
+      })
+    }
+  }, [isScreenActive])
 
   const [isInfoShown, setIsInfoShown] = useState(false)
 
   useEffect(() => {
     Updates.checkForUpdateAsync()
   }, [])
-  const [isActiveScreen, setIsActiveScreen] = React.useState(false)
-
-  useEffect(() => {
-    const unsubscribe = props.navigation.addListener('focus', () => {
-      setIsActiveScreen(true)
-    })
-
-    return unsubscribe
-  }, [props.navigation])
-
-  useEffect(() => {
-    const unsubscribe = props.navigation.addListener('blur', () => {
-      setIsActiveScreen(false)
-    })
-
-    return unsubscribe
-  }, [props.navigation])
 
   const { data, error, refetch } = useQuery({
     queryKey: ['audio-files'],
@@ -81,10 +54,10 @@ const Main = (props: PropsT) => {
   const projects = data ?? []
 
   useEffect(() => {
-    if (isActiveScreen) {
+    if (isScreenActive) {
       refetch()
     }
-  }, [isActiveScreen])
+  }, [isScreenActive])
 
   const displayResetConfirmation = (audioId: number) =>
     Alert.alert(
