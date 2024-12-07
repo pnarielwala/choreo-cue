@@ -92,7 +92,7 @@ it('should play and pause audio', async () => {
 }, 10000)
 
 it('should change tempo of the audio', async () => {
-  const { getByLabelText, getByText } = doRenderWithProviders({
+  const { getByLabelText, getByText, getByTestId } = doRenderWithProviders({
     musicData: { name: 'Toosie Slide - Drake.mp3', uri: '', id: 1 },
   })
 
@@ -100,7 +100,9 @@ it('should change tempo of the audio', async () => {
 
   expect(getByText('0:00')).toBeDefined()
 
-  fireEvent.press(getByText('0.5x'))
+  const slider = getByTestId('tempo-slider')
+  fireEvent(slider, 'onValueChange', 0.5)
+
   await act(async () => {
     fireEvent.press(getByLabelText('Play button'))
 
