@@ -24,6 +24,10 @@ const rollbar = new Client({
   accessToken: process.env.EXPO_ROLLBAR_ACCESS_TOKEN,
   environment: Updates.channel ? Updates.channel : 'development',
   version: versionString,
+  code_version:
+    Updates.channel === 'production'
+      ? versionString
+      : (Constants.manifest2?.metadata?.['updateGroup'] ?? 'local'),
   captureDeviceInfo: true,
   captureUncaught: true,
   captureUnhandledRejections: true,
