@@ -1,34 +1,15 @@
 import React, { useState } from 'react'
-// import { ButtonGroup } from 'react-native-elements'
-import { View, H2, useSx, Text, ButtonGroup } from 'design'
-
-const TEMPOS: { [key: number]: { rate: number; display: string } } = {
-  0: {
-    rate: 0.5,
-    display: '0.5x',
-  },
-  1: {
-    rate: 0.75,
-    display: '0.75x',
-  },
-  2: {
-    rate: 1,
-    display: '1x',
-  },
-  3: {
-    rate: 1.25,
-    display: '1.25x',
-  },
-}
+import { View, H2, Text, useTheme } from 'design'
+import Slider from '@react-native-community/slider'
 
 export type PropsT = {
   setRate: (tempo: number) => void
 }
 
 export default function Tempo({ setRate }: PropsT) {
-  const [tempoIndex, setTempoIndex] = useState(2)
+  const [tempo, setTempo] = useState(1)
 
-  const sx = useSx()
+  const theme = useTheme()
 
   return (
     <View sx={{ width: '100%', justifyContent: 'flex-start' }}>
@@ -40,41 +21,37 @@ export default function Tempo({ setRate }: PropsT) {
       >
         Tempo
       </H2>
-      <ButtonGroup
-        onPress={(buttonText) => {
-          const index = Object.values(TEMPOS).findIndex(
-            (tempo) => tempo.display === buttonText
-          )
-          setTempoIndex(index)
-          setRate(TEMPOS[index].rate)
-        }}
-        selectedButton={TEMPOS[tempoIndex].display}
-        buttons={Object.values(TEMPOS).map((tempo) => tempo.display)}
-      />
-      {/* <ButtonGroup
-        onPress={(index) => {
-          setTempoIndex(index)
-          setRate(TEMPOS[index].rate)
-        }}
-        selectedIndex={tempoIndex}
-        buttons={Object.values(TEMPOS).map((tempo) => tempo.display)}
-        containerStyle={sx({
+      <View
+        sx={{
+          display: 'flex',
+          flexDirection: 'row',
           width: '100%',
-          maxWidth: 500,
-          mx: 'auto',
-          height: [32, 40],
-          borderColor: 'divider',
-        })}
-        buttonStyle={sx({ bg: 'background' })}
-        innerBorderStyle={sx({ color: 'divider' })}
-        selectedButtonStyle={sx({ bg: 'black' })}
-        textStyle={sx({
-          // @ts-ignore FIXME: variants can be an array
-          variant: ['text.bodySmall', 'text.body'],
-          fontFamily: 'nunito',
-          fontWeight: 500,
-        })}
-      /> */}
+          gap: 2,
+        }}
+      >
+        <Slider
+          testID="tempo-slider"
+          minimumTrackTintColor={theme.colors.sliderTrack}
+          maximumTrackTintColor={theme.colors.sliderTrackBackground}
+          thumbTintColor={theme.colors.sliderThumb}
+          minimumValue={0.5}
+          maximumValue={1.5}
+          step={0.05}
+          value={tempo}
+          onValueChange={(value: number) => {
+            const rate = +value.toPrecision(3)
+            setTempo(+value.toPrecision(3))
+            setRate(rate)
+          }}
+          style={{
+            flex: 1,
+            alignSelf: 'center',
+          }}
+        />
+        <Text sx={{ alignSelf: 'center', minWidth: 50, textAlign: 'right' }}>
+          {tempo}x
+        </Text>
+      </View>
     </View>
   )
 }

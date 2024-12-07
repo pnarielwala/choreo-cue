@@ -10,6 +10,9 @@ const theme = makeTheme({
     primary: '#32E0C4',
     secondary: '#000',
     muted: '#C8C8C8',
+    sliderTrackBackground: '#C8C8C8',
+    sliderTrack: '#000',
+    sliderThumb: '#000',
     // other
     red: '#f35588',
     green: '#a3f7bf',

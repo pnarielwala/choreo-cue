@@ -38,9 +38,9 @@ const TrackSlider = (props: PropsT) => {
       }}
     >
       <Slider
-        minimumTrackTintColor={theme.colors.black}
-        maximumTrackTintColor={theme.colors.divider}
-        thumbTintColor={theme.colors.black}
+        minimumTrackTintColor={theme.colors.sliderTrack}
+        maximumTrackTintColor={theme.colors.sliderTrackBackground}
+        thumbTintColor={theme.colors.sliderThumb}
         minimumValue={0}
         maximumValue={1}
         value={
