@@ -22,7 +22,7 @@ const versionString = `${Constants.manifest2?.extra?.expoClient?.version} (${
 
 const rollbar = new Client({
   accessToken: process.env.EXPO_ROLLBAR_ACCESS_TOKEN,
-  environment: Updates.channel || String(process.env.NODE_ENV),
+  environment: Updates.channel ? Updates.channel : 'development',
   version: versionString,
   captureDeviceInfo: true,
   captureUncaught: true,
