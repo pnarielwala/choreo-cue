@@ -32,7 +32,8 @@
       },
       "versionCode": 8,
       "package": "com.pnarielwala.choreocue",
-      "permissions": []
+      "permissions": [],
+      "blockedPermissions": ["android.permission.RECORD_AUDIO"]
     },
     "web": {
       "favicon": "./assets/favicon.png"
