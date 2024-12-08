@@ -32,7 +32,8 @@
       },
       "versionCode": 8,
       "package": "com.pnarielwala.choreocue",
-      "permissions": []
+      "permissions": [],
+      "blockedPermissions": ["android.permission.RECORD_AUDIO"]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -42,7 +43,27 @@
         "projectId": "67b74356-e2b9-428a-8388-c05d0629a0be"
       }
     },
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static",
+            "extraPods": [
+              {
+                "name": "RollbarReport",
+                "modular_headers": true
+              },
+              {
+                "name": "RollbarCrash",
+                "modular_headers": true
+              }
+            ]
+          }
+        }
+      ]
+    ],
     "runtimeVersion": {
       "policy": "appVersion"
     }
