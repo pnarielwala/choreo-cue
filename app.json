@@ -2,7 +2,7 @@
   "expo": {
     "name": "Choreo Cue",
     "slug": "choreo-cue",
-    "version": "1.8.0",
+    "version": "1.11.0",
     "scheme": "choreo-cue",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
