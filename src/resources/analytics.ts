@@ -31,6 +31,7 @@ const rollbar = new Client({
   captureDeviceInfo: true,
   captureUncaught: true,
   captureUnhandledRejections: true,
+  captureIp: true,
   payload: {
     context: {
       deviceName: DeviceInfo.deviceName,
