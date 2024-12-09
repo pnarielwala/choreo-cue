@@ -28,7 +28,7 @@ module.exports = {
       {
         message:
           'chore(release): ${nextRelease.version}\n\n${nextRelease.notes}',
-        assets: ['app.json'],
+        assets: ['app.config.js'],
       },
     ],
   ],
