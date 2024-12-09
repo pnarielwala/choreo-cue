@@ -7,15 +7,15 @@ module.exports = {
       {
         replacements: [
           {
-            files: ['app.json'],
-            from: '"buildNumber": ".*"',
-            to: '"buildNumber": "${nextRelease.version}"',
+            files: ['app.config.js'],
+            from: "buildNumber: '.*'",
+            to: "buildNumber: '${nextRelease.version}'",
           },
           {
-            files: ['app.json'],
-            from: '"versionCode": \\d*',
+            files: ['app.config.js'],
+            from: 'versionCode: \\d*',
             to: (matched) =>
-              `"versionCode": ${parseInt(matched.split(': ')[1].trim()) + 1}`,
+              `versionCode: ${parseInt(matched.split(': ')[1].trim()) + 1}`,
           },
         ],
       },
