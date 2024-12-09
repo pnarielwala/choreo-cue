@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import { useSharedValue } from 'react-native-reanimated'
 import { View, H2, Text, useTheme } from 'design'
 import Slider from '@react-native-community/slider'
 import { Pressable, useSx } from 'dripsy'
