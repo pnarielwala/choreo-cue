@@ -8,7 +8,9 @@
     "build:android": "NODE_ENV=production eas build --platform android",
     "test": "jest --watch --coverage=false",
     "eject": "expo eject",
-    "prepare": "husky"
+    "prepare": "husky",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "dependencies": {
     "@expo/knex-expo-sqlite-dialect": "0.0.1",
