@@ -1,6 +1,11 @@
 import React from 'react'
 
-import { renderWithProviders, screen, fireEvent } from '__test-utils__/rntl'
+import {
+  renderWithProviders,
+  screen,
+  fireEvent,
+  waitFor,
+} from '__test-utils__/rntl'
 
 import Tempo, { PropsT } from './Tempo'
 
@@ -55,5 +60,19 @@ describe('Tempo', () => {
     expect(slider.props.minimumTrackTintColor).toBeDefined()
     expect(slider.props.maximumTrackTintColor).toBeDefined()
     expect(slider.props.thumbTintColor).toBeDefined()
+  })
+
+  it('resets the tempo value to 1 when the reset button is pressed', async () => {
+    doRender()
+
+    const slider = screen.getByTestId('tempo-slider')
+    fireEvent(slider, 'onValueChange', 0.8)
+
+    expect(screen.getByText('0.8x')).toBeTruthy()
+
+    const resetButton = screen.getByRole('button', { name: 'Reset tempo' })
+    fireEvent.press(resetButton)
+
+    await waitFor(() => expect(screen.getByText('1x')).toBeTruthy())
   })
 })
