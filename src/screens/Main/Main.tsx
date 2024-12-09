@@ -81,7 +81,6 @@ const Main = (props: PropsT) => {
 
   useEffect(() => {
     props.navigation.setOptions({
-      headerTransparent: true,
       headerRight: () => (
         <Pressable onPress={() => setIsInfoShown(true)}>
           <FontAwesome5 name="info-circle" size={24} color="black" />
@@ -177,7 +176,6 @@ const Main = (props: PropsT) => {
           sx={{
             height: 50,
             width: 'auto',
-            marginTop: 7,
           }}
           source={require('assets/logo.png')}
           testID="logo-image"

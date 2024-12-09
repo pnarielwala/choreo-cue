@@ -119,7 +119,6 @@ const App = () => {
     headerTitle: '',
     ...headerStyles,
     headerBackButtonDisplayMode: 'minimal',
-    headerStatusBarHeight: Platform.OS === 'android' ? 40 : undefined,
     headerLeft: (props) =>
       props.canGoBack && (
         <Pressable
