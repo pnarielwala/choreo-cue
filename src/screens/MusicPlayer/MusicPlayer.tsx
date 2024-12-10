@@ -134,7 +134,8 @@ const MusicPlayer = (props: PropsT) => {
           <View sx={{ flex: 1, alignItems: 'flex-start' }}>
             <Cues
               currentPosition={currentPosition}
-              onPlayFromPosition={setAudioPosition}
+              onPlayAudio={playAudio}
+              onSeekToPosition={setAudioPosition}
               audioId={audioId}
             />
           </View>

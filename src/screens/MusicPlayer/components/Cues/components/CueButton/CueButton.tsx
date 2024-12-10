@@ -6,16 +6,43 @@ import { Pressable, Text, Box } from 'design'
 type PropsT = {
   savedPosition: number | undefined
   onPress: (position: number) => void
+  onDoublePress: (position: number) => void
   onSaveCue: () => Promise<void>
   color: string
+}
+
+let timer: NodeJS.Timeout | null = null
+
+const debounceTap = (onSingleTap: () => void, onDoubleTap: () => void) => {
+  if (timer) {
+    clearTimeout(timer)
+    timer = null
+    onDoubleTap()
+  } else {
+    onSingleTap()
+    timer = setTimeout(() => {
+      timer = null
+    }, 200)
+  }
 }
 
 const CueButton = ({
   savedPosition: position,
   onPress,
+  onDoublePress,
   onSaveCue,
   color,
 }: PropsT) => {
+  const handlePress = () => {
+    debounceTap(
+      () => {
+        onPress(position ?? 0)
+      },
+      () => {
+        onDoublePress(position ?? 0)
+      }
+    )
+  }
   return (
     <Box
       sx={{ width: '50%', p: [1, null, 2], height: '100%', maxHeight: '50%' }}
@@ -42,12 +69,11 @@ const CueButton = ({
             visibilityTime: 1000,
           })
         }}
-        onPress={() => position !== undefined && onPress(position)}
+        onPress={handlePress}
       >
         <Text
+          variants={['bodySmall', 'body']}
           sx={{
-            // @ts-ignore FIXME: fix dripsy typing for variant
-            variant: ['text.bodySmall', 'text.body'],
             fontWeight: position !== undefined ? 'bold' : 'normal',
           }}
         >
@@ -55,6 +81,9 @@ const CueButton = ({
             ? formatDuration(Math.floor((position ?? 0) / 1000) * 1000)
             : 'Hold to Set'}
         </Text>
+        {position !== undefined && (
+          <Text variant="bodySmall">Double tap to auto-play</Text>
+        )}
       </Pressable>
     </Box>
   )

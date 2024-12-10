@@ -16,7 +16,8 @@ import Cues, { PropsT } from './Cues'
 
 const defaultProps: PropsT = {
   currentPosition: 0,
-  onPlayFromPosition: jest.fn(),
+  onPlayAudio: jest.fn(),
+  onSeekToPosition: jest.fn(),
   audioId: 1,
 }
 
@@ -85,7 +86,40 @@ it('cue button sets current position from saved', async () => {
 
   fireEvent.press(getByText('0:23'))
 
-  expect(defaultProps.onPlayFromPosition).toHaveBeenCalledWith(23 * 1000)
+  expect(defaultProps.onSeekToPosition).toHaveBeenCalledWith(23 * 1000)
+
+  await new Promise((res) => setTimeout(res, 200))
+  fireEvent.press(getByText('0:23'))
+
+  expect(defaultProps.onPlayAudio).not.toHaveBeenCalled()
+})
+
+it('cue button sets current position from saved and plays the audio when double pressed', async () => {
+  const { queryAllByText, queryByText, rerender, getByText } = doRender({
+    currentPosition: 23 * 1000, // 23 seconds
+  })
+
+  const elements = queryAllByText('Hold to Set')
+
+  tracker.on('query', (query) => {
+    if (query.method === 'select' && query.sql.includes('from `cues`')) {
+      query.response([{ start: 23 * 1000, cue_number: 1 }])
+    } else if (query.method === 'insert' && query.sql.includes('into `cues`')) {
+      query.response([1])
+    }
+  })
+
+  fireEvent(elements[1], 'onLongPress')
+
+  await waitFor(() => expect(queryByText('0:23')).toBeOnTheScreen())
+
+  rerender(<Cues {...defaultProps} currentPosition={50 * 1000} />) // position at 50 seconds
+
+  fireEvent.press(getByText('0:23'))
+  fireEvent.press(getByText('0:23'))
+
+  expect(defaultProps.onSeekToPosition).toHaveBeenCalledWith(23 * 1000)
+  expect(defaultProps.onPlayAudio).toHaveBeenCalled()
 })
 
 // TODO: using custom modal instead of Alert
