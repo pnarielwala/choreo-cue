@@ -11,21 +11,6 @@ type PropsT = {
   color: string
 }
 
-let timer: NodeJS.Timeout | null = null
-
-const debounceTap = (onSingleTap: () => void, onDoubleTap: () => void) => {
-  if (timer) {
-    clearTimeout(timer)
-    timer = null
-    onDoubleTap()
-  } else {
-    onSingleTap()
-    timer = setTimeout(() => {
-      timer = null
-    }, 200)
-  }
-}
-
 const CueButton = ({
   savedPosition: position,
   onPress,
@@ -33,6 +18,22 @@ const CueButton = ({
   onSaveCue,
   color,
 }: PropsT) => {
+  const [timer, setTimer] = useState<NodeJS.Timeout | null>(null)
+
+  const debounceTap = (onSingleTap: () => void, onDoubleTap: () => void) => {
+    if (timer) {
+      clearTimeout(timer)
+      setTimer(null)
+      onDoubleTap()
+    } else {
+      onSingleTap()
+      let timer = setTimeout(() => {
+        setTimer(null)
+      }, 200)
+      setTimer(timer)
+    }
+  }
+
   const handlePress = () => {
     debounceTap(
       () => {
