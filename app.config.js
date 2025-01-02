@@ -20,7 +20,7 @@ module.exports = {
     ios: {
       supportsTablet: true,
       bundleIdentifier: 'com.pnarielwala.choreo-cue',
-      buildNumber: '1.13.0',
+      buildNumber: '1.13.1',
       infoPlist: {
         UIBackgroundModes: ['audio'],
       },
@@ -30,7 +30,7 @@ module.exports = {
         foregroundImage: './assets/adaptive-icon.png',
         backgroundColor: '#FFFFFF',
       },
-      versionCode: 13,
+      versionCode: 14,
       package: 'com.pnarielwala.choreocue',
       permissions: [],
       blockedPermissions: ['android.permission.RECORD_AUDIO'],
