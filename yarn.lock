@@ -2324,10 +2324,10 @@
     "@babel/runtime" "^7.13.10"
     "@radix-ui/react-compose-refs" "1.0.0"
 
-"@react-native-assets/slider@9.1.0":
-  version "9.1.0"
-  resolved "https://registry.yarnpkg.com/@react-native-assets/slider/-/slider-9.1.0.tgz#447d1f51fa00a8a8b89be42b2f107d681c7653fc"
-  integrity sha512-p1UhuqytAXiBmKH5ciZEDOGk1s0wgTBJ4WE8LjvcRwL+DKOImanvyWj+P+7p4XpiNQU5pHMbgvhxck69M3HGbA==
+"@react-native-assets/slider@10.0.2":
+  version "10.0.2"
+  resolved "https://registry.yarnpkg.com/@react-native-assets/slider/-/slider-10.0.2.tgz#f5e071aadee0815910433cf50b2af551f88b0cc8"
+  integrity sha512-7LC0TxSkRcUROJJogYlzgRrIiomce3MdD87mTRrHQATAIN4WR9hKEZ+PuSmDD8LpPw1pYYzATTI9aLqmDjTFvQ==
   optionalDependencies:
     react-dom ">=16.13.1"
     react-native-web ">=0.13.4"
