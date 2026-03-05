@@ -21,9 +21,7 @@ module.exports = {
       supportsTablet: true,
       bundleIdentifier: 'com.pnarielwala.choreo-cue',
       buildNumber: '1.13.2',
-      infoPlist: {
-        UIBackgroundModes: ['audio'],
-      },
+      infoPlist: { UIBackgroundModes: ['audio'] },
     },
     android: {
       adaptiveIcon: {
@@ -35,15 +33,10 @@ module.exports = {
       permissions: [],
       blockedPermissions: ['android.permission.RECORD_AUDIO'],
     },
-    web: {
-      favicon: './assets/favicon.png',
-    },
-    extra: {
-      eas: {
-        projectId: '67b74356-e2b9-428a-8388-c05d0629a0be',
-      },
-    },
+    web: { favicon: './assets/favicon.png' },
+    extra: { eas: { projectId: '67b74356-e2b9-428a-8388-c05d0629a0be' } },
     plugins: [
+      'expo-font',
       'expo-router',
       [
         'expo-build-properties',
@@ -51,14 +44,8 @@ module.exports = {
           ios: {
             useFrameworks: 'static',
             extraPods: [
-              {
-                name: 'RollbarReport',
-                modular_headers: true,
-              },
-              {
-                name: 'RollbarCrash',
-                modular_headers: true,
-              },
+              { name: 'RollbarReport', modular_headers: true },
+              { name: 'RollbarCrash', modular_headers: true },
             ],
           },
         },
@@ -71,8 +58,6 @@ module.exports = {
         },
       ],
     ],
-    runtimeVersion: {
-      policy: 'appVersion',
-    },
+    runtimeVersion: { policy: 'appVersion' },
   },
 }

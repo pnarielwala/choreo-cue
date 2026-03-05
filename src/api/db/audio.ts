@@ -1,7 +1,7 @@
 import dbClient from './client'
 
 import * as DocumentPicker from 'expo-document-picker'
-import * as FileSystem from 'expo-file-system'
+import { File } from 'expo-file-system'
 
 export const createAudioTable = async () => {
   await dbClient.schema.createTable('audio', (table) => {
@@ -52,7 +52,8 @@ export const deleteAudioFile = async (id: number) => {
   const { uri } = audioFile
   await dbClient('audio').where({ id }).del()
   await dbClient('cues').where({ audio_id: id }).del()
-  await FileSystem.deleteAsync(uri)
+  const file = new File(uri)
+  file.delete()
 }
 
 export const addICloudAudioFile = async (

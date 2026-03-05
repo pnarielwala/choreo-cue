@@ -1,16 +1,18 @@
-import * as FileSystem from 'expo-file-system'
+import { File, Directory, Paths } from 'expo-file-system'
 import * as DocumentPicker from 'expo-document-picker'
 import analytics from 'resources/analytics'
 
 export const deleteAllLocalFiles = async () => {
-  const contents = await FileSystem.readDirectoryAsync(
-    String(FileSystem.documentDirectory)
-  )
+  const documentDir = Paths.document
+  const contents = documentDir.list()
 
   if (contents) {
-    const promises = contents.map((fileName) =>
-      FileSystem.deleteAsync(FileSystem.documentDirectory + encodeURI(fileName))
-    )
+    const promises = contents.map((item) => {
+      return new Promise<void>((resolve) => {
+        item.delete()
+        resolve()
+      })
+    })
 
     await Promise.all(promises)
   }
@@ -19,26 +21,24 @@ export const deleteAllLocalFiles = async () => {
 export const saveFileToDirectory = async (
   sourceFile: DocumentPicker.DocumentPickerAsset
 ) => {
-  const destinationPath = `${FileSystem.documentDirectory}${encodeURI(sourceFile.name)}`
+  const destinationFile = new File(Paths.document, sourceFile.name)
 
-  if (destinationPath === sourceFile.uri) {
+  if (destinationFile.uri === sourceFile.uri) {
     // file is already in the document directory
     return sourceFile
   }
 
-  if (FileSystem.documentDirectory) {
-    await FileSystem.copyAsync({
-      from: sourceFile.uri,
-      to: destinationPath,
-    })
+  try {
+    const sourceFileInstance = new File(sourceFile.uri)
+    sourceFileInstance.copy(destinationFile)
 
     // save file path to sqlite
-  } else {
-    analytics.error('FileSystem.documentDirectory is undefined')
+  } catch (error) {
+    analytics.error('Failed to copy file to document directory')
   }
 
   return {
     ...sourceFile,
-    uri: destinationPath,
+    uri: destinationFile.uri,
   }
 }

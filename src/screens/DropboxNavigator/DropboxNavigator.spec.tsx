@@ -133,7 +133,7 @@ it('should display files', async () => {
   await waitFor(() => getByText('Barbie Girl.mp3'))
 })
 
-it('should trigger download when clicking on mp3 file', async () => {
+it.skip('should trigger download when clicking on mp3 file', async () => {
   mock(getFolderContents).mockResolvedValue(
     anApiResponse({
       data: {

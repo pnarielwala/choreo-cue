@@ -40,11 +40,7 @@ const useAudioPlayer = (source: { uri: string; name: string } | undefined) => {
         text1: 'Sorry! Unable to load audio.',
         text2:
           'Try deleting and re-adding the audio file. If the problem persists, please contact support.',
-        text2Style: {
-          fontSize: 12,
-          flexWrap: 'wrap',
-          display: 'flex',
-        },
+        text2Style: { fontSize: 12, flexWrap: 'wrap', display: 'flex' },
         autoHide: false,
       })
       analytics.error('Expo Audio loadAsync failed', error)
@@ -83,9 +79,7 @@ const useAudioPlayer = (source: { uri: string; name: string } | undefined) => {
     isPlaying,
     currentPosition,
     duration,
-    details: {
-      trackName: source?.name || 'Unnamed audio',
-    },
+    details: { trackName: source?.name || 'Unnamed audio' },
   }
 }
 

@@ -1,12 +1,7 @@
 export const Audio = {
   setAudioModeAsync: jest.fn(),
   Sound: class Sound {
-    status = {
-      isPlaying: false,
-      positionMillis: 0,
-      isLoaded: false,
-      rate: 1,
-    }
+    status = { isPlaying: false, positionMillis: 0, isLoaded: false, rate: 1 }
 
     timePlayStart: number = 0
 
@@ -25,10 +20,7 @@ export const Audio = {
       (this.updateCallback = callback)
     loadAsync = async () => {
       this.status.isLoaded = true
-      return {
-        isLoaded: true,
-        durationMillis: 4 * 60 * 1000,
-      }
+      return { isLoaded: true, durationMillis: 4 * 60 * 1000 }
     }
     playAsync = () => {
       this.status.isPlaying = true
