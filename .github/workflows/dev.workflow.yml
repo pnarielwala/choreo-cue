@@ -67,4 +67,4 @@ jobs:
       - name: Deploy EAS update
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: yarn eas update --branch ${{ github.head_ref }} --non-interactive
+        run: yarn eas update --branch ${{ github.head_ref }} --message "${{ github.event.pull_request.title }}" --non-interactive
