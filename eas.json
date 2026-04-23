@@ -1,22 +1,29 @@
 {
-  "cli": {
-    "version": ">= 13.1.1"
-  },
+  "cli": { "version": ">= 13.1.1" },
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": { "APP_ENV": "development" }
     },
     "preview": {
       "distribution": "internal",
-      "channel": "preview"
+      "channel": "staging",
+      "env": { "APP_ENV": "staging" }
     },
     "production": {
+      "autoIncrement": true,
       "node": "22.11.0",
-      "channel": "production"
+      "channel": "production",
+      "env": { "APP_ENV": "production" }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {},
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account.json"
+      }
+    }
   }
 }
