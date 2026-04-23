@@ -51,9 +51,58 @@ jobs:
       - name: Run unit tests
         run: yarn jest --coverage=false --detectOpenHandles --forceExit
 
+  detect-fingerprint:
+    name: Check if native build needed
+    needs: setup
+    runs-on: ubuntu-latest
+    outputs:
+      needs_native_build: ${{ steps.check.outputs.needs_native_build }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - uses: actions/cache@v4
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+      - name: Generate fingerprint
+        id: fingerprint
+        env:
+          APP_ENV: development
+        run: |
+          IOS_HASH=$(npx @expo/fingerprint fingerprint:generate --platform ios | jq -r '.hash')
+          ANDROID_HASH=$(npx @expo/fingerprint fingerprint:generate --platform android | jq -r '.hash')
+          echo "ios_hash=$IOS_HASH" >> $GITHUB_OUTPUT
+          echo "android_hash=$ANDROID_HASH" >> $GITHUB_OUTPUT
+      - name: Check for existing builds
+        id: check
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          set +e
+          IOS_BUILDS=$(npx eas build:list \
+            --fingerprint-hash ${{ steps.fingerprint.outputs.ios_hash }} \
+            --build-profile development \
+            --platform ios --status finished --limit 1 \
+            --json --non-interactive 2>/dev/null | jq 'length' 2>/dev/null)
+          ANDROID_BUILDS=$(npx eas build:list \
+            --fingerprint-hash ${{ steps.fingerprint.outputs.android_hash }} \
+            --build-profile development \
+            --platform android --status finished --limit 1 \
+            --json --non-interactive 2>/dev/null | jq 'length' 2>/dev/null)
+          IOS_BUILDS=${IOS_BUILDS:-0}
+          ANDROID_BUILDS=${ANDROID_BUILDS:-0}
+          if [[ "$IOS_BUILDS" -eq 0 || "$ANDROID_BUILDS" -eq 0 ]]; then
+            echo "needs_native_build=true" >> $GITHUB_OUTPUT
+          else
+            echo "needs_native_build=false" >> $GITHUB_OUTPUT
+          fi
+
   deploy-preview:
     name: Deploy preview update
-    needs: setup
+    needs: detect-fingerprint
+    if: needs.detect-fingerprint.outputs.needs_native_build == 'false'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -68,3 +117,22 @@ jobs:
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: yarn eas update --branch ${{ github.head_ref }} --message "${{ github.event.pull_request.title }}" --non-interactive
+
+  build-dev-client:
+    name: Build development client
+    needs: detect-fingerprint
+    if: needs.detect-fingerprint.outputs.needs_native_build == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - uses: actions/cache@v4
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+      - name: Build development client
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: yarn eas build --profile development --platform all --non-interactive

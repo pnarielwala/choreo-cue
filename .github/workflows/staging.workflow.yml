@@ -59,40 +59,66 @@ jobs:
       - name: Run unit tests
         run: yarn jest --coverage=false --detectOpenHandles --forceExit
 
-  detect-changes:
-    name: Detect build type
+  detect-fingerprint:
+    name: Check if native build needed
     needs: [typecheck, test]
     runs-on: ubuntu-latest
     outputs:
-      needs_native_build: ${{ steps.set-output.outputs.needs_native_build }}
+      needs_native_build: ${{ steps.result.outputs.needs_native_build }}
     steps:
       - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
-        id: filter
-        if: github.event_name == 'push'
+      - uses: actions/setup-node@v4
         with:
-          filters: |
-            native:
-              - 'ios/**'
-              - 'android/**'
-              - 'app.json'
-              - 'app.config.*'
-              - 'eas.json'
-              - 'package.json'
-              - 'yarn.lock'
-      - name: Set build type output
-        id: set-output
+          node-version-file: .nvmrc
+      - uses: actions/cache@v4
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+      - name: Generate fingerprint
+        id: fingerprint
+        env:
+          APP_ENV: staging
         run: |
-          if [[ "${{ inputs.force_native_build }}" == "true" || "${{ steps.filter.outputs.native }}" == "true" ]]; then
+          IOS_HASH=$(npx @expo/fingerprint fingerprint:generate --platform ios | jq -r '.hash')
+          ANDROID_HASH=$(npx @expo/fingerprint fingerprint:generate --platform android | jq -r '.hash')
+          echo "ios_hash=$IOS_HASH" >> $GITHUB_OUTPUT
+          echo "android_hash=$ANDROID_HASH" >> $GITHUB_OUTPUT
+      - name: Check for existing builds
+        id: check
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          set +e
+          IOS_BUILDS=$(npx eas build:list \
+            --fingerprint-hash ${{ steps.fingerprint.outputs.ios_hash }} \
+            --build-profile staging \
+            --platform ios --status finished --limit 1 \
+            --json --non-interactive 2>/dev/null | jq 'length' 2>/dev/null)
+          ANDROID_BUILDS=$(npx eas build:list \
+            --fingerprint-hash ${{ steps.fingerprint.outputs.android_hash }} \
+            --build-profile staging \
+            --platform android --status finished --limit 1 \
+            --json --non-interactive 2>/dev/null | jq 'length' 2>/dev/null)
+          IOS_BUILDS=${IOS_BUILDS:-0}
+          ANDROID_BUILDS=${ANDROID_BUILDS:-0}
+          if [[ "$IOS_BUILDS" -eq 0 || "$ANDROID_BUILDS" -eq 0 ]]; then
             echo "needs_native_build=true" >> $GITHUB_OUTPUT
           else
             echo "needs_native_build=false" >> $GITHUB_OUTPUT
           fi
+      - name: Apply force override
+        id: result
+        run: |
+          if [[ "${{ inputs.force_native_build }}" == "true" ]]; then
+            echo "needs_native_build=true" >> $GITHUB_OUTPUT
+          else
+            echo "needs_native_build=${{ steps.check.outputs.needs_native_build }}" >> $GITHUB_OUTPUT
+          fi
 
   deploy-ota:
     name: Deploy OTA update
-    needs: detect-changes
-    if: needs.detect-changes.outputs.needs_native_build == 'false'
+    needs: detect-fingerprint
+    if: needs.detect-fingerprint.outputs.needs_native_build == 'false'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -117,8 +143,8 @@ jobs:
 
   build-and-submit:
     name: Build preview for internal testing
-    needs: detect-changes
-    if: needs.detect-changes.outputs.needs_native_build == 'true'
+    needs: detect-fingerprint
+    if: needs.detect-fingerprint.outputs.needs_native_build == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
