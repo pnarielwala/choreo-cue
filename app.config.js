@@ -70,7 +70,7 @@ module.exports = {
       ],
     ],
     runtimeVersion: {
-      policy: 'fingerprintVersion',
+      policy: 'fingerprint',
     },
   },
 }
