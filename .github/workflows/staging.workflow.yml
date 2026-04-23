@@ -132,7 +132,7 @@ jobs:
       - name: Build preview for all platforms
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: yarn eas build --profile preview --platform all --non-interactive
+        run: yarn eas build --profile staging --platform all --non-interactive
       - name: Notify Rollbar of deploy
         run: |
           curl -s https://api.rollbar.com/api/1/deploy \

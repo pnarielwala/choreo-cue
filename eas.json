@@ -6,7 +6,7 @@
       "distribution": "internal",
       "env": { "APP_ENV": "development" }
     },
-    "preview": {
+    "staging": {
       "distribution": "internal",
       "channel": "staging",
       "env": { "APP_ENV": "staging" }
