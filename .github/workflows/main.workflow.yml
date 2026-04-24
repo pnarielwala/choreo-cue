@@ -165,6 +165,13 @@ jobs:
           ASC_APP_ID: ${{ secrets.ASC_APP_ID }}
           EXPO_APPLE_TEAM_ID: ${{ secrets.EXPO_APPLE_TEAM_ID }}
         run: yarn eas submit --profile production --platform ios --latest --non-interactive
+      - name: Submit for App Store review
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+          ASC_API_KEY: ${{ secrets.ASC_API_KEY }}
+          ASC_APP_ID: ${{ secrets.ASC_APP_ID }}
+        run: node scripts/submit-for-review.mjs
       - name: Commit version bump
         run: |
           git config user.name "github-actions[bot]"
