@@ -4,13 +4,7 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "channel": "development",
-      "ios": {
-        "bundleIdentifier": "com.pnarielwala.choreo-cue.dev"
-      },
-      "android": {
-        "package": "com.pnarielwala.choreocue.dev"
-      }
+      "channel": "development"
     },
     "production": {
       "autoIncrement": true,
