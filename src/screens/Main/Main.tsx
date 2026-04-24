@@ -14,7 +14,6 @@ import { Divider, Dialog } from 'react-native-elements'
 import { deleteAudioFile, getAudioFiles } from 'api/db/audio'
 import { Alert } from 'react-native'
 import { Platform } from 'react-native'
-import analytics from 'resources/analytics'
 import useIsScreenActive from 'hooks/useIsScreenActive'
 
 export type PropsT = ScreenPropsT<'Home'>
@@ -31,14 +30,6 @@ const Main = (props: PropsT) => {
     initializationError,
   } = Updates.useUpdates()
   const sx = useSx()
-
-  useEffect(() => {
-    if (isScreenActive) {
-      analytics.info('Screen viewed', {
-        screen: 'Main',
-      })
-    }
-  }, [isScreenActive])
 
   const [isInfoShown, setIsInfoShown] = useState(false)
 

@@ -1,8 +1,6 @@
 import { H1, View } from 'design'
 import React from 'react'
 
-import analytics from 'resources/analytics'
-
 type PropsT = {
   children: React.ReactNode
 }
@@ -24,7 +22,7 @@ class ErrorBoundary extends React.Component<PropsT, StateT> {
 
   componentDidCatch(error: any, errorInfo: any) {
     // You can also log the error to an error reporting service
-    analytics.critical(error, errorInfo)
+    console.error(error, errorInfo)
   }
 
   render() {

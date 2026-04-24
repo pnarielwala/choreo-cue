@@ -12,7 +12,7 @@ node_modules/expo-sqlite/ios/**/*
 # Transitive deps of config plugins - pure JS validation/utility libs with no native impact.
 # Their require() resolution can differ between macOS local and Linux EAS build environments,
 # causing fingerprint mismatches. The actual config plugins (expo-build-properties, expo-router,
-# rollbar-config-plugin) are still tracked directly.
+# expo-router) are still tracked directly.
 node_modules/ajv/**/*
 node_modules/ajv-formats/**/*
 node_modules/ajv-keywords/**/*

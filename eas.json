@@ -5,13 +5,17 @@
       "developmentClient": true,
       "distribution": "internal",
       "channel": "development",
-      "env": { "APP_ENV": "development" }
+      "ios": {
+        "bundleIdentifier": "com.pnarielwala.choreo-cue.dev"
+      },
+      "android": {
+        "package": "com.pnarielwala.choreocue.dev"
+      }
     },
     "production": {
       "autoIncrement": true,
       "node": "22.11.0",
-      "channel": "production",
-      "env": { "APP_ENV": "production" }
+      "channel": "production"
     }
   },
   "submit": {

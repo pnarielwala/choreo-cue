@@ -125,13 +125,6 @@ jobs:
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: yarn eas update --branch production --non-interactive
-      - name: Notify Rollbar of deploy
-        run: |
-          curl -s https://api.rollbar.com/api/1/deploy \
-            -F access_token=${{ secrets.ROLLBAR_ACCESS_TOKEN }} \
-            -F environment=production \
-            -F revision=${{ github.sha }} \
-            -F local_username=${{ github.actor }}
 
   build-and-submit:
     name: Build and submit to stores
@@ -158,10 +151,3 @@ jobs:
           ASC_APP_ID: ${{ secrets.ASC_APP_ID }}
           EXPO_APPLE_TEAM_ID: ${{ secrets.EXPO_APPLE_TEAM_ID }}
         run: yarn eas submit --profile production --platform ios --latest --non-interactive
-      - name: Notify Rollbar of deploy
-        run: |
-          curl -s https://api.rollbar.com/api/1/deploy \
-            -F access_token=${{ secrets.ROLLBAR_ACCESS_TOKEN }} \
-            -F environment=production \
-            -F revision=${{ github.sha }} \
-            -F local_username=${{ github.actor }}

@@ -1,8 +1,5 @@
 import 'react-native-gesture-handler/jestSetup'
 
-// jest.mock('rollbar-react-native')
-// jest.mock('../resources/rollbar')
-
 jest.mock('../api/db/client', () => {
   const knex = require('knex')
   const mockKnex = require('mock-knex')
