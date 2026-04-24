@@ -157,7 +157,7 @@ jobs:
       - name: Build for all platforms
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: yarn eas build --profile production --platform all --non-interactive
+        run: yarn eas build --profile production --platform ios --non-interactive
       - name: Submit to App Store
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
