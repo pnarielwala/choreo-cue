@@ -1,75 +1,167 @@
-name: Production workflow
+name: Production deploy
 
 on:
   push:
     branches:
-      - 'main'
-    tags-ignore:
-      - '**'
+      - main
+  workflow_dispatch:
+    inputs:
+      force_native_build:
+        description: Force a native build + store submit instead of OTA update
+        type: boolean
+        default: false
 
 jobs:
   setup:
-    if: ${{ !startsWith(github.event.head_commit.message, 'chore(release):') }}
     name: Install dependencies
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@main
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
+          node-version-file: .nvmrc
       - uses: actions/cache@v4
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
       - name: Install dependencies
         run: yarn install
+
   typecheck:
-    name: Run Typescript typecheck
+    name: Run TypeScript typecheck
     needs: setup
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@main
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
+          node-version-file: .nvmrc
       - uses: actions/cache@v4
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
       - name: Run tsc
         run: yarn tsc
+
   test:
     name: Run unit tests
     needs: setup
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@main
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
+          node-version-file: .nvmrc
       - uses: actions/cache@v4
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
       - name: Run unit tests
         run: yarn jest --coverage=false --detectOpenHandles --forceExit
-  publish:
-    name: Publish version
+
+  detect-fingerprint:
+    name: Check if native build needed
     needs: [typecheck, test]
     runs-on: ubuntu-latest
+    outputs:
+      needs_native_build: ${{ steps.result.outputs.needs_native_build }}
     steps:
-      - uses: actions/checkout@main
-        with:
-          fetch-depth: 0
-          persist-credentials: false
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
+          node-version-file: .nvmrc
       - uses: actions/cache@v4
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-      - name: Run semantic-release
+      - name: Generate fingerprint
+        id: fingerprint
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
-        run: yarn semantic-release --debug
+          APP_ENV: production
+        run: |
+          IOS_HASH=$(npx @expo/fingerprint fingerprint:generate --platform ios | jq -r '.hash')
+          echo "ios_hash=$IOS_HASH" >> $GITHUB_OUTPUT
+      - name: Check for existing builds
+        id: check
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          set +e
+          IOS_BUILDS=$(yarn eas build:list \
+            --fingerprint-hash ${{ steps.fingerprint.outputs.ios_hash }} \
+            --build-profile production \
+            --platform ios --status finished --limit 1 \
+            --json --non-interactive 2>&1 | sed -n '/^\[/,/^\]/p' | jq 'length' 2>/dev/null)
+          IOS_BUILDS=${IOS_BUILDS:-0}
+          if [[ "$IOS_BUILDS" -eq 0 ]]; then
+            echo "needs_native_build=true" >> $GITHUB_OUTPUT
+          else
+            echo "needs_native_build=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Apply force override
+        id: result
+        run: |
+          if [[ "${{ inputs.force_native_build }}" == "true" ]]; then
+            echo "needs_native_build=true" >> $GITHUB_OUTPUT
+          else
+            echo "needs_native_build=${{ steps.check.outputs.needs_native_build }}" >> $GITHUB_OUTPUT
+          fi
+
+  deploy-ota:
+    name: Deploy OTA update
+    needs: detect-fingerprint
+    if: needs.detect-fingerprint.outputs.needs_native_build == 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - uses: actions/cache@v4
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+      - name: Deploy OTA update
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: yarn eas update --branch production --non-interactive
+      - name: Notify Rollbar of deploy
+        run: |
+          curl -s https://api.rollbar.com/api/1/deploy \
+            -F access_token=${{ secrets.ROLLBAR_ACCESS_TOKEN }} \
+            -F environment=production \
+            -F revision=${{ github.sha }} \
+            -F local_username=${{ github.actor }}
+
+  build-and-submit:
+    name: Build and submit to stores
+    needs: detect-fingerprint
+    if: needs.detect-fingerprint.outputs.needs_native_build == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - uses: actions/cache@v4
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+      - name: Build for all platforms
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: yarn eas build --profile production --platform all --non-interactive
+      - name: Submit to App Store
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EXPO_APPLE_ID: ${{ secrets.EXPO_APPLE_ID }}
+          ASC_APP_ID: ${{ secrets.ASC_APP_ID }}
+          EXPO_APPLE_TEAM_ID: ${{ secrets.EXPO_APPLE_TEAM_ID }}
+        run: yarn eas submit --profile production --platform ios --latest --non-interactive
+      - name: Notify Rollbar of deploy
+        run: |
+          curl -s https://api.rollbar.com/api/1/deploy \
+            -F access_token=${{ secrets.ROLLBAR_ACCESS_TOKEN }} \
+            -F environment=production \
+            -F revision=${{ github.sha }} \
+            -F local_username=${{ github.actor }}
