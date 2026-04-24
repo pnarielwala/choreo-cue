@@ -5,6 +5,7 @@
       "developmentClient": true,
       "distribution": "internal",
       "channel": "development",
+      "image": "macos-sequoia-15.6-xcode-16.4",
       "env": { "APP_ENV": "development" }
     },
     "production": {

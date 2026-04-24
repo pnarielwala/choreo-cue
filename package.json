@@ -29,7 +29,7 @@
     "expo-av": "~16.0.0",
     "expo-build-properties": "1.0.10",
     "expo-constants": "~18.0.13",
-    "expo-dev-client": "~5.2.4",
+    "expo-dev-client": "~5.0.20",
     "expo-device": "8.0.10",
     "expo-document-picker": "^14.0.0",
     "expo-file-system": "~19.0.0",
