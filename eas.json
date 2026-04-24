@@ -1,9 +1,27 @@
 {
-  "cli": { "version": "14.2.0" },
+  "cli": { "version": ">= 18.8.1", "appVersionSource": "remote" },
   "build": {
-    "development": { "developmentClient": true, "distribution": "internal" },
-    "preview": { "distribution": "internal", "channel": "preview" },
-    "production": { "node": "22.11.0", "channel": "production" }
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "channel": "development",
+      "env": { "APP_ENV": "development" }
+    },
+    "production": {
+      "autoIncrement": true,
+      "node": "22.11.0",
+      "channel": "production",
+      "env": { "APP_ENV": "production" }
+    }
   },
-  "submit": { "production": {} }
+  "submit": {
+    "production": {
+      "ios": {
+        "ascAppId": "1582862831"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account.json"
+      }
+    }
+  }
 }

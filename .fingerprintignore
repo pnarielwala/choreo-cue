@@ -1,0 +1,23 @@
+# Generated native dirs - produced by expo prebuild on EAS but absent locally in managed workflow.
+# Everything that affects their output is already tracked via node_modules/*/ios, node_modules/*/android,
+# expoAutolinkingConfig, and expoConfig sources.
+ios/**/*
+android/**/*
+
+# expo-sqlite ships crsqlite as a pre-compiled XCFramework binary. The binary bytes differ between
+# macOS (local) and Linux (EAS) even for the same package version. The package version is already
+# tracked via expoAutolinkingConfig, so native rebuild is still triggered on upgrades.
+node_modules/expo-sqlite/ios/**/*
+
+# Transitive deps of config plugins - pure JS validation/utility libs with no native impact.
+# Their require() resolution can differ between macOS local and Linux EAS build environments,
+# causing fingerprint mismatches. The actual config plugins (expo-build-properties, expo-router,
+# rollbar-config-plugin) are still tracked directly.
+node_modules/ajv/**/*
+node_modules/ajv-formats/**/*
+node_modules/ajv-keywords/**/*
+node_modules/schema-utils/**/*
+node_modules/fast-deep-equal/**/*
+node_modules/fast-uri/**/*
+node_modules/json-schema-traverse/**/*
+node_modules/slugify/**/*
