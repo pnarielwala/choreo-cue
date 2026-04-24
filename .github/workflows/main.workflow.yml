@@ -11,6 +11,10 @@ on:
         type: boolean
         default: false
 
+concurrency:
+  group: production-deploy
+  cancel-in-progress: true
+
 jobs:
   setup:
     name: Install dependencies
@@ -154,6 +158,17 @@ jobs:
           NEW_VERSION="$MAJOR.$MINOR.$((PATCH + 1))"
           sed -i "s/version: '$CURRENT'/version: '$NEW_VERSION'/" app.config.js
           echo "Bumped version $CURRENT → $NEW_VERSION"
+      - name: Cancel in-progress EAS builds
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          for STATUS in new in-progress; do
+            BUILDS=$(yarn eas build:list --profile production --platform ios --status "$STATUS" --json --non-interactive 2>&1 | sed -n '/^\[/,/^\]/p')
+            for BUILD_ID in $(echo "$BUILDS" | jq -r '.[].id' 2>/dev/null); do
+              echo "Cancelling $STATUS build $BUILD_ID"
+              yarn eas build:cancel "$BUILD_ID" --non-interactive
+            done
+          done
       - name: Build for all platforms
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
