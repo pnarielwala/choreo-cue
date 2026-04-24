@@ -101,8 +101,7 @@ jobs:
 
   deploy-preview:
     name: Deploy preview update
-    needs: detect-fingerprint
-    if: needs.detect-fingerprint.outputs.needs_native_build == 'false'
+    needs: setup
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
