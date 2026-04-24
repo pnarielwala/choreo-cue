@@ -147,6 +147,13 @@ jobs:
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+      - name: Bump app version
+        run: |
+          CURRENT=$(node -p "require('./app.config.js').expo.version")
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+          NEW_VERSION="$MAJOR.$MINOR.$((PATCH + 1))"
+          sed -i "s/version: '$CURRENT'/version: '$NEW_VERSION'/" app.config.js
+          echo "Bumped version $CURRENT → $NEW_VERSION"
       - name: Build for all platforms
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
@@ -158,6 +165,13 @@ jobs:
           ASC_APP_ID: ${{ secrets.ASC_APP_ID }}
           EXPO_APPLE_TEAM_ID: ${{ secrets.EXPO_APPLE_TEAM_ID }}
         run: yarn eas submit --profile production --platform ios --latest --non-interactive
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add app.config.js
+          git commit -m "chore: bump app version to $(node -p "require('./app.config.js').expo.version") [skip ci]"
+          git push
       - name: Notify Rollbar of deploy
         run: |
           curl -s https://api.rollbar.com/api/1/deploy \
