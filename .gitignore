@@ -39,3 +39,5 @@ yarn-error.*
 
 # VS Code
 .vscode/
+# EAS submit credentials
+google-service-account.json

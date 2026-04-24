@@ -1,6 +1,23 @@
+const APP_ENV = process.env.APP_ENV || 'production'
+
+const envConfig = {
+  development: {
+    name: 'Choreo Cue (Dev)',
+    bundleIdentifier: 'com.pnarielwala.choreo-cue.dev',
+    androidPackage: 'com.pnarielwala.choreocue.dev',
+  },
+  production: {
+    name: 'Choreo Cue',
+    bundleIdentifier: 'com.pnarielwala.choreo-cue',
+    androidPackage: 'com.pnarielwala.choreocue',
+  },
+}
+
+const env = envConfig[APP_ENV] || envConfig.production
+
 module.exports = {
   expo: {
-    name: 'Choreo Cue',
+    name: env.name,
     slug: 'choreo-cue',
     version: '1.11.0',
     scheme: 'choreo-cue',
@@ -19,8 +36,7 @@ module.exports = {
     assetBundlePatterns: ['**/*'],
     ios: {
       supportsTablet: true,
-      bundleIdentifier: 'com.pnarielwala.choreo-cue',
-      buildNumber: '1.13.2',
+      bundleIdentifier: env.bundleIdentifier,
       infoPlist: {
         UIBackgroundModes: ['audio'],
       },
@@ -30,8 +46,7 @@ module.exports = {
         foregroundImage: './assets/adaptive-icon.png',
         backgroundColor: '#FFFFFF',
       },
-      versionCode: 15,
-      package: 'com.pnarielwala.choreocue',
+      package: env.androidPackage,
       permissions: [],
       blockedPermissions: ['android.permission.RECORD_AUDIO'],
     },
@@ -72,7 +87,7 @@ module.exports = {
       ],
     ],
     runtimeVersion: {
-      policy: 'appVersion',
+      policy: 'fingerprint',
     },
   },
 }
