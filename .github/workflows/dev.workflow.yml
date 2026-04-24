@@ -72,28 +72,20 @@ jobs:
           APP_ENV: development
         run: |
           IOS_HASH=$(npx @expo/fingerprint fingerprint:generate --platform ios | jq -r '.hash')
-          ANDROID_HASH=$(npx @expo/fingerprint fingerprint:generate --platform android | jq -r '.hash')
           echo "ios_hash=$IOS_HASH" >> $GITHUB_OUTPUT
-          echo "android_hash=$ANDROID_HASH" >> $GITHUB_OUTPUT
       - name: Check for existing builds
         id: check
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
           set +e
-          IOS_BUILDS=$(npx eas build:list \
+          IOS_BUILDS=$(yarn eas build:list \
             --fingerprint-hash ${{ steps.fingerprint.outputs.ios_hash }} \
             --build-profile development \
             --platform ios --status finished --limit 1 \
-            --json --non-interactive 2>/dev/null | jq 'length' 2>/dev/null)
-          ANDROID_BUILDS=$(npx eas build:list \
-            --fingerprint-hash ${{ steps.fingerprint.outputs.android_hash }} \
-            --build-profile development \
-            --platform android --status finished --limit 1 \
-            --json --non-interactive 2>/dev/null | jq 'length' 2>/dev/null)
+            --json --non-interactive 2>&1 | sed -n '/^\[/,/^\]/p' | jq 'length' 2>/dev/null)
           IOS_BUILDS=${IOS_BUILDS:-0}
-          ANDROID_BUILDS=${ANDROID_BUILDS:-0}
-          if [[ "$IOS_BUILDS" -eq 0 || "$ANDROID_BUILDS" -eq 0 ]]; then
+          if [[ "$IOS_BUILDS" -eq 0 ]]; then
             echo "needs_native_build=true" >> $GITHUB_OUTPUT
           else
             echo "needs_native_build=false" >> $GITHUB_OUTPUT
@@ -156,7 +148,9 @@ jobs:
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
-          BUILD_URL=$(yarn eas build:list --build-profile development --platform ios --status finished --limit 1 --json --non-interactive 2>/dev/null | jq -r '.[0].buildDetailsPageUrl')
+          BUILD_URL=$(yarn eas build:list --build-profile development --platform ios --status finished --limit 1 --json --non-interactive 2>&1 \
+            | sed -n '/^\[/,/^\]/p' \
+            | jq -r '"https://expo.dev/accounts/" + .[0].project.ownerAccount.name + "/projects/" + .[0].project.slug + "/builds/" + .[0].id')
           echo "url=$BUILD_URL" >> $GITHUB_OUTPUT
       - name: Comment build link on PR
         env:
