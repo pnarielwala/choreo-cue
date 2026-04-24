@@ -21,3 +21,27 @@ node_modules/fast-deep-equal/**/*
 node_modules/fast-uri/**/*
 node_modules/json-schema-traverse/**/*
 node_modules/slugify/**/*
+
+# Dev-only packages - testing, linting, formatting, release automation, and type definitions.
+# None of these contain or influence native code; they only affect the development workflow.
+node_modules/@faker-js/**/*
+node_modules/@google/semantic-release-replace-plugin/**/*
+node_modules/@semantic-release/**/*
+node_modules/@testing-library/**/*
+node_modules/@types/**/*
+node_modules/commitizen/**/*
+node_modules/cz-conventional-changelog/**/*
+node_modules/eas-cli/**/*
+node_modules/husky/**/*
+node_modules/jest/**/*
+node_modules/jest-expo/**/*
+node_modules/lint-staged/**/*
+node_modules/mock-knex/**/*
+node_modules/prettier/**/*
+node_modules/semantic-release/**/*
+node_modules/semantic-release-expo/**/*
+node_modules/semantic-release-replace-plugin/**/*
+node_modules/sqlite3/**/*
+node_modules/ts-jest/**/*
+node_modules/typescript/**/*
+node_modules/babel-plugin-module-resolver/**/*
