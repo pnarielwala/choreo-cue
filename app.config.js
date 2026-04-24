@@ -6,11 +6,6 @@ const envConfig = {
     bundleIdentifier: 'com.pnarielwala.choreo-cue.dev',
     androidPackage: 'com.pnarielwala.choreocue.dev',
   },
-  preview: {
-    name: 'Choreo Cue (Preview)',
-    bundleIdentifier: 'com.pnarielwala.choreo-cue.preview',
-    androidPackage: 'com.pnarielwala.choreocue.preview',
-  },
   production: {
     name: 'Choreo Cue',
     bundleIdentifier: 'com.pnarielwala.choreo-cue',

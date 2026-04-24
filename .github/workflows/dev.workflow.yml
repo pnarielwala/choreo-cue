@@ -52,7 +52,7 @@ jobs:
         run: yarn jest --coverage=false --detectOpenHandles --forceExit
 
   detect-fingerprint:
-    name: Check if preview build needed
+    name: Check if dev build needed
     needs: setup
     runs-on: ubuntu-latest
     outputs:
@@ -69,7 +69,7 @@ jobs:
       - name: Generate fingerprint
         id: fingerprint
         env:
-          APP_ENV: preview
+          APP_ENV: development
         run: |
           IOS_HASH=$(npx @expo/fingerprint fingerprint:generate --platform ios | jq -r '.hash')
           ANDROID_HASH=$(npx @expo/fingerprint fingerprint:generate --platform android | jq -r '.hash')
@@ -83,12 +83,12 @@ jobs:
           set +e
           IOS_BUILDS=$(npx eas build:list \
             --fingerprint-hash ${{ steps.fingerprint.outputs.ios_hash }} \
-            --build-profile preview \
+            --build-profile development \
             --platform ios --status finished --limit 1 \
             --json --non-interactive 2>/dev/null | jq 'length' 2>/dev/null)
           ANDROID_BUILDS=$(npx eas build:list \
             --fingerprint-hash ${{ steps.fingerprint.outputs.android_hash }} \
-            --build-profile preview \
+            --build-profile development \
             --platform android --status finished --limit 1 \
             --json --non-interactive 2>/dev/null | jq 'length' 2>/dev/null)
           IOS_BUILDS=${IOS_BUILDS:-0}
@@ -98,6 +98,19 @@ jobs:
           else
             echo "needs_native_build=false" >> $GITHUB_OUTPUT
           fi
+
+  label-pr:
+    name: Label PR if native build needed
+    needs: detect-fingerprint
+    if: needs.detect-fingerprint.outputs.needs_native_build == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Add native build label
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr edit ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --add-label "native build"
 
   deploy-preview:
     name: Deploy preview update
@@ -115,13 +128,15 @@ jobs:
       - name: Deploy EAS update
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: yarn eas update --branch preview --message "${{ github.event.pull_request.title }}" --non-interactive
+        run: yarn eas update --branch ${{ github.head_ref }} --message "${{ github.event.pull_request.title }}" --non-interactive
 
-  build-preview:
-    name: Build preview client
+  build-dev-client:
+    name: Build development client
     needs: detect-fingerprint
     if: needs.detect-fingerprint.outputs.needs_native_build == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -131,7 +146,26 @@ jobs:
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-      - name: Build preview client
+      - name: Build development client
+        id: build
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: yarn eas build --profile preview --platform all --non-interactive
+        run: |
+          BUILD_OUTPUT=$(yarn eas build --profile development --platform ios --non-interactive --json 2>/dev/null)
+          BUILD_URL=$(echo "$BUILD_OUTPUT" | jq -r '.[0].buildDetailsPageUrl')
+          echo "url=$BUILD_URL" >> $GITHUB_OUTPUT
+      - name: Comment build link on PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          COMMENT_BODY="📱 **Development Build** — ${{ steps.build.outputs.url }}"
+          EXISTING=$(gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments \
+            --jq '.[] | select(.body | startswith("📱 **Development Build**")) | .id' | tail -1)
+          if [ -n "$EXISTING" ]; then
+            gh api repos/${{ github.repository }}/issues/comments/$EXISTING \
+              -X PATCH -f body="$COMMENT_BODY"
+          else
+            gh pr comment ${{ github.event.pull_request.number }} \
+              --repo ${{ github.repository }} \
+              --body "$COMMENT_BODY"
+          fi
