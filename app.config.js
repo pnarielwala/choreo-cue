@@ -55,6 +55,9 @@ module.exports = {
     plugins: [
       'expo-font',
       'expo-router',
+      'expo-asset',
+      'expo-secure-store',
+      'expo-sqlite',
       [
         'expo-build-properties',
         {
