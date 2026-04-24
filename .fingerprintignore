@@ -40,3 +40,6 @@ node_modules/sqlite3/**/*
 node_modules/ts-jest/**/*
 node_modules/typescript/**/*
 node_modules/babel-plugin-module-resolver/**/*
+
+# Renovate config - dependency bot settings have no native impact.
+renovate.json
