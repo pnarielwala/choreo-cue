@@ -3,6 +3,16 @@ import 'react-native-gesture-handler/jestSetup'
 // jest.mock('rollbar-react-native')
 // jest.mock('../resources/rollbar')
 
+// Mock SafeAreaView from react-native to use react-native-safe-area-context
+jest.mock('react-native/Libraries/Components/SafeAreaView/SafeAreaView', () => {
+  const { SafeAreaView } = require('react-native-safe-area-context')
+  return { SafeAreaView }
+})
+
+import mockSafeAreaContext from 'react-native-safe-area-context/jest/mock'
+
+jest.mock('react-native-safe-area-context', () => mockSafeAreaContext)
+
 jest.mock('../api/db/client', () => {
   const knex = require('knex')
   const mockKnex = require('mock-knex')

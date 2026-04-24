@@ -1,7 +1,7 @@
 import * as SQLite from 'expo-sqlite'
 import { SQLiteDatabase } from 'expo-sqlite'
 import dbClient from './client'
-import * as FileSystem from 'expo-file-system'
+import { File, Directory, Paths } from 'expo-file-system'
 
 export const initializeMigrationTable = async () => {
   const hasTable = await dbClient.schema.hasTable('migrations')
@@ -29,21 +29,22 @@ const destroyAllTables = async () => {
 const deleteAllFiles = async () => {
   // delete all files in document directory
 
-  const contents = await FileSystem.readDirectoryAsync(
-    String(FileSystem.documentDirectory)
-  )
+  const documentDir = Paths.document
+  const contents = documentDir.list()
 
   if (contents) {
     const promises = contents
       .filter(
-        (fileName) =>
+        (item) =>
           // filter file name starting with sqlite with regex
-          !/^sqlite/i.test(fileName)
+          !/^sqlite/i.test(item.name)
       )
-      .map((fileName) =>
-        FileSystem.deleteAsync(
-          FileSystem.documentDirectory + encodeURI(fileName)
-        )
+      .map(
+        (item) =>
+          new Promise<void>((resolve) => {
+            item.delete()
+            resolve()
+          })
       )
 
     await Promise.all(promises)

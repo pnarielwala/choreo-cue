@@ -10,7 +10,7 @@ import { useQuery } from '@tanstack/react-query'
 
 export type PropsT = {
   currentPosition: number
-  onPlayAudio: () => Promise<void>
+  onPlayAudio: () => void
   onSeekToPosition: (position: number) => void
   audioId: number
 }

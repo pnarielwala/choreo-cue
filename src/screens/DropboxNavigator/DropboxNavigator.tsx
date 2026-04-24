@@ -4,8 +4,8 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 
 import { AntDesign } from '@expo/vector-icons'
 
-import { SafeAreaView, Flex, Box, Text, ScrollView, Pressable } from 'design'
-import { H1, useSx } from 'dripsy'
+import { Flex, Box, Text, ScrollView, Pressable } from 'design'
+import { H1, useSx, View } from 'dripsy'
 
 import Spinner from 'react-native-loading-spinner-overlay'
 
@@ -51,7 +51,7 @@ const DropboxNavigator = (props: PropsT) => {
                 mt: 2,
               }}
             >
-              <AntDesign name="arrowleft" size={24} />
+              <AntDesign name="arrow-left" size={24} />
             </Pressable>
           )
         : () => null,
@@ -81,6 +81,7 @@ const DropboxNavigator = (props: PropsT) => {
           const file = await saveFileToDirectory({
             name: response.name,
             uri: response.uri,
+            lastModified: Date.now(),
           })
 
           const audioId = await addDropboxAudioFile(file)
@@ -128,7 +129,7 @@ const DropboxNavigator = (props: PropsT) => {
   }
 
   return (
-    <SafeAreaView
+    <View
       sx={{
         bg: 'background',
         height: '100%',
@@ -178,7 +179,7 @@ const DropboxNavigator = (props: PropsT) => {
                   {isFile ? (
                     <>
                       <AntDesign
-                        name="file1"
+                        name="file"
                         size={64}
                         style={sx({
                           color: isDownloadable ? 'primary' : 'muted',
@@ -198,7 +199,7 @@ const DropboxNavigator = (props: PropsT) => {
                   ) : (
                     <>
                       <AntDesign
-                        name="folder1"
+                        name="folder"
                         size={64}
                         style={sx({
                           color: 'orange',
@@ -222,7 +223,7 @@ const DropboxNavigator = (props: PropsT) => {
         </ScrollView>
       </Box>
       <Spinner visible={isLoading} />
-    </SafeAreaView>
+    </View>
   )
 }
 

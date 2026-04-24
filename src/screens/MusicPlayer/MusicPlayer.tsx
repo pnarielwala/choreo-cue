@@ -5,7 +5,7 @@ import {
   NativeSyntheticEvent,
   TextInputChangeEventData,
 } from 'react-native'
-import { View, SafeAreaView, H1, Pressable, Icon, Text, Input } from 'design'
+import { View, H1, Pressable, Icon, Text, Input } from 'design'
 import Spinner from 'react-native-loading-spinner-overlay'
 import TextTicker from 'react-native-text-ticker'
 import { useKeepAwake } from 'expo-keep-awake'
@@ -91,7 +91,7 @@ const MusicPlayer = (props: PropsT) => {
 
   return (
     <>
-      <SafeAreaView
+      <View
         sx={{
           flex: 1,
           bg: 'background',
@@ -140,7 +140,7 @@ const MusicPlayer = (props: PropsT) => {
             />
           </View>
         </View>
-      </SafeAreaView>
+      </View>
 
       <Dialog isVisible={isVisible} onBackdropPress={closeDialog}>
         <Dialog.Title title="Rename audio" />

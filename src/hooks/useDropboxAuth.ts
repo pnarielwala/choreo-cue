@@ -34,6 +34,8 @@ const useDropBoxAuth = ({ onCheckAuth }: PropsT) => {
     discovery
   )
 
+  console.log('uri', Linking.createURL('/redirect'))
+
   useEffect(() => {
     if (response?.type === 'success') {
       const auth = response.params

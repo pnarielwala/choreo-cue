@@ -1,92 +1,46 @@
-import { Audio } from 'expo-av'
-import { AVPlaybackSource, AVPlaybackStatus } from 'expo-av/build/AV'
-import { useEffect, useState } from 'react'
-import Toast from 'react-native-toast-message'
+import {
+  useAudioPlayer,
+  useAudioPlayerStatus,
+  setAudioModeAsync,
+} from 'expo-audio'
+import { useEffect } from 'react'
 
 import analytics from 'resources/analytics'
 
-const useAudioPlayer = (source: { uri: string; name: string } | undefined) => {
-  const [sound, setSound] = useState<Audio.Sound>()
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [duration, setDuration] = useState(0)
-  const [currentPosition, setCurrentPosition] = useState(0)
-
-  const onPlaybackStatusUpdate = (status: AVPlaybackStatus) => {
-    if (status.isLoaded) {
-      setIsPlaying(status.isPlaying)
-      setCurrentPosition(status.positionMillis)
-    }
-  }
-
-  const loadSoundFromData = async (data: Exclude<AVPlaybackSource, number>) => {
-    Audio.setAudioModeAsync({
-      playsInSilentModeIOS: true,
-      staysActiveInBackground: true,
-    })
-    const sound = new Audio.Sound()
-    sound.setOnPlaybackStatusUpdate(onPlaybackStatusUpdate)
-    setSound(sound)
-
-    try {
-      const track = await sound.loadAsync(data)
-
-      if (track.isLoaded) {
-        track.durationMillis && setDuration(track.durationMillis)
-      }
-    } catch (error: any) {
-      Toast.show({
-        type: 'error',
-        position: 'top',
-        text1: 'Sorry! Unable to load audio.',
-        text2:
-          'Try deleting and re-adding the audio file. If the problem persists, please contact support.',
-        text2Style: {
-          fontSize: 12,
-          flexWrap: 'wrap',
-          display: 'flex',
-        },
-        autoHide: false,
-      })
-      analytics.error('Expo Audio loadAsync failed', error)
-    }
-  }
-
-  async function playSound() {
-    await sound?.playAsync()
-  }
-
-  async function pauseSound() {
-    await sound?.pauseAsync()
-  }
-
-  const setSoundPosition = async (position: number) =>
-    await sound?.setPositionAsync(position)
-
-  const setSoundSpeed = async (tempo: number) =>
-    await sound?.setRateAsync(tempo, true)
+const useAudioPlayerHook = (
+  source: { uri: string; name: string } | undefined
+) => {
+  const player = useAudioPlayer(source ? { uri: source.uri } : null)
+  const status = useAudioPlayerStatus(player)
 
   useEffect(() => {
-    source ? loadSoundFromData(source) : analytics.error('Sound missing!')
+    if (!source) {
+      analytics.error('Sound missing!')
+      return
+    }
+
+    setAudioModeAsync({
+      playsInSilentMode: true,
+      shouldPlayInBackground: true,
+    })
   }, [])
 
-  useEffect(() => {
-    return () => {
-      sound?.unloadAsync()
-    }
-  }, [sound])
+  const playAudio = () => player.play()
+  const pauseAudio = () => player.pause()
+  const setAudioPosition = async (position: number) =>
+    player.seekTo(position / 1000)
+  const setAudioSpeed = (tempo: number) => player.setPlaybackRate(tempo)
 
   return {
-    playAudio: playSound,
-    pauseAudio: pauseSound,
-    setAudioPosition: setSoundPosition,
-    setAudioSpeed: setSoundSpeed,
-    isPlaying,
-    currentPosition,
-    duration,
-    details: {
-      trackName: source?.name || 'Unnamed audio',
-    },
+    playAudio,
+    pauseAudio,
+    setAudioPosition,
+    setAudioSpeed,
+    isPlaying: status.playing,
+    currentPosition: Math.round(status.currentTime * 1000),
+    duration: Math.round(status.duration * 1000),
+    details: { trackName: source?.name || 'Unnamed audio' },
   }
 }
 
-export default useAudioPlayer
+export default useAudioPlayerHook

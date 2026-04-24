@@ -1,5 +1,5 @@
 import React, { Fragment, useEffect, useState } from 'react'
-import { View, Image, SafeAreaView, Pressable, Text, Box, useSx } from 'design'
+import { View, Image, Pressable, Text, Box, useSx } from 'design'
 
 import * as Updates from 'expo-updates'
 import Constants from 'expo-constants'
@@ -23,13 +23,8 @@ const Main = (props: PropsT) => {
   const isScreenActive = useIsScreenActive({
     navigation: props.navigation,
   })
-  const {
-    currentlyRunning,
-    isUpdatePending,
-    downloadError,
-    checkError,
-    initializationError,
-  } = Updates.useUpdates()
+  const { currentlyRunning, isUpdatePending, downloadError, checkError } =
+    Updates.useUpdates()
   const sx = useSx()
 
   useEffect(() => {
@@ -141,11 +136,6 @@ const Main = (props: PropsT) => {
               Error checking for update: {checkError.message}
             </Text>
           )}
-          {initializationError && (
-            <Text variant="bodySmall" sx={{ color: 'red' }} selectable>
-              Error initializing updates: {initializationError.message}
-            </Text>
-          )}
           <View
             sx={{
               display: 'flex',
@@ -170,7 +160,7 @@ const Main = (props: PropsT) => {
           </View>
         </View>
       </Dialog>
-      <SafeAreaView sx={{ margin: 4 }}>
+      <View sx={{ margin: 4 }}>
         <Image
           resizeMode="contain"
           sx={{
@@ -278,7 +268,7 @@ const Main = (props: PropsT) => {
             </View>
           )}
         </View>
-      </SafeAreaView>
+      </View>
     </View>
   )
 }
