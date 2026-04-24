@@ -6,10 +6,10 @@
       "distribution": "internal",
       "env": { "APP_ENV": "development" }
     },
-    "staging": {
+    "preview": {
       "distribution": "internal",
-      "channel": "staging",
-      "env": { "APP_ENV": "staging" }
+      "channel": "preview",
+      "env": { "APP_ENV": "preview" }
     },
     "production": {
       "autoIncrement": true,
