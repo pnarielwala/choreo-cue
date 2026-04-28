@@ -85,12 +85,23 @@ const allowAudioIdToNotBeUnique = async () => {
   })
 }
 
+const addLastOpenedAtColumnToAudioTable = async () => {
+  await dbClient.schema.alterTable('audio', (table) => {
+    table.string('last_opened_at')
+  })
+  // Backfill so existing rows keep their original ordering.
+  await dbClient.raw(
+    'UPDATE audio SET last_opened_at = created_at WHERE last_opened_at IS NULL'
+  )
+}
+
 const migrations = {
   0: initializeMigrationTable,
   1: createAudioTable,
   2: createCuesTable,
   3: addCueNumberColumnToCuesTable,
   4: allowAudioIdToNotBeUnique,
+  5: addLastOpenedAtColumnToAudioTable,
 }
 
 // =================== migrations end ===================

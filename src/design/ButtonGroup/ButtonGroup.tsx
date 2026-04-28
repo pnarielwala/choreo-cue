@@ -21,7 +21,7 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({
         display: 'flex',
         width: '100%',
         borderRadius: 8,
-        borderColor: 'black',
+        borderColor: 'border',
         borderWidth: 1,
       }}
     >
@@ -43,10 +43,15 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({
               borderTopRightRadius: 6,
               borderBottomRightRadius: 6,
             }),
-            backgroundColor: selectedButton === button ? 'black' : undefined,
+            backgroundColor:
+              selectedButton === button ? 'surfaceInverse' : 'transparent',
           }}
         >
-          <Text sx={{ color: selectedButton === button ? 'white' : 'black' }}>
+          <Text
+            sx={{
+              color: selectedButton === button ? 'textInverse' : 'text',
+            }}
+          >
             {button}
           </Text>
         </Pressable>

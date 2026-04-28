@@ -1,5 +1,5 @@
 import React from 'react'
-import { Pressable, View, Flex } from 'design'
+import { Pressable, View, Flex, useTheme } from 'design'
 
 import { MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons'
 
@@ -20,6 +20,9 @@ const Controls = ({
   setPosition,
   currentPosition,
 }: PropsT) => {
+  const theme = useTheme()
+  const iconColor = (theme.colors as Record<string, string>).text
+
   return (
     <Flex sx={{ width: '100%', justifyContent: 'center' }}>
       <View
@@ -38,7 +41,11 @@ const Controls = ({
           }}
           accessibilityLabel={`Skip back ${SKIP_STEP / 1000} seconds`}
         >
-          <MaterialCommunityIcons name="rewind-10" size={48} color="black" />
+          <MaterialCommunityIcons
+            name="rewind-10"
+            size={48}
+            color={iconColor}
+          />
         </Pressable>
 
         <Pressable
@@ -50,7 +57,7 @@ const Controls = ({
           <FontAwesome5
             name={isPlaying ? 'pause-circle' : 'play-circle'}
             size={64}
-            color="black"
+            color={iconColor}
           />
         </Pressable>
 
@@ -63,7 +70,7 @@ const Controls = ({
           <MaterialCommunityIcons
             name="fast-forward-10"
             size={48}
-            color="black"
+            color={iconColor}
           />
         </Pressable>
       </View>

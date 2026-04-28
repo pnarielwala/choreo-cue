@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { Alert } from 'react-native'
 import Toast from 'react-native-toast-message'
 
-import { H2, Pressable, View, Flex, Text } from 'design'
+import { Pressable, View, Flex, Text, SectionHeader } from 'design'
 
 import CueButton from './components/CueButton'
 import { deleteAllCues, getAllCues, saveCue } from 'api/db/cues'
@@ -14,6 +14,8 @@ export type PropsT = {
   onSeekToPosition: (position: number) => void
   audioId: number
 }
+
+const SLOTS = [1, 2, 3, 4] as const
 
 const Cues = (props: PropsT) => {
   const { data, refetch } = useQuery({
@@ -44,16 +46,12 @@ const Cues = (props: PropsT) => {
 
   const displayResetConfirmation = () =>
     Alert.alert('Are you sure?', 'This will clear all your cues', [
-      {
-        text: 'Cancel',
-        style: 'cancel',
-      },
+      { text: 'Cancel', style: 'cancel' },
       {
         text: 'Reset',
         style: 'destructive',
         onPress: async () => {
           await resetAllCues()
-
           Toast.show({
             type: 'success',
             position: 'top',
@@ -66,52 +64,26 @@ const Cues = (props: PropsT) => {
 
   return (
     <View sx={{ flex: 1, justifyContent: 'flex-start' }}>
-      <H2 as={Text} sx={{ height: 'auto' }}>
-        Cues
-      </H2>
+      <SectionHeader>Cues</SectionHeader>
       <Flex
         sx={{ flexWrap: 'wrap', mx: [-1, null, -2], flex: 2 }}
         testID="cue-grid"
       >
-        <CueButton
-          savedPosition={cues[1]}
-          onPress={props.onSeekToPosition}
-          onDoublePress={props.onPlayAudio}
-          onSaveCue={() => setCue(1)}
-          color="red"
-        />
-        <CueButton
-          savedPosition={cues[2]}
-          onPress={props.onSeekToPosition}
-          onDoublePress={props.onPlayAudio}
-          onSaveCue={() => setCue(2)}
-          color="blue"
-        />
-        <CueButton
-          savedPosition={cues[3]}
-          onPress={props.onSeekToPosition}
-          onDoublePress={props.onPlayAudio}
-          onSaveCue={() => setCue(3)}
-          color="green"
-        />
-        <CueButton
-          savedPosition={cues[4]}
-          onPress={props.onSeekToPosition}
-          onDoublePress={props.onPlayAudio}
-          onSaveCue={() => setCue(4)}
-          color="yellow"
-        />
+        {SLOTS.map((slot) => (
+          <CueButton
+            key={slot}
+            slot={slot}
+            savedPosition={cues[slot]}
+            onPress={props.onSeekToPosition}
+            onDoublePress={props.onPlayAudio}
+            onSaveCue={() => setCue(slot)}
+          />
+        ))}
       </Flex>
 
       <Flex sx={{ mt: 2, flex: 1, width: '100%', justifyContent: 'center' }}>
         <Pressable onPress={displayResetConfirmation}>
-          <Text
-            sx={{
-              color: 'red',
-            }}
-          >
-            Reset Cues
-          </Text>
+          <Text sx={{ color: 'danger', fontWeight: '600' }}>Reset Cues</Text>
         </Pressable>
       </Flex>
     </View>
