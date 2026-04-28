@@ -3,7 +3,10 @@
   "compilerOptions": {
     "strict": true,
     "noImplicitAny": false,
-    "baseUrl": "src/"
+    "paths": {
+      "*": ["./src/*"]
+    },
+    "types": ["jest", "node"]
   },
   "exclude": [
     "node_modules",
