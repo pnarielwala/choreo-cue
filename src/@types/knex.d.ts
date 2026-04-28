@@ -11,6 +11,7 @@ declare module 'knex/types/tables' {
     path: string
     source: 'iCloud' | 'Dropbox' | 'Spotify' | 'YT' | 'Apple'
     created_at: string
+    last_opened_at: string | null
   }
 
   interface Cue {

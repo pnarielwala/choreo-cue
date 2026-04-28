@@ -21,10 +21,11 @@ const TextInput = (props: PropsT) => {
         ...props.sx,
         borderWidth: 1,
         padding: 2,
-        fontSize: 18,
+        fontSize: 16,
+        color: 'text',
         borderColor: focused
-          ? 'primary'
-          : (props.sx?.['borderColor'] ?? 'black'),
+          ? 'accent'
+          : (props.sx?.['borderColor'] ?? 'border'),
       }}
     />
   )

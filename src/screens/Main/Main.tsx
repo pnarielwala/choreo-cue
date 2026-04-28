@@ -1,19 +1,25 @@
-import React, { Fragment, useEffect, useState } from 'react'
-import { View, Image, Pressable, Text, Box, useSx } from 'design'
+import React, { useEffect, useRef } from 'react'
+import {
+  View,
+  Image,
+  Pressable,
+  ScrollView,
+  Text,
+  Button,
+  ListItem,
+  ScreenLayout,
+  SectionHeader,
+  useTheme,
+} from 'design'
 
 import * as Updates from 'expo-updates'
-import Constants from 'expo-constants'
 
 import { FontAwesome5 } from '@expo/vector-icons'
 
-import { getFolderContents } from 'api/dropboxClient'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { ScreenPropsT } from 'App'
-import useDropBoxAuth from 'hooks/useDropboxAuth'
-import { Divider, Dialog } from 'react-native-elements'
 import { deleteAudioFile, getAudioFiles } from 'api/db/audio'
-import { Alert } from 'react-native'
-import { Platform } from 'react-native'
+import { Alert, Platform } from 'react-native'
 import analytics from 'resources/analytics'
 import useIsScreenActive from 'hooks/useIsScreenActive'
 
@@ -23,9 +29,11 @@ const Main = (props: PropsT) => {
   const isScreenActive = useIsScreenActive({
     navigation: props.navigation,
   })
-  const { currentlyRunning, isUpdatePending, downloadError, checkError } =
-    Updates.useUpdates()
-  const sx = useSx()
+  const theme = useTheme()
+  const colors = theme.colors as Record<string, string>
+  const listRef = useRef<{
+    scrollTo: (opts: { y: number; animated?: boolean }) => void
+  }>(null)
 
   useEffect(() => {
     if (isScreenActive) {
@@ -35,13 +43,14 @@ const Main = (props: PropsT) => {
     }
   }, [isScreenActive])
 
-  const [isInfoShown, setIsInfoShown] = useState(false)
-
   useEffect(() => {
-    Updates.checkForUpdateAsync()
+    if (__DEV__) return
+    Updates.checkForUpdateAsync().catch(() => {
+      // Best-effort; ignore failures so a flaky update channel can't break the app.
+    })
   }, [])
 
-  const { data, error, refetch } = useQuery({
+  const { data, refetch } = useQuery({
     queryKey: ['audio-files'],
     queryFn: getAudioFiles,
   })
@@ -59,10 +68,7 @@ const Main = (props: PropsT) => {
       'Delete project?',
       'This will also delete the configured cues.',
       [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
+        { text: 'Cancel', style: 'cancel' },
         {
           text: 'Delete',
           style: 'destructive',
@@ -77,199 +83,110 @@ const Main = (props: PropsT) => {
   useEffect(() => {
     props.navigation.setOptions({
       headerRight: () => (
-        <Pressable onPress={() => setIsInfoShown(true)}>
-          <FontAwesome5 name="info-circle" size={24} color="black" />
+        <Pressable
+          onPress={() => props.navigation.push('Settings')}
+          hitSlop={16}
+          accessibilityLabel="Settings"
+        >
+          <FontAwesome5 name="cog" size={22} color={colors.text} />
         </Pressable>
       ),
       headerTitle: Platform.OS === 'android' ? '' : 'Home',
     })
-  }, [])
-
-  const versionString = `${Constants.manifest2?.extra?.expoClient?.version} (${
-    Constants.manifest2?.extra?.expoClient?.[
-      {
-        ios: 'ios',
-        android: 'android',
-        web: 'web',
-      }[Platform.OS]
-    ]?.[
-      {
-        ios: 'buildNumber',
-        android: 'versionCode',
-        web: 'web',
-      }[Platform.OS]
-    ] || 'dev mode'
-  })`
+  }, [colors.text])
 
   return (
-    <View
-      sx={{
-        position: 'relative',
-        height: '100%',
-        backgroundColor: 'background',
-        flex: 1,
-      }}
-    >
-      <Dialog isVisible={isInfoShown}>
-        <View sx={{ width: '100%' }}>
-          <Dialog.Title title="Version" />
-          <Text variant="bodySmall" selectable>
-            Version: {versionString}
-          </Text>
-          <Text variant="bodySmall" selectable>
-            Channel: {currentlyRunning.channel || 'Not set'}
-          </Text>
-          <Text variant="bodySmall" selectable>
-            Update group id:{' '}
-            {Constants.manifest2?.metadata?.['updateGroup'] || 'Not set'}
-          </Text>
-          <Text variant="bodySmall" selectable>
-            Update Id: {currentlyRunning.updateId || 'Not set'}
-          </Text>
-          {downloadError && (
-            <Text variant="bodySmall" sx={{ color: 'red' }} selectable>
-              Error downloading update: {downloadError.message}
-            </Text>
-          )}
-          {checkError && (
-            <Text variant="bodySmall" sx={{ color: 'red' }} selectable>
-              Error checking for update: {checkError.message}
-            </Text>
-          )}
-          <View
-            sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              mt: 3,
-              justifyContent: 'flex-end',
-              gap: 3,
-            }}
-          >
-            {isUpdatePending ? (
-              <Dialog.Button
-                onPress={() => Updates.fetchUpdateAsync()}
-                testID="close-info"
-                title={'Reload app'}
-              />
-            ) : null}
-            <Dialog.Button
-              onPress={() => setIsInfoShown(false)}
-              testID="close-info"
-              title={'Close'}
-            />
-          </View>
-        </View>
-      </Dialog>
-      <View sx={{ margin: 4 }}>
-        <Image
-          resizeMode="contain"
-          sx={{
-            height: 50,
-            width: 'auto',
-          }}
-          source={require('assets/logo.png')}
-          testID="logo-image"
-        />
-        <Pressable
-          sx={{
-            marginTop: 7,
-            padding: 10,
-            backgroundColor: 'black',
-            borderRadius: 8,
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-          onPress={() => {
-            props.navigation.push('SelectSource')
-          }}
-          role="button"
+    <ScreenLayout>
+      <Image
+        resizeMode="contain"
+        sx={{
+          height: 50,
+          width: 'auto',
+          mt: 4,
+        }}
+        source={require('assets/logo.png')}
+        testID="logo-image"
+      />
+
+      <View sx={{ mt: 6 }}>
+        <Button
+          variant="primary"
+          size="lg"
+          leadingIcon="plus"
+          onPress={() => props.navigation.push('SelectSource')}
+          testID="title"
+          fullWidth
         >
-          <Text
-            sx={{
-              fontSize: 24,
-              textAlign: 'center',
-              fontWeight: 'bold',
-              color: 'white',
+          Create new project
+        </Button>
+      </View>
+
+      <SectionHeader id="projects-list">Recent Projects</SectionHeader>
+
+      <ScrollView
+        // @ts-ignore — dripsy forwards ref to the underlying RN ScrollView
+        ref={listRef}
+        sx={{ flex: 1 }}
+        contentContainerSx={{ pb: 4 }}
+        role="list"
+        aria-labelledby="projects-list"
+        accessible
+        showsVerticalScrollIndicator={false}
+      >
+        {projects.map((project) => (
+          <ListItem
+            key={project.id}
+            title={project.name}
+            onPress={() => {
+              listRef.current?.scrollTo({ y: 0, animated: false })
+              props.navigation.push('Player', {
+                musicData: {
+                  uri: project.uri,
+                  name: project.name,
+                  id: project.id,
+                },
+              })
             }}
-            testID="title"
-          >
-            Create new project
-          </Text>
-          <Box sx={{ px: 1 }} />
-          <FontAwesome5 name="plus-circle" size={24} color="white" />
-        </Pressable>
-        <Text variant="h2" sx={{ marginTop: 5 }} id="projects-list" accessible>
-          Recent Projects
-        </Text>
-        <View role="list" aria-labelledby="projects-list" accessible>
-          {projects.map((project) => (
-            <Fragment key={project.name}>
+            role="listitem"
+            rightSlot={
               <Pressable
-                onPress={() => {
-                  props.navigation.push('Player', {
-                    musicData: {
-                      uri: project.uri,
-                      name: project.name,
-                      id: project.id,
-                    },
-                  })
-                }}
+                onPress={() => displayResetConfirmation(project.id)}
+                hitSlop={16}
+                accessibilityLabel={`Delete ${project.name}`}
                 sx={{
-                  py: 4,
-                  display: 'flex',
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
+                  width: 36,
+                  height: 36,
+                  borderRadius: 'pill',
+                  backgroundColor: 'surfaceMuted',
+                  justifyContent: 'center',
                   alignItems: 'center',
                 }}
-                role="listitem"
               >
-                <Text
-                  sx={{
-                    color: 'text',
-                    fontSize: 16,
-                    flex: 1,
-                  }}
-                >
-                  {project.name}
-                </Text>
-
-                <Pressable hitSlop={48}>
-                  <FontAwesome5
-                    name="trash-alt"
-                    size={24}
-                    style={sx({ color: 'red' })}
-                    onPress={() => displayResetConfirmation(project.id)}
-                  />
-                </Pressable>
+                <FontAwesome5
+                  name="trash-alt"
+                  size={16}
+                  color={colors.danger}
+                />
               </Pressable>
-              <Divider />
-            </Fragment>
-          ))}
-          {projects.length === 0 && (
-            <View
-              sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                flexDirection: 'row',
-                marginTop: 5,
-              }}
-            >
-              <Text
-                sx={{
-                  color: 'text',
-                  fontSize: 16,
-                }}
-              >
-                No projects yet
-              </Text>
-            </View>
-          )}
-        </View>
-      </View>
-    </View>
+            }
+          />
+        ))}
+        {projects.length === 0 && (
+          <View
+            sx={{
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexDirection: 'row',
+              mt: 5,
+            }}
+          >
+            <Text sx={{ color: 'textMuted', fontSize: 16 }}>
+              No projects yet
+            </Text>
+          </View>
+        )}
+      </ScrollView>
+    </ScreenLayout>
   )
 }
 

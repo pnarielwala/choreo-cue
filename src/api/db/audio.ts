@@ -16,15 +16,22 @@ export const createAudioTable = async () => {
 }
 
 export const getAudioFiles = async () => {
-  // get all audio files sorted in reverse chronological order
+  // Most recently opened first; brand-new files inherit their created_at as
+  // their last_opened_at, so they show up at the top until something else is opened.
   const results = await dbClient('audio')
     .select('*')
-    .orderBy('created_at', 'desc')
+    .orderBy('last_opened_at', 'desc')
   return (results ?? []).map((result) => ({
     id: result.id,
     name: result.name,
     uri: result.path,
   }))
+}
+
+export const touchAudioFile = async (id: number) => {
+  await dbClient('audio')
+    .where({ id })
+    .update({ last_opened_at: new Date().toISOString() })
 }
 
 export const updateAudioName = async (id: number, name: string) => {
@@ -59,12 +66,14 @@ export const deleteAudioFile = async (id: number) => {
 export const addICloudAudioFile = async (
   file: DocumentPicker.DocumentPickerAsset
 ) => {
+  const now = new Date().toISOString()
   const result = await dbClient('audio').insert(
     {
       name: file.name,
       path: file.uri,
       source: 'iCloud',
-      created_at: new Date().toISOString(),
+      created_at: now,
+      last_opened_at: now,
     },
     ['id']
   )
@@ -76,12 +85,14 @@ export const addDropboxAudioFile = async (file: {
   name: string
   uri: string
 }) => {
+  const now = new Date().toISOString()
   const result = await dbClient('audio').insert(
     {
       name: file.name,
       path: file.uri,
       source: 'Dropbox',
-      created_at: new Date().toISOString(),
+      created_at: now,
+      last_opened_at: now,
     },
     ['id']
   )
