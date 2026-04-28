@@ -5,12 +5,19 @@ import {
   NativeSyntheticEvent,
   TextInputChangeEventData,
 } from 'react-native'
-import { View, H1, Pressable, Icon, Text, Input } from 'design'
-import Spinner from 'react-native-loading-spinner-overlay'
+import {
+  View,
+  H1,
+  Pressable,
+  Input,
+  Button,
+  ScreenLayout,
+  useTheme,
+} from 'design'
 import TextTicker from 'react-native-text-ticker'
 import { useKeepAwake } from 'expo-keep-awake'
 
-import { AntDesign, FontAwesome5 } from '@expo/vector-icons'
+import { FontAwesome5 } from '@expo/vector-icons'
 
 import TrackSlider from './components/TrackSlider'
 import Cues from './components/Cues'
@@ -18,15 +25,20 @@ import Controls from './components/Controls/Controls'
 import Tempo from './components/Tempo'
 import useMusicPlayer from 'hooks/useMusicPlayer'
 import { ScreenPropsT } from 'App'
-import { deleteAllLocalFiles } from 'api/filesystemClient'
 import { Dialog } from 'react-native-elements'
-import { updateAudioName } from 'api/db/audio'
+import { touchAudioFile, updateAudioName } from 'api/db/audio'
 
 export type PropsT = ScreenPropsT<'Player'>
 
 const MusicPlayer = (props: PropsT) => {
   const { id: audioId } = props.route.params.musicData
   useKeepAwake()
+  const theme = useTheme()
+  const colors = theme.colors as Record<string, string>
+
+  useEffect(() => {
+    touchAudioFile(audioId).catch(() => {})
+  }, [audioId])
   const {
     playAudio,
     pauseAudio,
@@ -71,7 +83,7 @@ const MusicPlayer = (props: PropsT) => {
           hitSlop={48}
           accessibilityLabel="Back"
         >
-          <FontAwesome5 name="chevron-left" size={24} />
+          <FontAwesome5 name="chevron-left" size={24} color={colors.text} />
         </Pressable>
       ),
       headerTitle: 'Music Player',
@@ -83,67 +95,67 @@ const MusicPlayer = (props: PropsT) => {
           hitSlop={48}
           accessibilityLabel="Rename audio"
         >
-          <FontAwesome5 name="pencil-alt" size={24} />
+          <FontAwesome5 name="pencil-alt" size={22} color={colors.text} />
         </Pressable>
       ),
     })
-  }, [props])
+  }, [props, colors.text])
 
   return (
     <>
-      <View
-        sx={{
-          flex: 1,
-          bg: 'background',
-        }}
-      >
-        <View sx={{ px: 3, flex: 1 }}>
-          <View sx={{ height: 'auto' }}>
-            <View sx={{ alignItems: 'flex-start', width: '100%' }}>
-              <H1
-                as={TextTicker}
-                // @ts-ignore TODO: Fix TS typing for Dripsy on "as" prop
-                loop={false}
-                bounce={false}
-                repeatSpacer={20}
-                scrollSpeed={200}
-                easing={Easing.linear}
-                marqueeDelay={1000}
-              >
-                {trackName}
-              </H1>
-            </View>
-
-            <Controls
-              playSound={playAudio}
-              pauseSound={pauseAudio}
-              currentPosition={currentPosition}
-              isPlaying={isPlaying}
-              setPosition={setAudioPosition}
-            />
-
-            <TrackSlider
-              duration={duration}
-              currentPosition={currentPosition}
-              onPositionChange={setAudioPosition}
-              disabled={false}
-            />
-
-            <Tempo setRate={setAudioSpeed} />
+      <ScreenLayout padding={3}>
+        <View sx={{ height: 'auto' }}>
+          <View sx={{ alignItems: 'flex-start', width: '100%' }}>
+            <H1
+              as={TextTicker}
+              // @ts-ignore TODO: Fix TS typing for Dripsy on "as" prop
+              loop={false}
+              bounce={false}
+              repeatSpacer={20}
+              scrollSpeed={200}
+              easing={Easing.linear}
+              marqueeDelay={1000}
+            >
+              {trackName}
+            </H1>
           </View>
-          <View sx={{ flex: 1, alignItems: 'flex-start' }}>
-            <Cues
-              currentPosition={currentPosition}
-              onPlayAudio={playAudio}
-              onSeekToPosition={setAudioPosition}
-              audioId={audioId}
-            />
-          </View>
+
+          <Controls
+            playSound={playAudio}
+            pauseSound={pauseAudio}
+            currentPosition={currentPosition}
+            isPlaying={isPlaying}
+            setPosition={setAudioPosition}
+          />
+
+          <TrackSlider
+            duration={duration}
+            currentPosition={currentPosition}
+            onPositionChange={setAudioPosition}
+            disabled={false}
+          />
+
+          <Tempo setRate={setAudioSpeed} />
         </View>
-      </View>
+        <View sx={{ flex: 1, alignItems: 'flex-start' }}>
+          <Cues
+            currentPosition={currentPosition}
+            onPlayAudio={playAudio}
+            onSeekToPosition={setAudioPosition}
+            audioId={audioId}
+          />
+        </View>
+      </ScreenLayout>
 
-      <Dialog isVisible={isVisible} onBackdropPress={closeDialog}>
-        <Dialog.Title title="Rename audio" />
+      <Dialog
+        isVisible={isVisible}
+        onBackdropPress={closeDialog}
+        overlayStyle={{ backgroundColor: colors.surfaceElevated }}
+      >
+        <Dialog.Title
+          title="Rename audio"
+          titleStyle={{ color: colors.text }}
+        />
         <Input
           placeholder="New name"
           sx={{ mt: 3 }}
@@ -152,19 +164,18 @@ const MusicPlayer = (props: PropsT) => {
         />
         <View
           sx={{
-            display: 'flex',
             flexDirection: 'row',
             mt: 3,
             justifyContent: 'flex-end',
             gap: 3,
           }}
         >
-          <Pressable onPress={closeDialog}>
-            <Text>Cancel</Text>
-          </Pressable>
-          <Pressable onPress={onRenameAudio}>
-            <Text>Save</Text>
-          </Pressable>
+          <Button variant="ghost" size="sm" onPress={closeDialog}>
+            Cancel
+          </Button>
+          <Button variant="primary" size="sm" onPress={onRenameAudio}>
+            Save
+          </Button>
         </View>
       </Dialog>
     </>

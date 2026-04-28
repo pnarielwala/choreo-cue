@@ -1,24 +1,26 @@
 import formatDuration from 'format-duration'
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import Toast from 'react-native-toast-message'
-import { Pressable, Text, Box } from 'design'
+import { Pressable, Text, Box, getCueColorKey } from 'design'
+import type { CueSlot } from 'design'
 
 type PropsT = {
+  slot: CueSlot
   savedPosition: number | undefined
   onPress: (position: number) => void
   onDoublePress: (position: number) => void
   onSaveCue: () => Promise<void>
-  color: string
 }
 
 const CueButton = ({
+  slot,
   savedPosition: position,
   onPress,
   onDoublePress,
   onSaveCue,
-  color,
 }: PropsT) => {
   const [timer, setTimer] = useState<NodeJS.Timeout | null>(null)
+  const colorKey = getCueColorKey(slot)
 
   const debounceTap = (onSingleTap: () => void, onDoubleTap: () => void) => {
     if (timer) {
@@ -27,23 +29,20 @@ const CueButton = ({
       onDoubleTap()
     } else {
       onSingleTap()
-      let timer = setTimeout(() => {
+      const newTimer = setTimeout(() => {
         setTimer(null)
       }, 200)
-      setTimer(timer)
+      setTimer(newTimer)
     }
   }
 
   const handlePress = () => {
     debounceTap(
-      () => {
-        onPress(position ?? 0)
-      },
-      () => {
-        onDoublePress(position ?? 0)
-      }
+      () => onPress(position ?? 0),
+      () => onDoublePress(position ?? 0)
     )
   }
+
   return (
     <Box
       sx={{ width: '50%', p: [1, null, 2], height: '100%', maxHeight: '50%' }}
@@ -51,14 +50,13 @@ const CueButton = ({
       <Pressable
         sx={{
           width: '100%',
-          bg: color,
+          bg: colorKey,
           height: '100%',
-          display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          borderRadius: 4,
+          borderRadius: 'md',
           borderWidth: Number(position !== undefined) * 3,
-          borderColor: 'black',
+          borderColor: 'cueBorder',
           opacity: position !== undefined ? 1 : 0.6,
         }}
         onLongPress={async () => {
@@ -75,7 +73,8 @@ const CueButton = ({
         <Text
           variants={['bodySmall', 'body']}
           sx={{
-            fontWeight: position !== undefined ? 'bold' : 'normal',
+            fontWeight: position !== undefined ? '700' : '400',
+            color: 'cueBorder',
           }}
         >
           {position !== undefined
@@ -83,7 +82,9 @@ const CueButton = ({
             : 'Hold to Set'}
         </Text>
         {position !== undefined && (
-          <Text variant="bodySmall">Double tap to auto-play</Text>
+          <Text variant="bodySmall" sx={{ color: 'cueBorder' }}>
+            Double tap to auto-play
+          </Text>
         )}
       </Pressable>
     </Box>

@@ -60,10 +60,7 @@ export default function Tempo({ setRate }: PropsT) {
         </Text>
         <Pressable
           hitSlop={30}
-          sx={{
-            alignSelf: 'center',
-            color: tempo === 1 ? 'text' : 'textMuted',
-          }}
+          sx={{ alignSelf: 'center' }}
           onPress={() => {
             handleSetTempo(1)
           }}
@@ -75,7 +72,7 @@ export default function Tempo({ setRate }: PropsT) {
             name="sync-alt"
             size={24}
             style={sx({
-              color: tempo === 1 ? 'muted' : 'text',
+              color: tempo === 1 ? 'textMuted' : 'text',
             })}
           />
         </Pressable>

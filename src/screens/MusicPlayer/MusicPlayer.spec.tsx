@@ -63,12 +63,12 @@ it('should display audio title', async () => {
     musicData: { name: 'Toosie Slide - Drake.mp3', uri: '', id: 1 },
   })
 
-  await waitFor(() => {})
+  await waitFor(() => {
+    // TextTicker renders Text twice as it's implementation
+    const elements = queryAllByText('Toosie Slide - Drake.mp3')
 
-  // TextTicker renders Text twice as it's implementation
-  const elements = queryAllByText('Toosie Slide - Drake.mp3')
-
-  expect(elements[0]).toBeDefined()
+    expect(elements[0]).toBeDefined()
+  })
 })
 
 it.skip('should play and pause audio', async () => {

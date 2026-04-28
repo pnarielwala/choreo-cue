@@ -182,7 +182,7 @@ const DropboxNavigator = (props: PropsT) => {
                         name="file"
                         size={64}
                         style={sx({
-                          color: isDownloadable ? 'primary' : 'muted',
+                          color: isDownloadable ? 'accent' : 'textMuted',
                         })}
                       />
                       <Text
@@ -190,7 +190,7 @@ const DropboxNavigator = (props: PropsT) => {
                         sx={{
                           textAlign: 'center',
                           mt: 2,
-                          color: isDownloadable ? 'text' : 'muted',
+                          color: isDownloadable ? 'text' : 'textMuted',
                         }}
                       >
                         {entry.name}
@@ -202,7 +202,7 @@ const DropboxNavigator = (props: PropsT) => {
                         name="folder"
                         size={64}
                         style={sx({
-                          color: 'orange',
+                          color: 'warning',
                         })}
                       />
                       <Text
