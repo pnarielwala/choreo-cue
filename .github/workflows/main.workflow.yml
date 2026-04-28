@@ -128,7 +128,8 @@ jobs:
       - name: Deploy OTA update
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: yarn eas update --branch production --non-interactive
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message || github.sha }}
+        run: yarn eas update --branch production --message "$COMMIT_MESSAGE" --non-interactive
       - name: Notify Rollbar of deploy
         run: |
           curl -s https://api.rollbar.com/api/1/deploy \
@@ -173,13 +174,6 @@ jobs:
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: yarn eas build --profile production --platform ios --non-interactive
-      - name: Submit to App Store
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-          EXPO_APPLE_ID: ${{ secrets.EXPO_APPLE_ID }}
-          ASC_APP_ID: ${{ secrets.ASC_APP_ID }}
-          EXPO_APPLE_TEAM_ID: ${{ secrets.EXPO_APPLE_TEAM_ID }}
-        run: yarn eas submit --profile production --platform ios --latest --non-interactive
       - name: Commit version bump
         run: |
           git config user.name "github-actions[bot]"
@@ -187,6 +181,13 @@ jobs:
           git add app.config.js
           git commit -m "chore: bump app version to $(node -p "require('./app.config.js').expo.version") [skip ci]"
           git push
+      - name: Submit to App Store
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EXPO_APPLE_ID: ${{ secrets.EXPO_APPLE_ID }}
+          ASC_APP_ID: ${{ secrets.ASC_APP_ID }}
+          EXPO_APPLE_TEAM_ID: ${{ secrets.EXPO_APPLE_TEAM_ID }}
+        run: yarn eas submit --profile production --platform ios --latest --non-interactive
       - name: Notify Rollbar of deploy
         run: |
           curl -s https://api.rollbar.com/api/1/deploy \
