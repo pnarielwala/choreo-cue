@@ -3,7 +3,9 @@
   "compilerOptions": {
     "strict": true,
     "noImplicitAny": false,
-    "baseUrl": "src/"
+    "baseUrl": "src/",
+    "ignoreDeprecations": "6.0",
+    "types": ["jest", "node"]
   },
   "exclude": [
     "node_modules",
