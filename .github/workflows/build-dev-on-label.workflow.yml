@@ -1,0 +1,62 @@
+name: Build dev client on label
+
+on:
+  pull_request:
+    types: [labeled]
+
+jobs:
+  build-dev-client:
+    name: Build development client
+    if: github.event.label.name == 'build dev client'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Remove trigger label
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr edit ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --remove-label "build dev client"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - uses: actions/cache@v4
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build development client
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: yarn eas build --profile development --platform ios --non-interactive
+
+      - name: Get build URL
+        id: build
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          BUILD_URL=$(yarn eas build:list --build-profile development --platform ios --status finished --limit 1 --json --non-interactive 2>&1 \
+            | sed -n '/^\[/,/^\]/p' \
+            | jq -r '"https://expo.dev/accounts/" + .[0].project.ownerAccount.name + "/projects/" + .[0].project.slug + "/builds/" + .[0].id')
+          echo "url=$BUILD_URL" >> $GITHUB_OUTPUT
+
+      - name: Comment build link on PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          COMMENT_BODY="📱 **Development Build** — ${{ steps.build.outputs.url }}"
+          EXISTING=$(gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments \
+            --jq '.[] | select(.body | startswith("📱 **Development Build**")) | .id' | tail -1)
+          if [ -n "$EXISTING" ]; then
+            gh api repos/${{ github.repository }}/issues/comments/$EXISTING \
+              -X PATCH -f body="$COMMENT_BODY"
+          else
+            gh pr comment ${{ github.event.pull_request.number }} \
+              --repo ${{ github.repository }} \
+              --body "$COMMENT_BODY"
+          fi
