@@ -17,7 +17,7 @@ const SectionHeader = ({ children, rightSlot, testID, id }: PropsT) => {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        mt: 5,
+        mt: 3,
         mb: 2,
       }}
       testID={testID}

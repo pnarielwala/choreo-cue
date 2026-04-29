@@ -27,7 +27,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**', 'package.json') }}
       - name: Install dependencies
         run: yarn install
 
@@ -43,7 +43,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**', 'package.json') }}
       - name: Run tsc
         run: yarn tsc
 
@@ -59,7 +59,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**', 'package.json') }}
       - name: Run unit tests
         run: yarn jest --coverage=false --detectOpenHandles --forceExit
 
@@ -77,11 +77,13 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**', 'package.json') }}
       - name: Generate fingerprint
         id: fingerprint
         env:
           APP_ENV: production
+          EXPO_ROLLBAR_ACCESS_TOKEN: ${{ secrets.EXPO_ROLLBAR_ACCESS_TOKEN }}
+          EXPO_SPOTIFY_CLIENT_ID: ${{ secrets.EXPO_SPOTIFY_CLIENT_ID }}
         run: |
           IOS_HASH=$(npx @expo/fingerprint fingerprint:generate --platform ios | jq -r '.hash')
           echo "ios_hash=$IOS_HASH" >> $GITHUB_OUTPUT
@@ -124,10 +126,13 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**', 'package.json') }}
       - name: Deploy OTA update
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          APP_ENV: production
+          EXPO_ROLLBAR_ACCESS_TOKEN: ${{ secrets.EXPO_ROLLBAR_ACCESS_TOKEN }}
+          EXPO_SPOTIFY_CLIENT_ID: ${{ secrets.EXPO_SPOTIFY_CLIENT_ID }}
           COMMIT_MESSAGE: ${{ github.event.head_commit.message || github.sha }}
         run: yarn eas update --branch production --message "$COMMIT_MESSAGE" --non-interactive
       - name: Notify Rollbar of deploy
@@ -151,7 +156,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**', 'package.json') }}
       - name: Bump app version
         run: |
           CURRENT=$(node -p "require('./app.config.js').expo.version")

@@ -144,6 +144,7 @@ const Main = (props: PropsT) => {
                   uri: project.uri,
                   name: project.name,
                   id: project.id,
+                  source: project.source,
                 },
               })
             }}

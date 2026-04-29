@@ -15,7 +15,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**', 'package.json') }}
       - name: Install dependencies
         run: yarn install
 
@@ -31,7 +31,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**', 'package.json') }}
       - name: Run tsc
         run: yarn tsc
 
@@ -47,7 +47,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**', 'package.json') }}
       - name: Run unit tests
         run: yarn jest --coverage=false --detectOpenHandles --forceExit
 
@@ -65,14 +65,22 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**', 'package.json') }}
       - name: Generate fingerprint
         id: fingerprint
         env:
           APP_ENV: development
+          EXPO_ROLLBAR_ACCESS_TOKEN: ${{ secrets.EXPO_ROLLBAR_ACCESS_TOKEN }}
+          EXPO_SPOTIFY_CLIENT_ID: ${{ secrets.EXPO_SPOTIFY_CLIENT_ID }}
         run: |
-          IOS_HASH=$(npx @expo/fingerprint fingerprint:generate --platform ios | jq -r '.hash')
+          npx @expo/fingerprint fingerprint:generate --platform ios > fingerprint-ios.json
+          IOS_HASH=$(jq -r '.hash' fingerprint-ios.json)
           echo "ios_hash=$IOS_HASH" >> $GITHUB_OUTPUT
+      - name: Upload fingerprint artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fingerprint-ios-${{ github.sha }}
+          path: fingerprint-ios.json
       - name: Check for existing builds
         id: check
         env:
@@ -116,9 +124,22 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**', 'package.json') }}
+      - name: Capture deploy-time fingerprint
+        env:
+          APP_ENV: development
+          EXPO_ROLLBAR_ACCESS_TOKEN: ${{ secrets.EXPO_ROLLBAR_ACCESS_TOKEN }}
+          EXPO_SPOTIFY_CLIENT_ID: ${{ secrets.EXPO_SPOTIFY_CLIENT_ID }}
+        run: npx @expo/fingerprint fingerprint:generate --platform ios > fingerprint-ios-deploy.json
+      - name: Upload deploy-time fingerprint artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fingerprint-ios-deploy-${{ github.sha }}
+          path: fingerprint-ios-deploy.json
       - name: Deploy EAS update
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
           APP_ENV: development
+          EXPO_ROLLBAR_ACCESS_TOKEN: ${{ secrets.EXPO_ROLLBAR_ACCESS_TOKEN }}
+          EXPO_SPOTIFY_CLIENT_ID: ${{ secrets.EXPO_SPOTIFY_CLIENT_ID }}
         run: yarn eas update --branch ${{ github.head_ref }} --message "${{ github.event.pull_request.title }}" --non-interactive

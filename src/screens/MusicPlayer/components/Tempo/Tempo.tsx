@@ -6,15 +6,17 @@ import { FontAwesome5 } from '@expo/vector-icons'
 
 export type PropsT = {
   setRate: (tempo: number) => void
+  disabled?: boolean
 }
 
-export default function Tempo({ setRate }: PropsT) {
+export default function Tempo({ setRate, disabled = false }: PropsT) {
   const [tempo, setTempo] = useState(1)
 
   const theme = useTheme()
   const sx = useSx()
 
   const handleSetTempo = (value: number) => {
+    if (disabled) return
     setTempo(value)
     setRate(value)
   }
@@ -25,6 +27,7 @@ export default function Tempo({ setRate }: PropsT) {
         as={Text}
         sx={{
           alignSelf: 'flex-start',
+          color: disabled ? 'textMuted' : 'text',
         }}
       >
         Tempo
@@ -35,6 +38,7 @@ export default function Tempo({ setRate }: PropsT) {
           flexDirection: 'row',
           width: '100%',
           gap: 2,
+          opacity: disabled ? 0.5 : 1,
         }}
       >
         <Slider
@@ -46,6 +50,7 @@ export default function Tempo({ setRate }: PropsT) {
           maximumValue={1.5}
           step={0.05}
           value={tempo}
+          disabled={disabled}
           onValueChange={(value: number) => {
             const rate = +value.toPrecision(3)
             handleSetTempo(rate)
@@ -64,7 +69,7 @@ export default function Tempo({ setRate }: PropsT) {
           onPress={() => {
             handleSetTempo(1)
           }}
-          disabled={tempo === 1}
+          disabled={disabled || tempo === 1}
           aria-label="Reset tempo"
           role="button"
         >
@@ -72,11 +77,16 @@ export default function Tempo({ setRate }: PropsT) {
             name="sync-alt"
             size={24}
             style={sx({
-              color: tempo === 1 ? 'textMuted' : 'text',
+              color: disabled || tempo === 1 ? 'textMuted' : 'text',
             })}
           />
         </Pressable>
       </View>
+      {disabled && (
+        <Text variant="bodySmall" sx={{ color: 'textMuted', mt: 1 }}>
+          Tempo isn't available for Spotify tracks.
+        </Text>
+      )}
     </View>
   )
 }

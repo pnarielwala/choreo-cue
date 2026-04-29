@@ -70,13 +70,8 @@ module.exports = {
           },
         },
       ],
-      [
-        './plugins/rollbar-config-plugin',
-        {
-          environment: 'production',
-          rollbarPostToken: process.env.EXPO_ROLLBAR_ACCESS_TOKEN,
-        },
-      ],
+      ['./plugins/rollbar-config-plugin', { environment: 'production' }],
+      './plugins/spotify-config-plugin',
     ],
     runtimeVersion: {
       policy: 'fingerprint',
