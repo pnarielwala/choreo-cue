@@ -27,7 +27,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**', 'package.json') }}
       - name: Install dependencies
         run: yarn install
 
@@ -43,7 +43,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**', 'package.json') }}
       - name: Run tsc
         run: yarn tsc
 
@@ -59,7 +59,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**', 'package.json') }}
       - name: Run unit tests
         run: yarn jest --coverage=false --detectOpenHandles --forceExit
 
@@ -77,7 +77,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**', 'package.json') }}
       - name: Generate fingerprint
         id: fingerprint
         env:
@@ -126,7 +126,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**', 'package.json') }}
       - name: Deploy OTA update
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
@@ -156,7 +156,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**', 'package.json') }}
       - name: Bump app version
         run: |
           CURRENT=$(node -p "require('./app.config.js').expo.version")

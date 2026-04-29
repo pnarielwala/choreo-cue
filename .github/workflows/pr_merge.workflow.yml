@@ -18,7 +18,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**', 'package.json') }}
       - name: Install dependencies
         run: yarn install
       - name: Delete EAS branch
