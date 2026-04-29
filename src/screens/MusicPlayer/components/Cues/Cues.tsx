@@ -10,7 +10,7 @@ import { useQuery } from '@tanstack/react-query'
 
 export type PropsT = {
   currentPosition: number
-  onPlayAudio: () => void
+  onPlayAtPosition: (position: number) => void
   onSeekToPosition: (position: number) => void
   audioId: number
 }
@@ -75,7 +75,7 @@ const Cues = (props: PropsT) => {
             slot={slot}
             savedPosition={cues[slot]}
             onPress={props.onSeekToPosition}
-            onDoublePress={props.onPlayAudio}
+            onDoublePress={props.onPlayAtPosition}
             onSaveCue={() => setCue(slot)}
           />
         ))}

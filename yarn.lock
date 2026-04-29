@@ -8735,6 +8735,11 @@ react-native-size-matters@^0.3.1:
   resolved "https://registry.yarnpkg.com/react-native-size-matters/-/react-native-size-matters-0.3.1.tgz#24d0cfc335a2c730f6d58bd7b43ea5a41be4b49f"
   integrity sha512-mKOfBLIBFBcs9br1rlZDvxD5+mAl8Gfr5CounwJtxI6Z82rGrMO+Kgl9EIg3RMVf3G855a85YVqHJL2f5EDRlw==
 
+react-native-spotify-remote@1.0.0-1:
+  version "1.0.0-1"
+  resolved "https://registry.yarnpkg.com/react-native-spotify-remote/-/react-native-spotify-remote-1.0.0-1.tgz#a529d061fe39bf643cd1fbe9d9f75360cfaf6239"
+  integrity sha512-NfB/w+hIqwd5cpyGkYpfxWoQ0NL/x8iGkec/8shlmAPXN7Qdu5VKKedNmPyxn10G6dI3HrJY6nglRVvaxbDSsA==
+
 react-native-svg-transformer@^1.5.0:
   version "1.5.3"
   resolved "https://registry.yarnpkg.com/react-native-svg-transformer/-/react-native-svg-transformer-1.5.3.tgz#a45b1bacb0623b66b134726a389ab2c67d856252"

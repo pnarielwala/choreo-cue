@@ -77,6 +77,7 @@ module.exports = {
           rollbarPostToken: process.env.EXPO_ROLLBAR_ACCESS_TOKEN,
         },
       ],
+      './plugins/spotify-config-plugin',
     ],
     runtimeVersion: {
       policy: 'fingerprint',

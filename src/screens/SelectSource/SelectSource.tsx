@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { Alert } from 'react-native'
 
 import { ListItem, ScreenLayout } from 'design'
 
@@ -7,9 +8,12 @@ import { ScreenPropsT } from 'App'
 import * as DocumentPicker from 'expo-document-picker'
 import { useQueryClient } from '@tanstack/react-query'
 import useDropBoxAuth from 'hooks/useDropboxAuth'
+import useSpotifyAuth from 'hooks/useSpotifyAuth'
 import { getFolderContents } from 'api/dropboxClient'
+import { getUserPlaylists, getMe } from 'api/spotifyClient'
 import { saveFileToDirectory } from 'api/filesystemClient'
 import { addICloudAudioFile } from 'api/db/audio'
+import analytics from 'resources/analytics'
 
 export type PropsT = ScreenPropsT<'SelectSource'>
 
@@ -17,7 +21,7 @@ const SOURCES = {
   iCloud: { name: 'File System', icon: 'folder-open', enabled: true },
   Dropbox: { name: 'Dropbox', icon: 'dropbox', enabled: true },
   Video: { name: 'Extract from video', icon: 'file-video', enabled: false },
-  Spotify: { name: 'Spotify', icon: 'spotify', enabled: false },
+  Spotify: { name: 'Spotify', icon: 'spotify', enabled: true },
   YT: { name: 'YT Music', icon: 'youtube', enabled: false },
   Apple: { name: 'Apple Music', icon: 'apple', enabled: false },
 } as const
@@ -36,6 +40,31 @@ const SelectSource = (props: PropsT) => {
         }
         props.navigation.push('DropboxNavigator', { path: '', name: 'Home' })
       }
+    },
+  })
+
+  const { authenticate: authenticateSpotify } = useSpotifyAuth({
+    onCheckAuth: async (authenticated) => {
+      if (!authenticated) return
+      try {
+        const me = await getMe()
+        if (me.product !== 'premium') {
+          Alert.alert(
+            'Spotify Premium required',
+            'Choreo Cue needs a Spotify Premium account to control playback. You can still use other sources.'
+          )
+          return
+        }
+      } catch (e) {
+        analytics.error('[Spotify] failed to fetch user profile', e as any)
+      }
+      if (!queryClient.getQueryData(['spotify-playlists'])) {
+        queryClient.prefetchQuery({
+          queryKey: ['spotify-playlists'],
+          queryFn: () => getUserPlaylists(),
+        })
+      }
+      props.navigation.push('SpotifyNavigator')
     },
   })
 
@@ -60,6 +89,9 @@ const SelectSource = (props: PropsT) => {
       }
       case 'Dropbox':
         authenticate()
+        break
+      case 'Spotify':
+        authenticateSpotify()
         break
       default:
         break

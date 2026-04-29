@@ -138,8 +138,8 @@ All workflows live in `.github/workflows/`. The deployment pipeline uses **EAS (
 1. **`dev.workflow.yml`** (PR check) — on every pull request: typecheck, test, deploy EAS preview update using the PR branch name.
 
 2. **`main.workflow.yml`** (Production deploy) — on push to `main`: typecheck, test, then smart deploy:
-   - If only JS changes → OTA update via `eas update --branch production`
-   - If native files changed (ios/, android/, app.config.*, package.json, yarn.lock) → full EAS build + App Store submit
+   - If the Expo fingerprint is unchanged → OTA update via `eas update --branch production`
+   - If the fingerprint changed (native deps, native config, or anything else `fingerprint.config.js` includes) → full EAS build + App Store submit
    - Can force a native build via `workflow_dispatch` with `force_native_build: true`
    - Notifies Rollbar of deployments
 
@@ -151,7 +151,7 @@ All workflows live in `.github/workflows/`. The deployment pipeline uses **EAS (
 
 ### Native vs OTA
 
-The production workflow uses `dorny/paths-filter` to detect whether native changes occurred. Changes to `ios/`, `android/`, `app.config.*`, `eas.json`, `package.json`, or `yarn.lock` trigger a full native build. Everything else gets an OTA update, which is much faster.
+The production workflow decides between a full native build and an OTA update by **comparing Expo fingerprints** between the current commit and the latest deployed runtime. The fingerprint hashes native dependencies and config (controlled by `fingerprint.config.js` at the repo root). If it matches, an OTA suffices; if it changed, a full EAS build + store submit runs. This is the same mechanism that determines which builds an OTA update is compatible with at runtime.
 
 ### Runtime versioning
 

@@ -16,7 +16,7 @@ import Cues, { PropsT } from './Cues'
 
 const defaultProps: PropsT = {
   currentPosition: 0,
-  onPlayAudio: jest.fn(),
+  onPlayAtPosition: jest.fn(),
   onSeekToPosition: jest.fn(),
   audioId: 1,
 }
@@ -93,7 +93,7 @@ it.skip('cue button sets current position from saved', async () => {
   await new Promise((res) => setTimeout(res, 200))
   fireEvent.press(getByText('0:23'))
 
-  expect(defaultProps.onPlayAudio).not.toHaveBeenCalled()
+  expect(defaultProps.onPlayAtPosition).not.toHaveBeenCalled()
 })
 
 it('cue button sets current position from saved and plays the audio when double pressed', async () => {
@@ -121,7 +121,7 @@ it('cue button sets current position from saved and plays the audio when double 
   fireEvent.press(getByText('0:23'))
 
   expect(defaultProps.onSeekToPosition).toHaveBeenCalledWith(23 * 1000)
-  expect(defaultProps.onPlayAudio).toHaveBeenCalled()
+  expect(defaultProps.onPlayAtPosition).toHaveBeenCalledWith(23 * 1000)
 })
 
 // TODO: using custom modal instead of Alert

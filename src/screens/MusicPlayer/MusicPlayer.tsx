@@ -1,5 +1,5 @@
 import 'react-native-gesture-handler'
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import {
   Easing,
   NativeSyntheticEvent,
@@ -8,6 +8,7 @@ import {
 import {
   View,
   H1,
+  Text,
   Pressable,
   Input,
   Button,
@@ -39,6 +40,11 @@ const MusicPlayer = (props: PropsT) => {
   useEffect(() => {
     touchAudioFile(audioId).catch(() => {})
   }, [audioId])
+
+  // Pause playback when the user leaves the player screen. Using a ref so
+  // we always invoke the latest pauseAudio (which closes over the current
+  // connection state etc.) on unmount, instead of a stale first-render copy.
+  const pauseRef = useRef<() => void>(() => {})
   const {
     playAudio,
     pauseAudio,
@@ -48,7 +54,26 @@ const MusicPlayer = (props: PropsT) => {
     currentPosition,
     duration,
     details,
+    capabilities,
+    connectionState,
+    hasActiveSession,
   } = useMusicPlayer(props.route.params.musicData)
+  const isSpotify = props.route.params.musicData.source === 'Spotify'
+  const showOpenSpotifyBanner =
+    isSpotify && connectionState === 'disconnected' && !hasActiveSession
+
+  pauseRef.current = pauseAudio
+  useEffect(() => {
+    return () => {
+      try {
+        pauseRef.current()
+      } catch {
+        // expo-audio may have already released the native shared object
+        // by the time this cleanup fires (especially when navigating
+        // between two tracks back-to-back). Safe to ignore.
+      }
+    }
+  }, [])
 
   const [trackName, setTrackName] = React.useState(details.trackName)
 
@@ -135,12 +160,36 @@ const MusicPlayer = (props: PropsT) => {
             disabled={false}
           />
 
-          <Tempo setRate={setAudioSpeed} />
+          {showOpenSpotifyBanner ? (
+            <View
+              sx={{
+                backgroundColor: 'surfaceMuted',
+                borderRadius: 8,
+                p: 3,
+                mt: 3,
+                width: '100%',
+              }}
+            >
+              <Text sx={{ mb: 3, color: 'text' }}>
+                Spotify isn't running. Tap resume to wake it back up — if no
+                Spotify device is active we'll bounce you into the app to start
+                playback.
+              </Text>
+              <Button variant="primary" size="sm" onPress={() => playAudio()}>
+                Resume playback
+              </Button>
+            </View>
+          ) : (
+            <Tempo setRate={setAudioSpeed} disabled={!capabilities.tempo} />
+          )}
         </View>
         <View sx={{ flex: 1, alignItems: 'flex-start' }}>
           <Cues
             currentPosition={currentPosition}
-            onPlayAudio={playAudio}
+            onPlayAtPosition={async (position) => {
+              await setAudioPosition(position)
+              playAudio()
+            }}
             onSeekToPosition={setAudioPosition}
             audioId={audioId}
           />

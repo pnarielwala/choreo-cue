@@ -20,9 +20,11 @@ import { Pressable, View, ThemeProvider, useTheme } from 'design'
 import Main from 'screens/Main'
 import MusicPlayer from 'screens/MusicPlayer'
 import DropboxNavigator from 'screens/DropboxNavigator'
+import SpotifyNavigator from 'screens/SpotifyNavigator'
 import ErrorBoundary from 'components/ErrorBoundary'
 import SelectSource from 'screens/SelectSource'
 import Settings from 'screens/Settings'
+import type { AudioSource } from 'api/db/audio'
 import { FontAwesome5 } from '@expo/vector-icons'
 import { migrateDbIfNeeded } from 'api/db/migrations'
 
@@ -38,12 +40,13 @@ import { migrateDbIfNeeded } from 'api/db/migrations'
 export type StacksT = {
   Home: undefined
   Player: {
-    musicData: { uri: string; name: string; id: number }
+    musicData: { uri: string; name: string; id: number; source?: AudioSource }
   }
   DropboxNavigator: {
     path: string
     name: string
   }
+  SpotifyNavigator: undefined
   SelectSource: undefined
   Settings: undefined
 }
@@ -121,6 +124,7 @@ const Navigation = ({ onLayoutRootView }: { onLayoutRootView: () => void }) => {
         {/* Modal Stack Screens */}
         <Stack.Group screenOptions={modalOptions}>
           <Stack.Screen name="DropboxNavigator" component={DropboxNavigator} />
+          <Stack.Screen name="SpotifyNavigator" component={SpotifyNavigator} />
         </Stack.Group>
       </Stack.Navigator>
 
