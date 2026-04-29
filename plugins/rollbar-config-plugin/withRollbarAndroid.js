@@ -1,18 +1,15 @@
 // plugins/rollbar-config-plugin/withRollbarAndroid.js
 const { withMainApplication, AndroidConfig } = require('@expo/config-plugins')
 
-const withRollbarAndroid = (config, { rollbarPostToken, environment }) => {
-  return withRollbarMainApplication(config, { rollbarPostToken, environment })
+const withRollbarAndroid = (config, { environment }) => {
+  return withRollbarMainApplication(config, { environment })
 }
 
-const withRollbarMainApplication = (
-  _config,
-  { rollbarPostToken, environment }
-) => {
+const withRollbarMainApplication = (_config, { environment }) => {
   return withMainApplication(_config, async (config) => {
     config.modResults.contents = modifyMainApplication({
       contents: config.modResults.contents,
-      rollbarPostToken,
+      rollbarPostToken: process.env.EXPO_ROLLBAR_ACCESS_TOKEN,
       environment,
       packageName: AndroidConfig.Package.getPackage(config),
     })
