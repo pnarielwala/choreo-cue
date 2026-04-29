@@ -4,7 +4,7 @@ index 0000000..0000001 100644
 +++ b/node_modules/react-native-spotify-remote/RNSpotifyRemote.podspec
 @@ -13,9 +13,9 @@ Pod::Spec.new do |s|
    s.platform     = :ios, "9.0"
-
+ 
    s.source       = { :git => package['repository']['url'], :tag => "v#{s.version}", :submodules => true }
 -  s.source_files  = "ios/*.{h,m}","ios/external/SpotifySDK/SpotifyiOS.framework/**/Headers/*.{h,m}"
 -  s.preserve_path = "ios/external/SpotifySDK/SpotifyiOS.framework"
@@ -12,6 +12,6 @@ index 0000000..0000001 100644
 +  s.source_files  = "ios/*.{h,m}"
 +  s.preserve_path = "ios/external/SpotifySDK/SpotifyiOS.xcframework"
 +  s.vendored_frameworks = "ios/external/SpotifySDK/SpotifyiOS.xcframework"
-
+ 
    s.dependency 'React-Core'
-
+ 
