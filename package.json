@@ -9,6 +9,7 @@
     "test": "jest --watch --coverage=false",
     "eject": "expo eject",
     "prepare": "husky",
+    "postinstall": "patch-package",
     "android": "expo run:android",
     "ios": "expo run:ios"
   },
@@ -80,6 +81,8 @@
     "jest-expo": "~55.0.0",
     "lint-staged": "^16.0.0",
     "mock-knex": "0.4.13",
+    "patch-package": "8.0.1",
+    "postinstall-postinstall": "2.1.0",
     "prettier": "3.8.3",
     "react-native-svg": "15.15.3",
     "react-native-svg-transformer": "^1.5.0",
