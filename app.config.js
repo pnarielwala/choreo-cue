@@ -23,7 +23,7 @@ module.exports = {
     scheme: 'choreo-cue',
     orientation: 'portrait',
     icon: './assets/icon.png',
-    userInterfaceStyle: 'light',
+    userInterfaceStyle: 'automatic',
     splash: {
       image: './src/assets/splash.png',
       resizeMode: 'contain',
