@@ -82,6 +82,8 @@ jobs:
         id: fingerprint
         env:
           APP_ENV: production
+          EXPO_ROLLBAR_ACCESS_TOKEN: ${{ secrets.EXPO_ROLLBAR_ACCESS_TOKEN }}
+          EXPO_SPOTIFY_CLIENT_ID: ${{ secrets.EXPO_SPOTIFY_CLIENT_ID }}
         run: |
           IOS_HASH=$(npx @expo/fingerprint fingerprint:generate --platform ios | jq -r '.hash')
           echo "ios_hash=$IOS_HASH" >> $GITHUB_OUTPUT
@@ -128,6 +130,9 @@ jobs:
       - name: Deploy OTA update
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          APP_ENV: production
+          EXPO_ROLLBAR_ACCESS_TOKEN: ${{ secrets.EXPO_ROLLBAR_ACCESS_TOKEN }}
+          EXPO_SPOTIFY_CLIENT_ID: ${{ secrets.EXPO_SPOTIFY_CLIENT_ID }}
           COMMIT_MESSAGE: ${{ github.event.head_commit.message || github.sha }}
         run: yarn eas update --branch production --message "$COMMIT_MESSAGE" --non-interactive
       - name: Notify Rollbar of deploy
