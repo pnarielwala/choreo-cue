@@ -9,7 +9,7 @@ index 0000000..0000001 100644
 -  s.source_files  = "ios/*.{h,m}","ios/external/SpotifySDK/SpotifyiOS.framework/**/Headers/*.{h,m}"
 -  s.preserve_path = "ios/external/SpotifySDK/SpotifyiOS.framework"
 -  s.vendored_frameworks = "ios/external/SpotifySDK/SpotifyiOS.framework"
-+  s.source_files  = "ios/*.{h,m}","ios/external/SpotifySDK/SpotifyiOS.xcframework/**/Headers/*.{h,m}"
++  s.source_files  = "ios/*.{h,m}"
 +  s.preserve_path = "ios/external/SpotifySDK/SpotifyiOS.xcframework"
 +  s.vendored_frameworks = "ios/external/SpotifySDK/SpotifyiOS.xcframework"
 
