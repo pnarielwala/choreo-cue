@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-spotify-remote/RNSpotifyRemote.podspec b/node_modules/react-native-spotify-remote/RNSpotifyRemote.podspec
-index 0000000..0000001 100644
+index 4ac5f28..a88a93c 100644
 --- a/node_modules/react-native-spotify-remote/RNSpotifyRemote.podspec
 +++ b/node_modules/react-native-spotify-remote/RNSpotifyRemote.podspec
 @@ -13,9 +13,9 @@ Pod::Spec.new do |s|
@@ -14,4 +14,4 @@ index 0000000..0000001 100644
 +  s.vendored_frameworks = "ios/external/SpotifySDK/SpotifyiOS.xcframework"
  
    s.dependency 'React-Core'
- 
+   
