@@ -9,7 +9,7 @@
     "test": "jest --watch --coverage=false",
     "eject": "expo eject",
     "prepare": "husky",
-    "postinstall": "patch-package",
+    "postinstall": "patch-package && rm -rf node_modules/react-native-spotify-remote/ios/external/SpotifySDK/SpotifyiOS.framework",
     "android": "expo run:android",
     "ios": "expo run:ios"
   },
