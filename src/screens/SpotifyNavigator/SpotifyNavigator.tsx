@@ -100,7 +100,7 @@ const SpotifyNavigator = (props: PropsT) => {
 
   const { mutate: pickTrack, isPending: saving } = useMutation({
     mutationFn: async (track: SpotifyTrack) => {
-      const fullName = `${track.name} — ${track.artists
+      const fullName = `${track.name} - ${track.artists
         .map((a) => a.name)
         .join(', ')}`
       const id = await addSpotifyAudioFile({

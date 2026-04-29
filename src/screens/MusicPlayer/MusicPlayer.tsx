@@ -171,7 +171,7 @@ const MusicPlayer = (props: PropsT) => {
               }}
             >
               <Text sx={{ mb: 3, color: 'text' }}>
-                Spotify isn't running. Tap resume to wake it back up — if no
+                Spotify isn't running. Tap resume to wake it back up - if no
                 Spotify device is active we'll bounce you into the app to start
                 playback.
               </Text>

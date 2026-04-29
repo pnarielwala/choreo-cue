@@ -97,8 +97,12 @@ export const clearSpotifyAuth = async () => {
   }
 }
 
+export type SpotifyAuthResult =
+  | { authenticated: true }
+  | { authenticated: false; reason: 'cancelled' | 'error' }
+
 type PropsT = {
-  onCheckAuth: (authenticated: boolean) => void
+  onCheckAuth: (result: SpotifyAuthResult) => void
 }
 
 const useSpotifyAuth = ({ onCheckAuth }: PropsT) => {
@@ -129,7 +133,7 @@ const useSpotifyAuth = ({ onCheckAuth }: PropsT) => {
       const verifier = requestRef.current?.codeVerifier
       if (!code || !verifier) {
         analytics.error('[Spotify Auth] missing code or verifier')
-        onCheckAuth(false)
+        onCheckAuth({ authenticated: false, reason: 'error' })
         return
       }
       exchangeCodeAsync(
@@ -151,14 +155,16 @@ const useSpotifyAuth = ({ onCheckAuth }: PropsT) => {
           }
           return persist(stored)
         })
-        .then(() => onCheckAuth(true))
+        .then(() => onCheckAuth({ authenticated: true }))
         .catch((e) => {
           analytics.error('[Spotify Auth] code exchange failed', e)
-          onCheckAuth(false)
+          onCheckAuth({ authenticated: false, reason: 'error' })
         })
     } else if (response?.type === 'error') {
       analytics.error('[Spotify Auth] authorization error')
-      onCheckAuth(false)
+      onCheckAuth({ authenticated: false, reason: 'error' })
+    } else if (response?.type === 'cancel' || response?.type === 'dismiss') {
+      onCheckAuth({ authenticated: false, reason: 'cancelled' })
     }
   }, [response])
 
@@ -167,7 +173,7 @@ const useSpotifyAuth = ({ onCheckAuth }: PropsT) => {
     if (cached) {
       try {
         await refreshIfNeeded(cached)
-        onCheckAuth(true)
+        onCheckAuth({ authenticated: true })
         return
       } catch {
         await clearSpotifyAuth()
