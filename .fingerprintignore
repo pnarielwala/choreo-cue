@@ -9,6 +9,12 @@ android/**/*
 # tracked via expoAutolinkingConfig, so native rebuild is still triggered on upgrades.
 node_modules/expo-sqlite/ios/**/*
 
+# react-native-spotify-remote vendors the SpotifyiOS xcframework with bitcode embedded. We strip
+# bitcode at install time (see scripts/strip-spotify-bitcode.sh), which produces stable bytes per
+# environment but can drift between local and EAS. SDK version changes are still tracked via the
+# package's podspec/package.json which sit outside ios/external/.
+node_modules/react-native-spotify-remote/ios/external/**/*
+
 # Transitive deps of config plugins - pure JS validation/utility libs with no native impact.
 # Their require() resolution can differ between macOS local and Linux EAS build environments,
 # causing fingerprint mismatches. The actual config plugins (expo-build-properties, expo-router,
