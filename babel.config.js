@@ -33,6 +33,7 @@ module.exports = function (api) {
           alias: {
             ...alias,
             'expo-sqlite/next': require.resolve('expo-sqlite'),
+            'live-activity': './modules/live-activity',
           },
         },
       ],

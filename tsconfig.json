@@ -4,6 +4,7 @@
     "strict": true,
     "noImplicitAny": false,
     "paths": {
+      "live-activity": ["./modules/live-activity"],
       "*": ["./src/*"]
     },
     "types": ["jest", "node"]

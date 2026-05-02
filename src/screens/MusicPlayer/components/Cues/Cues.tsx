@@ -5,8 +5,8 @@ import Toast from 'react-native-toast-message'
 import { Pressable, View, Flex, Text, SectionHeader } from 'design'
 
 import CueButton from './components/CueButton'
-import { deleteAllCues, getAllCues, saveCue } from 'api/db/cues'
-import { useQuery } from '@tanstack/react-query'
+import { deleteAllCues, saveCue } from 'api/db/cues'
+import useCues from 'hooks/useCues'
 
 export type PropsT = {
   currentPosition: number
@@ -18,15 +18,7 @@ export type PropsT = {
 const SLOTS = [1, 2, 3, 4] as const
 
 const Cues = (props: PropsT) => {
-  const { data, refetch } = useQuery({
-    queryKey: ['cues', props.audioId],
-    queryFn: () => getAllCues(props.audioId),
-    select: (data) =>
-      data.reduce(
-        (acc, cue) => ({ ...acc, [cue.cueNumber]: cue.start }),
-        {} as Record<number, number>
-      ),
-  })
+  const { data, refetch } = useCues(props.audioId)
 
   const cues = data || {}
 
