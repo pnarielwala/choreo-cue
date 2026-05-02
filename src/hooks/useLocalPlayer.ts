@@ -23,8 +23,29 @@ const useLocalPlayer = (
     setAudioModeAsync({
       playsInSilentMode: true,
       shouldPlayInBackground: true,
+      interruptionMode: 'doNotMix',
     })
   }, [])
+
+  useEffect(() => {
+    if (!source) return
+    try {
+      player.setActiveForLockScreen(
+        true,
+        { title: source.name },
+        { showSeekForward: true, showSeekBackward: true }
+      )
+    } catch {
+      /* native object already released */
+    }
+    return () => {
+      try {
+        player.setActiveForLockScreen(false)
+      } catch {
+        /* native object already released */
+      }
+    }
+  }, [player, source?.uri, source?.name])
 
   // expo-audio occasionally releases its native shared object before our
   // own cleanups run (e.g. fast back-to-back navigation between two
