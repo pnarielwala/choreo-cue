@@ -25,6 +25,8 @@ import Cues from './components/Cues'
 import Controls from './components/Controls/Controls'
 import Tempo from './components/Tempo'
 import useMusicPlayer from 'hooks/useMusicPlayer'
+import useCues from 'hooks/useCues'
+import useLiveActivity from 'hooks/useLiveActivity'
 import { ScreenPropsT } from 'App'
 import { Dialog } from 'react-native-elements'
 import { touchAudioFile, updateAudioName } from 'api/db/audio'
@@ -76,6 +78,22 @@ const MusicPlayer = (props: PropsT) => {
   }, [])
 
   const [trackName, setTrackName] = React.useState(details.trackName)
+
+  const { data: cuesByNumber } = useCues(audioId)
+  useLiveActivity({
+    audioId,
+    trackName,
+    isPlaying,
+    currentMs: currentPosition,
+    durationMs: duration,
+    cuesByNumber: cuesByNumber || {},
+    onCueTap: async (cueNumber) => {
+      const position = (cuesByNumber || {})[cueNumber]
+      if (position == null) return
+      await setAudioPosition(position)
+      playAudio()
+    },
+  })
 
   const [isVisible, setIsVisible] = React.useState(false)
   const [inputValue, setInputValue] = React.useState(

@@ -1,0 +1,9 @@
+{
+  "name": "live-activity",
+  "version": "0.0.1",
+  "description": "Local Expo module bridging ActivityKit Live Activities for cue jump-to controls.",
+  "main": "index.ts",
+  "license": "MIT",
+  "author": "Choreo Cue",
+  "homepage": "https://github.com/pnarielwala/choreo-cue"
+}

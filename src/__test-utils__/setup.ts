@@ -48,6 +48,14 @@ jest.mock('expo-secure-store', () => ({
   },
 }))
 
+jest.mock('live-activity', () => ({
+  startActivity: jest.fn(async () => null),
+  updateActivity: jest.fn(async () => {}),
+  endActivity: jest.fn(async () => {}),
+  areActivitiesEnabled: jest.fn(() => false),
+  addCueTapListener: jest.fn(() => ({ remove: jest.fn() })),
+}))
+
 jest.mock('expo-constants', () => ({
   manifest: {
     extra: {

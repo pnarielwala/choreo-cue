@@ -63,6 +63,7 @@ module.exports = {
         {
           ios: {
             useFrameworks: 'static',
+            deploymentTarget: '17.0',
             extraPods: [
               { name: 'RollbarReport', modular_headers: true },
               { name: 'RollbarCrash', modular_headers: true },
@@ -72,6 +73,7 @@ module.exports = {
       ],
       ['./plugins/rollbar-config-plugin', { environment: 'production' }],
       './plugins/spotify-config-plugin',
+      './plugins/live-activity-plugin',
     ],
     runtimeVersion: {
       policy: 'fingerprint',
