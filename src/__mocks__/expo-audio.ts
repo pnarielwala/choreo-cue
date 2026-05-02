@@ -35,6 +35,9 @@ const mockPlayer = {
   setPlaybackRate: jest.fn((rate: number) => {
     _rate = rate
   }),
+  setActiveForLockScreen: jest.fn(),
+  updateLockScreenMetadata: jest.fn(),
+  clearLockScreenControls: jest.fn(),
 }
 
 function reset() {
@@ -48,7 +51,12 @@ function reset() {
   mockPlayer.pause.mockClear()
   mockPlayer.seekTo.mockClear()
   mockPlayer.setPlaybackRate.mockClear()
+  mockPlayer.setActiveForLockScreen.mockClear()
+  mockPlayer.updateLockScreenMetadata.mockClear()
+  mockPlayer.clearLockScreenControls.mockClear()
 }
+
+export { mockPlayer as __mockPlayer }
 
 export const useAudioPlayer = jest.fn(() => {
   useEffect(() => reset, [])

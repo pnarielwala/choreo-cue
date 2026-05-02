@@ -14,6 +14,9 @@ import {
   within,
 } from '__test-utils__/rntl'
 import mockKnex from 'mock-knex'
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore — exported by the manual mock
+import { __mockPlayer } from 'expo-audio'
 
 import { act } from 'react-test-renderer'
 
@@ -56,6 +59,30 @@ beforeEach(() => {
       query.response([])
     }
   })
+})
+
+it('activates iOS lock screen controls when a local track loads and clears on unmount', async () => {
+  __mockPlayer.setActiveForLockScreen.mockClear()
+
+  const { unmount } = doRenderWithProviders({
+    musicData: {
+      name: 'Toosie Slide - Drake.mp3',
+      uri: 'file://song.mp3',
+      id: 1,
+    },
+  })
+
+  await waitFor(() => {
+    expect(__mockPlayer.setActiveForLockScreen).toHaveBeenCalledWith(
+      true,
+      { title: 'Toosie Slide - Drake.mp3' },
+      { showSeekForward: true, showSeekBackward: true }
+    )
+  })
+
+  unmount()
+
+  expect(__mockPlayer.setActiveForLockScreen).toHaveBeenLastCalledWith(false)
 })
 
 it('should display audio title', async () => {
