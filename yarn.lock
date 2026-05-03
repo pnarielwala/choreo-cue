@@ -1540,10 +1540,10 @@
   dependencies:
     cross-spawn "^7.0.3"
 
-"@expo/steps@18.8.0":
-  version "18.8.0"
-  resolved "https://registry.yarnpkg.com/@expo/steps/-/steps-18.8.0.tgz#f986005631646e16b0ba92d2c08494073386e7af"
-  integrity sha512-Q/TjLLI+pXN/stS43+7KSedgKppPO9W4m2eCTg/7nU0DMlryaeL0qRr21YHO0jQQt5S3raKlFNX4SYEqkZIHbA==
+"@expo/steps@18.9.0":
+  version "18.9.0"
+  resolved "https://registry.yarnpkg.com/@expo/steps/-/steps-18.9.0.tgz#f8f285349a65eba1dd513a6e4621095f2df26928"
+  integrity sha512-j6s2+ONNh+PQ5t0EjzgW8vzErJoHO7XGwu3ic2Rm+Cydiu3R2POxQhi9C9nQPvwZuFTpBbPlmningSILycAsLA==
   dependencies:
     "@expo/eas-build-job" "18.8.0"
     "@expo/logger" "18.5.0"
@@ -2597,17 +2597,17 @@
     deepmerge "^4.3.1"
     svgo "^3.0.2"
 
-"@tanstack/query-core@5.100.6":
-  version "5.100.6"
-  resolved "https://registry.yarnpkg.com/@tanstack/query-core/-/query-core-5.100.6.tgz#2f6dc032aaae1f327d85d3b977e6d530c948a91f"
-  integrity sha512-Os2CPUr98to98RYm+D4qGqGkiffn7MGSyl2547a4MljVkHE30AMJRqTiyCqBfMwzAx/I91vCkAxp5tHSla6Twg==
+"@tanstack/query-core@5.100.9":
+  version "5.100.9"
+  resolved "https://registry.yarnpkg.com/@tanstack/query-core/-/query-core-5.100.9.tgz#dcf44ef25cf42a4da229bcab1d8d33e80a740a99"
+  integrity sha512-SJSFw1S8+kQ0+knv/XGfrbocWoAlT7vDKsSImtLx3ZPQmEcR46hkDjLSvynSy25N8Ms4tIEini1FuBd5k7IscQ==
 
 "@tanstack/react-query@^5.51.21":
-  version "5.100.6"
-  resolved "https://registry.yarnpkg.com/@tanstack/react-query/-/react-query-5.100.6.tgz#f69aefc2136b1e7126e630e0d7881cf7b7e25c77"
-  integrity sha512-uVSrps0PV16Cxmcn2rvL+dUhwTpTUtiRW347AEeYxMZXO2pZe9ja7E24PAMGoQ5u2g89DD8u4QhOviBk+RN8RA==
+  version "5.100.9"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-query/-/react-query-5.100.9.tgz#0c701bf56f38b484602255a92d4c9e452a04807d"
+  integrity sha512-Oa44XkaI3kCNN6ME0KByU3xT3SEUNOMfZpHxL6+wFoTm+OeUFYHKdeYVe0aOXlRDm/f15sgLwEt2HDorIdW8+A==
   dependencies:
-    "@tanstack/query-core" "5.100.6"
+    "@tanstack/query-core" "5.100.9"
 
 "@testing-library/jest-native@5.4.3":
   version "5.4.3"
@@ -3181,11 +3181,11 @@ await-lock@^2.2.2:
   integrity sha512-aDczADvlvTGajTDjcjpJMqRkOF6Qdz3YbPZm/PyW6tKPkx2hlYBzxMhEywM/tU72HrVZjgl5VCdRuMlA7pZ8Gw==
 
 axios@^1.7.3:
-  version "1.15.2"
-  resolved "https://registry.yarnpkg.com/axios/-/axios-1.15.2.tgz#eb8fb6d30349abace6ade5b4cb4d9e8a0dc23e5b"
-  integrity sha512-wLrXxPtcrPTsNlJmKjkPnNPK2Ihe0hn0wGSaTEiHRPxwjvJwT3hKmXF4dpqxmPO9SoNb2FsYXj/xEo0gHN+D5A==
+  version "1.16.0"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-1.16.0.tgz#f8e5dd931cef2a5f8c32216d5784eda2f8750eb7"
+  integrity sha512-6hp5CwvTPlN2A31g5dxnwAX0orzM7pmCRDLnZSX772mv8WDqICwFjowHuPs04Mc8deIld1+ejhtaMn5vp6b+1w==
   dependencies:
-    follow-redirects "^1.15.11"
+    follow-redirects "^1.16.0"
     form-data "^4.0.5"
     proxy-from-env "^2.1.0"
 
@@ -4559,10 +4559,10 @@ dunder-proto@^1.0.1:
     es-errors "^1.3.0"
     gopd "^1.2.0"
 
-eas-cli@18.8.1:
-  version "18.8.1"
-  resolved "https://registry.yarnpkg.com/eas-cli/-/eas-cli-18.8.1.tgz#54364e6e2ddc48fe8f83947ea08ae9f979f8f56e"
-  integrity sha512-C3U2qDj1yKt7Xztx9wBBT5on8w9dIzxpbpGO3qZ9tK58QiHAo3mKIgS5IujzY3r/K2VuAq6zZc9g3zhAgOkL3Q==
+eas-cli@18.9.1:
+  version "18.9.1"
+  resolved "https://registry.yarnpkg.com/eas-cli/-/eas-cli-18.9.1.tgz#21a04ba23c71153e20ac9644b0405fda340b4fd0"
+  integrity sha512-Wl7oq+wvFdi/+a9bIihJQWorMscSUcvigb6TKhIeDAwN+enH2Z6ZP7p8sIaoUa3L0aYO0JUiMQIFPlFIMo+POA==
   dependencies:
     "@expo/apple-utils" "2.1.19"
     "@expo/code-signing-certificates" "0.0.5"
@@ -4584,7 +4584,7 @@ eas-cli@18.8.1:
     "@expo/results" "1.0.0"
     "@expo/rudder-sdk-node" "1.1.1"
     "@expo/spawn-async" "1.7.2"
-    "@expo/steps" "18.8.0"
+    "@expo/steps" "18.9.0"
     "@expo/timeago.js" "1.0.0"
     "@oclif/core" "^4.8.3"
     "@oclif/plugin-autocomplete" "^3.2.40"
@@ -5435,7 +5435,7 @@ flow-enums-runtime@^0.0.6:
   resolved "https://registry.yarnpkg.com/flow-enums-runtime/-/flow-enums-runtime-0.0.6.tgz#5bb0cd1b0a3e471330f4d109039b7eba5cb3e787"
   integrity sha512-3PYnM29RFXwvAN6Pc/scUfkI7RwhQ/xqyLUyPNlXUp9S40zI8nup9tUSrTLSVnWGBN38FNiGWbwZOB6uR4OGdw==
 
-follow-redirects@^1.15.11:
+follow-redirects@^1.16.0:
   version "1.16.0"
   resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.16.0.tgz#28474a159d3b9d11ef62050a14ed60e4df6d61bc"
   integrity sha512-y5rN/uOsadFT/JfYwhxRS5R7Qce+g3zG97+JrtFZlC9klX/W5hD7iiLzScI4nZqUS7DNUdhPgw4xI8W2LuXlUw==
@@ -6986,10 +6986,10 @@ kleur@^3.0.3:
   resolved "https://registry.yarnpkg.com/kleur/-/kleur-3.0.3.tgz#a79c9ecc86ee1ce3fa6206d1216c501f147fc07e"
   integrity sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==
 
-knex@3.2.9:
-  version "3.2.9"
-  resolved "https://registry.yarnpkg.com/knex/-/knex-3.2.9.tgz#6fa1e570d18dab99d5e95d911b04a96c2ce8e549"
-  integrity sha512-dtAILTjBMaG8YloP5oBxohDIKyIsdQ/TkcVvSjhsksvsjeH63Y0PADyuMDfNZKbVT3Rlx3vEYVBlecbPT/KerA==
+knex@3.2.10:
+  version "3.2.10"
+  resolved "https://registry.yarnpkg.com/knex/-/knex-3.2.10.tgz#ca8f77a10851b1e18b26463a6dc995e563c3b165"
+  integrity sha512-oypTHfrc9i72iyxaUQBKHOxhcr0xM65MPf6FpN02nimsftXwzXprIkLjfXdubvhbu4PMWLp023q8o8CYvHSuZw==
   dependencies:
     colorette "2.0.19"
     commander "^10.0.0"
@@ -6999,7 +6999,7 @@ knex@3.2.9:
     get-package-type "^0.1.0"
     getopts "2.3.0"
     interpret "^2.2.0"
-    lodash "^4.17.21"
+    lodash "^4.18.1"
     pg-connection-string "2.6.2"
     rechoir "^0.8.0"
     resolve-from "^5.0.0"
@@ -7197,7 +7197,7 @@ lodash@4.17.21:
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz#679591c564c3bffaae8454cf0b3df370c3d6911c"
   integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
 
-lodash@^4.14.2, lodash@^4.17.15, lodash@^4.17.19, lodash@^4.17.21:
+lodash@^4.14.2, lodash@^4.17.15, lodash@^4.17.19, lodash@^4.17.21, lodash@^4.18.1:
   version "4.18.1"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.18.1.tgz#ff2b66c1f6326d59513de2407bf881439812771c"
   integrity sha512-dMInicTPVE8d1e5otfwmmjlxkZoUpiVLwyeTdUsi/Caj/gfzzblBcCE5sRHV/AsjuCmxWrte2TNGSYuCeCq+0Q==
