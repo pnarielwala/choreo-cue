@@ -118,8 +118,23 @@ function withWidgetXcodeTarget(config, opts) {
       target.uuid
     )
 
-    // 4. Build settings on both Debug and Release.
+    // 4. Build settings on both Debug and Release. The widget target
+    //    needs DEVELOPMENT_TEAM or xcodebuild fails before code signing
+    //    can run. Source order: explicit `ios.appleTeamId` from Expo
+    //    config, then any team already on another target's build
+    //    settings (set by Expo prebuild or a prior plugin).
     const configurations = project.pbxXCBuildConfigurationSection()
+    let developmentTeam = config.ios && config.ios.appleTeamId
+    if (!developmentTeam) {
+      for (const key in configurations) {
+        if (typeof configurations[key] !== 'object') continue
+        const settings = configurations[key].buildSettings || {}
+        if (settings.DEVELOPMENT_TEAM) {
+          developmentTeam = settings.DEVELOPMENT_TEAM.replace(/^"|"$/g, '')
+          break
+        }
+      }
+    }
     for (const key in configurations) {
       if (typeof configurations[key] !== 'object') continue
       const buildSettings = configurations[key].buildSettings || {}
@@ -137,6 +152,9 @@ function withWidgetXcodeTarget(config, opts) {
           '"$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks"'
         buildSettings.SKIP_INSTALL = 'YES'
         buildSettings.TARGETED_DEVICE_FAMILY = '"1,2"'
+        if (developmentTeam) {
+          buildSettings.DEVELOPMENT_TEAM = developmentTeam
+        }
       }
     }
 

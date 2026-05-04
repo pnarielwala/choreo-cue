@@ -37,6 +37,7 @@ module.exports = {
     ios: {
       supportsTablet: true,
       bundleIdentifier: env.bundleIdentifier,
+      appleTeamId: '6DAFPMK62W',
       infoPlist: {
         UIBackgroundModes: ['audio'],
       },
