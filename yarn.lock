@@ -1540,10 +1540,10 @@
   dependencies:
     cross-spawn "^7.0.3"
 
-"@expo/steps@18.8.0":
-  version "18.8.0"
-  resolved "https://registry.yarnpkg.com/@expo/steps/-/steps-18.8.0.tgz#f986005631646e16b0ba92d2c08494073386e7af"
-  integrity sha512-Q/TjLLI+pXN/stS43+7KSedgKppPO9W4m2eCTg/7nU0DMlryaeL0qRr21YHO0jQQt5S3raKlFNX4SYEqkZIHbA==
+"@expo/steps@18.9.0":
+  version "18.9.0"
+  resolved "https://registry.yarnpkg.com/@expo/steps/-/steps-18.9.0.tgz#f8f285349a65eba1dd513a6e4621095f2df26928"
+  integrity sha512-j6s2+ONNh+PQ5t0EjzgW8vzErJoHO7XGwu3ic2Rm+Cydiu3R2POxQhi9C9nQPvwZuFTpBbPlmningSILycAsLA==
   dependencies:
     "@expo/eas-build-job" "18.8.0"
     "@expo/logger" "18.5.0"
@@ -4559,10 +4559,10 @@ dunder-proto@^1.0.1:
     es-errors "^1.3.0"
     gopd "^1.2.0"
 
-eas-cli@18.8.1:
-  version "18.8.1"
-  resolved "https://registry.yarnpkg.com/eas-cli/-/eas-cli-18.8.1.tgz#54364e6e2ddc48fe8f83947ea08ae9f979f8f56e"
-  integrity sha512-C3U2qDj1yKt7Xztx9wBBT5on8w9dIzxpbpGO3qZ9tK58QiHAo3mKIgS5IujzY3r/K2VuAq6zZc9g3zhAgOkL3Q==
+eas-cli@18.10.0:
+  version "18.10.0"
+  resolved "https://registry.yarnpkg.com/eas-cli/-/eas-cli-18.10.0.tgz#af63a30cb476e2e9d01d95d2936b886fa5291646"
+  integrity sha512-SnFX3B5JCjl/NUxsAomJ0afzW00bc8UZVoIqHmLxxDXksMxQO33Cp21u9Qgny6/+tEO6VLyOF2aS6tzHQqPIeQ==
   dependencies:
     "@expo/apple-utils" "2.1.19"
     "@expo/code-signing-certificates" "0.0.5"
@@ -4584,7 +4584,7 @@ eas-cli@18.8.1:
     "@expo/results" "1.0.0"
     "@expo/rudder-sdk-node" "1.1.1"
     "@expo/spawn-async" "1.7.2"
-    "@expo/steps" "18.8.0"
+    "@expo/steps" "18.9.0"
     "@expo/timeago.js" "1.0.0"
     "@oclif/core" "^4.8.3"
     "@oclif/plugin-autocomplete" "^3.2.40"
