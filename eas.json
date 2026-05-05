@@ -7,7 +7,7 @@
       "channel": "development",
       "env": {
         "APP_ENV": "development",
-        "LIVE_ACTIVITY_PROVISIONING_PROFILE": "Choreo Cue Dev Live Activity Ad Hoc"
+        "LIVE_ACTIVITY_PROVISIONING_PROFILE": "6298d4b8-c88c-4523-907b-380cc0c11843"
       }
     },
     "production": {
