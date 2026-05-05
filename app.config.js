@@ -52,7 +52,28 @@ module.exports = {
       blockedPermissions: ['android.permission.RECORD_AUDIO'],
     },
     web: { favicon: './assets/favicon.png' },
-    extra: { eas: { projectId: '67b74356-e2b9-428a-8388-c05d0629a0be' } },
+    extra: {
+      eas: {
+        projectId: '67b74356-e2b9-428a-8388-c05d0629a0be',
+        build: {
+          experimental: {
+            ios: {
+              appExtensions: [
+                {
+                  targetName: 'ChoreoCueLiveActivity',
+                  bundleIdentifier: `${env.bundleIdentifier}.LiveActivityExtension`,
+                  entitlements: {
+                    'com.apple.security.application-groups': [
+                      'group.com.pnarielwala.choreo-cue',
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
+    },
     plugins: [
       'expo-font',
       'expo-router',

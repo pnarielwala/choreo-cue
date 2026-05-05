@@ -33,7 +33,7 @@ jobs:
       - name: Build development client
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: yarn eas build --profile development --platform ios --non-interactive
+        run: yarn eas build --profile development --platform ios --clear-cache --non-interactive
 
       - name: Get build URL
         id: build
