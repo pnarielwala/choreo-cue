@@ -18,8 +18,8 @@ web-build/
 
 # Builds
 *.ipa
-ios/
-android/
+/ios/
+/android/
 
 # Metro
 .metro-health-check*

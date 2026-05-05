@@ -5,6 +5,7 @@ import {
   updateActivity,
   endActivity,
   addCueTapListener,
+  areActivitiesEnabled,
   type ActivityState,
   type CueSlot,
 } from 'live-activity'
@@ -54,15 +55,20 @@ const useLiveActivity = (args: Args) => {
       durationMs: args.durationMs,
       cues: buildCueSlots(args.cuesByNumber),
     }
+    console.log('[LiveActivity] areActivitiesEnabled:', areActivitiesEnabled())
+    console.log('[LiveActivity] startActivity called with state:', initialState)
     startActivity(initialState)
       .then((id) => {
+        console.log('[LiveActivity] startActivity resolved with id:', id)
         if (cancelled && id) {
           endActivity(id).catch(() => {})
           return
         }
         activityIdRef.current = id
       })
-      .catch(() => {})
+      .catch((err) => {
+        console.log('[LiveActivity] startActivity rejected:', err)
+      })
     return () => {
       cancelled = true
       const id = activityIdRef.current
