@@ -87,7 +87,7 @@ private struct CueRow: View {
           .frame(maxWidth: .infinity, minHeight: 44)
         }
         .buttonStyle(.bordered)
-        .tint(unset ? .gray : .accentColor)
+        .tint(unset ? Color.gray : cueSlotColor(idx + 1))
         .disabled(unset)
       }
     }
@@ -106,6 +106,29 @@ private func formatMsPadded(_ ms: Int) -> String {
   let m = totalSeconds / 60
   let s = totalSeconds % 60
   return String(format: "%02d:%02d", m, s)
+}
+
+// Cue slot colors mirror src/design/tokens/palette.ts cueDefaults.dark.
+// The Live Activity background is always the dark "activity tint" we set
+// on ActivityConfiguration, so the dark-mode hexes give the closest
+// match to what the user sees in the app.
+private func cueSlotColor(_ slot: Int) -> Color {
+  switch slot {
+  case 1: return Color(hex: 0xC63961)
+  case 2: return Color(hex: 0x30A6A2)
+  case 3: return Color(hex: 0x39AC5A)
+  case 4: return Color(hex: 0xD1C647)
+  default: return .accentColor
+  }
+}
+
+private extension Color {
+  init(hex: UInt32) {
+    let r = Double((hex >> 16) & 0xFF) / 255.0
+    let g = Double((hex >> 8) & 0xFF) / 255.0
+    let b = Double(hex & 0xFF) / 255.0
+    self.init(red: r, green: g, blue: b)
+  }
 }
 
 @main
