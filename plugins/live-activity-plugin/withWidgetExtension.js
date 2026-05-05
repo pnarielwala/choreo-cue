@@ -135,6 +135,13 @@ function withWidgetXcodeTarget(config, opts) {
         }
       }
     }
+    // Manual signing: if LIVE_ACTIVITY_PROVISIONING_PROFILE is set
+    // (typically via eas.json env per build profile), pin the widget to
+    // that profile so EAS doesn't need to know about the extra target
+    // during its single-target signing-injection step. Falls back to
+    // Automatic signing for local Xcode builds where the developer can
+    // auto-generate a profile.
+    const manualProfile = process.env.LIVE_ACTIVITY_PROVISIONING_PROFILE
     for (const key in configurations) {
       if (typeof configurations[key] !== 'object') continue
       const buildSettings = configurations[key].buildSettings || {}
@@ -144,7 +151,6 @@ function withWidgetXcodeTarget(config, opts) {
         buildSettings.PRODUCT_BUNDLE_IDENTIFIER = `"${bundleIdentifier}"`
         buildSettings.INFOPLIST_FILE = `"${targetName}/${PLIST_FILE}"`
         buildSettings.CODE_SIGN_ENTITLEMENTS = `"${targetName}/${ENTITLEMENTS_FILE}"`
-        buildSettings.CODE_SIGN_STYLE = 'Automatic'
         buildSettings.CURRENT_PROJECT_VERSION = '1'
         buildSettings.MARKETING_VERSION = '1.0'
         buildSettings.GENERATE_INFOPLIST_FILE = 'NO'
@@ -154,6 +160,13 @@ function withWidgetXcodeTarget(config, opts) {
         buildSettings.TARGETED_DEVICE_FAMILY = '"1,2"'
         if (developmentTeam) {
           buildSettings.DEVELOPMENT_TEAM = developmentTeam
+        }
+        if (manualProfile) {
+          buildSettings.CODE_SIGN_STYLE = 'Manual'
+          buildSettings.CODE_SIGN_IDENTITY = '"Apple Distribution"'
+          buildSettings.PROVISIONING_PROFILE_SPECIFIER = `"${manualProfile}"`
+        } else {
+          buildSettings.CODE_SIGN_STYLE = 'Automatic'
         }
       }
     }

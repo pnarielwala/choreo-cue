@@ -5,13 +5,19 @@
       "developmentClient": true,
       "distribution": "internal",
       "channel": "development",
-      "env": { "APP_ENV": "development" }
+      "env": {
+        "APP_ENV": "development",
+        "LIVE_ACTIVITY_PROVISIONING_PROFILE": "Choreo Cue Dev Live Activity Ad Hoc"
+      }
     },
     "production": {
       "autoIncrement": true,
       "node": "22.11.0",
       "channel": "production",
-      "env": { "APP_ENV": "production" }
+      "env": {
+        "APP_ENV": "production",
+        "LIVE_ACTIVITY_PROVISIONING_PROFILE": "Choreo Cue Live Activity App Store"
+      }
     }
   },
   "submit": {
