@@ -77,9 +77,14 @@ private struct CueRow: View {
         let position = state.cuePositionsMs[idx]
         let unset = position < 0
         Button(intent: JumpToCueIntent(audioId: audioId, cueNumber: idx + 1)) {
-          Text("\(idx + 1)")
-            .font(.system(size: 16, weight: .semibold, design: .rounded))
-            .frame(maxWidth: .infinity, minHeight: 36)
+          VStack(spacing: 2) {
+            Text("\(idx + 1)")
+              .font(.system(size: 16, weight: .semibold, design: .rounded))
+            Text(unset ? "--:--" : formatMsPadded(position))
+              .font(.system(size: 10, weight: .regular, design: .monospaced))
+              .opacity(unset ? 0.5 : 0.85)
+          }
+          .frame(maxWidth: .infinity, minHeight: 44)
         }
         .buttonStyle(.bordered)
         .tint(unset ? .gray : .accentColor)
@@ -94,6 +99,13 @@ private func formatMs(_ ms: Int) -> String {
   let m = totalSeconds / 60
   let s = totalSeconds % 60
   return String(format: "%d:%02d", m, s)
+}
+
+private func formatMsPadded(_ ms: Int) -> String {
+  let totalSeconds = max(ms, 0) / 1000
+  let m = totalSeconds / 60
+  let s = totalSeconds % 60
+  return String(format: "%02d:%02d", m, s)
 }
 
 @main
