@@ -89,9 +89,21 @@ const MusicPlayer = (props: PropsT) => {
     cuesByNumber: cuesByNumber || {},
     onCueTap: async (cueNumber) => {
       const position = (cuesByNumber || {})[cueNumber]
+      console.log(
+        '[LiveActivity] onCueTap handler: cueNumber=',
+        cueNumber,
+        'position=',
+        position
+      )
       if (position == null) return
-      await setAudioPosition(position)
-      playAudio()
+      try {
+        await setAudioPosition(position)
+        console.log('[LiveActivity] setAudioPosition resolved')
+        playAudio()
+        console.log('[LiveActivity] playAudio called')
+      } catch (err) {
+        console.log('[LiveActivity] seek/play failed:', err)
+      }
     },
   })
 

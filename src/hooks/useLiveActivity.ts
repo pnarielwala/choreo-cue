@@ -38,7 +38,18 @@ const useLiveActivity = (args: Args) => {
   // Subscribe once to cue-tap events from the widget extension.
   useEffect(() => {
     const sub = addCueTapListener((event) => {
-      if (event.audioId !== args.audioId) return
+      console.log('[LiveActivity] onCueTap event received:', event)
+      if (event.audioId !== args.audioId) {
+        console.log(
+          '[LiveActivity] event audioId',
+          event.audioId,
+          'does not match current',
+          args.audioId,
+          '- ignoring'
+        )
+        return
+      }
+      console.log('[LiveActivity] dispatching cueNumber', event.cueNumber)
       onCueTapRef.current(event.cueNumber)
     })
     return () => sub.remove()

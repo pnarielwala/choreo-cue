@@ -130,12 +130,15 @@ public class LiveActivityModule: Module {
   }
 
   private func handleDarwinTap() {
+    NSLog("[LiveActivityModule] Darwin tap fired")
     guard let defaults = UserDefaults(suiteName: appGroupId),
           let payload = defaults.dictionary(forKey: pendingTapKey),
           let audioId = payload["audioId"] as? Int,
           let cueNumber = payload["cueNumber"] as? Int else {
+      NSLog("[LiveActivityModule] Darwin tap missing payload in App Group")
       return
     }
+    NSLog("[LiveActivityModule] emitting onCueTap audioId=\(audioId) cue=\(cueNumber)")
     sendEvent("onCueTap", [
       "audioId": audioId,
       "cueNumber": cueNumber,
