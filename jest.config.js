@@ -9,5 +9,6 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/src/__test-utils__/setupEnv.ts'],
   moduleNameMapper: {
     '\\.svg': '<rootDir>/src/__test-utils__/svgMock.tsx',
+    '^live-activity$': '<rootDir>/modules/live-activity',
   },
 }

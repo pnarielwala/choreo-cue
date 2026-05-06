@@ -37,6 +37,7 @@ module.exports = {
     ios: {
       supportsTablet: true,
       bundleIdentifier: env.bundleIdentifier,
+      appleTeamId: '6DAFPMK62W',
       infoPlist: {
         UIBackgroundModes: ['audio'],
       },
@@ -51,7 +52,28 @@ module.exports = {
       blockedPermissions: ['android.permission.RECORD_AUDIO'],
     },
     web: { favicon: './assets/favicon.png' },
-    extra: { eas: { projectId: '67b74356-e2b9-428a-8388-c05d0629a0be' } },
+    extra: {
+      eas: {
+        projectId: '67b74356-e2b9-428a-8388-c05d0629a0be',
+        build: {
+          experimental: {
+            ios: {
+              appExtensions: [
+                {
+                  targetName: 'ChoreoCueLiveActivity',
+                  bundleIdentifier: `${env.bundleIdentifier}.LiveActivityExtension`,
+                  entitlements: {
+                    'com.apple.security.application-groups': [
+                      'group.com.pnarielwala.choreo-cue',
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
+    },
     plugins: [
       'expo-font',
       'expo-router',
@@ -63,6 +85,7 @@ module.exports = {
         {
           ios: {
             useFrameworks: 'static',
+            deploymentTarget: '17.0',
             extraPods: [
               { name: 'RollbarReport', modular_headers: true },
               { name: 'RollbarCrash', modular_headers: true },
@@ -72,6 +95,7 @@ module.exports = {
       ],
       ['./plugins/rollbar-config-plugin', { environment: 'production' }],
       './plugins/spotify-config-plugin',
+      './plugins/live-activity-plugin',
     ],
     runtimeVersion: {
       policy: 'fingerprint',
