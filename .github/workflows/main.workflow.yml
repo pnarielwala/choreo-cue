@@ -68,7 +68,8 @@ jobs:
     needs: [typecheck, test]
     runs-on: ubuntu-latest
     outputs:
-      needs_native_build: ${{ steps.result.outputs.needs_native_build }}
+      needs_native_build_ios: ${{ steps.result.outputs.needs_native_build_ios }}
+      needs_native_build_android: ${{ steps.result.outputs.needs_native_build_android }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -78,7 +79,7 @@ jobs:
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**', 'package.json') }}
-      - name: Generate fingerprint
+      - name: Generate fingerprints
         id: fingerprint
         env:
           APP_ENV: production
@@ -86,7 +87,9 @@ jobs:
           EXPO_SPOTIFY_CLIENT_ID: ${{ secrets.EXPO_SPOTIFY_CLIENT_ID }}
         run: |
           IOS_HASH=$(npx @expo/fingerprint fingerprint:generate --platform ios | jq -r '.hash')
+          ANDROID_HASH=$(npx @expo/fingerprint fingerprint:generate --platform android | jq -r '.hash')
           echo "ios_hash=$IOS_HASH" >> $GITHUB_OUTPUT
+          echo "android_hash=$ANDROID_HASH" >> $GITHUB_OUTPUT
       - name: Check for existing builds
         id: check
         env:
@@ -99,24 +102,37 @@ jobs:
             --platform ios --status finished --limit 1 \
             --json --non-interactive 2>&1 | sed -n '/^\[/,/^\]/p' | jq 'length' 2>/dev/null)
           IOS_BUILDS=${IOS_BUILDS:-0}
+          ANDROID_BUILDS=$(yarn eas build:list \
+            --fingerprint-hash ${{ steps.fingerprint.outputs.android_hash }} \
+            --build-profile production \
+            --platform android --status finished --limit 1 \
+            --json --non-interactive 2>&1 | sed -n '/^\[/,/^\]/p' | jq 'length' 2>/dev/null)
+          ANDROID_BUILDS=${ANDROID_BUILDS:-0}
           if [[ "$IOS_BUILDS" -eq 0 ]]; then
-            echo "needs_native_build=true" >> $GITHUB_OUTPUT
+            echo "needs_native_build_ios=true" >> $GITHUB_OUTPUT
           else
-            echo "needs_native_build=false" >> $GITHUB_OUTPUT
+            echo "needs_native_build_ios=false" >> $GITHUB_OUTPUT
+          fi
+          if [[ "$ANDROID_BUILDS" -eq 0 ]]; then
+            echo "needs_native_build_android=true" >> $GITHUB_OUTPUT
+          else
+            echo "needs_native_build_android=false" >> $GITHUB_OUTPUT
           fi
       - name: Apply force override
         id: result
         run: |
           if [[ "${{ inputs.force_native_build }}" == "true" ]]; then
-            echo "needs_native_build=true" >> $GITHUB_OUTPUT
+            echo "needs_native_build_ios=true" >> $GITHUB_OUTPUT
+            echo "needs_native_build_android=true" >> $GITHUB_OUTPUT
           else
-            echo "needs_native_build=${{ steps.check.outputs.needs_native_build }}" >> $GITHUB_OUTPUT
+            echo "needs_native_build_ios=${{ steps.check.outputs.needs_native_build_ios }}" >> $GITHUB_OUTPUT
+            echo "needs_native_build_android=${{ steps.check.outputs.needs_native_build_android }}" >> $GITHUB_OUTPUT
           fi
 
   deploy-ota:
     name: Deploy OTA update
     needs: detect-fingerprint
-    if: needs.detect-fingerprint.outputs.needs_native_build == 'false'
+    if: needs.detect-fingerprint.outputs.needs_native_build_ios == 'false' || needs.detect-fingerprint.outputs.needs_native_build_android == 'false'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -127,6 +143,18 @@ jobs:
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**', 'package.json') }}
+      - name: Determine OTA platform
+        id: platform
+        run: |
+          IOS_NEEDS_NATIVE="${{ needs.detect-fingerprint.outputs.needs_native_build_ios }}"
+          ANDROID_NEEDS_NATIVE="${{ needs.detect-fingerprint.outputs.needs_native_build_android }}"
+          if [[ "$IOS_NEEDS_NATIVE" == "false" && "$ANDROID_NEEDS_NATIVE" == "false" ]]; then
+            echo "target=all" >> $GITHUB_OUTPUT
+          elif [[ "$IOS_NEEDS_NATIVE" == "false" ]]; then
+            echo "target=ios" >> $GITHUB_OUTPUT
+          else
+            echo "target=android" >> $GITHUB_OUTPUT
+          fi
       - name: Deploy OTA update
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
@@ -134,7 +162,7 @@ jobs:
           EXPO_ROLLBAR_ACCESS_TOKEN: ${{ secrets.EXPO_ROLLBAR_ACCESS_TOKEN }}
           EXPO_SPOTIFY_CLIENT_ID: ${{ secrets.EXPO_SPOTIFY_CLIENT_ID }}
           COMMIT_MESSAGE: ${{ github.event.head_commit.message || github.sha }}
-        run: yarn eas update --branch production --message "$COMMIT_MESSAGE" --non-interactive
+        run: yarn eas update --branch production --platform ${{ steps.platform.outputs.target }} --message "$COMMIT_MESSAGE" --non-interactive
       - name: Notify Rollbar of deploy
         run: |
           curl -s https://api.rollbar.com/api/1/deploy \
@@ -143,13 +171,41 @@ jobs:
             -F revision=${{ github.sha }} \
             -F local_username=${{ github.actor }}
 
-  build-and-submit:
-    name: Build and submit to stores
+  bump-version:
+    name: Bump app version
     needs: detect-fingerprint
-    if: needs.detect-fingerprint.outputs.needs_native_build == 'true'
+    if: needs.detect-fingerprint.outputs.needs_native_build_ios == 'true' || needs.detect-fingerprint.outputs.needs_native_build_android == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.commit.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bump version
+        run: |
+          CURRENT=$(node -p "require('./app.config.js').expo.version")
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+          NEW_VERSION="$MAJOR.$MINOR.$((PATCH + 1))"
+          sed -i "s/version: '$CURRENT'/version: '$NEW_VERSION'/" app.config.js
+          echo "Bumped version $CURRENT → $NEW_VERSION"
+      - name: Commit version bump
+        id: commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add app.config.js
+          git commit -m "chore: bump app version to $(node -p "require('./app.config.js').expo.version") [skip ci]"
+          git push
+          echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
+  build-and-submit-ios:
+    name: Build and submit iOS
+    needs: [detect-fingerprint, bump-version]
+    if: needs.detect-fingerprint.outputs.needs_native_build_ios == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.bump-version.outputs.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
@@ -157,13 +213,6 @@ jobs:
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**', 'package.json') }}
-      - name: Bump app version
-        run: |
-          CURRENT=$(node -p "require('./app.config.js').expo.version")
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
-          NEW_VERSION="$MAJOR.$MINOR.$((PATCH + 1))"
-          sed -i "s/version: '$CURRENT'/version: '$NEW_VERSION'/" app.config.js
-          echo "Bumped version $CURRENT → $NEW_VERSION"
       - name: Cancel in-progress EAS builds
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
@@ -171,21 +220,14 @@ jobs:
           for STATUS in new in-progress; do
             BUILDS=$(yarn eas build:list --profile production --platform ios --status "$STATUS" --json --non-interactive 2>&1 | sed -n '/^\[/,/^\]/p')
             for BUILD_ID in $(echo "$BUILDS" | jq -r '.[].id' 2>/dev/null); do
-              echo "Cancelling $STATUS build $BUILD_ID"
+              echo "Cancelling iOS $STATUS build $BUILD_ID"
               yarn eas build:cancel "$BUILD_ID" --non-interactive
             done
           done
-      - name: Build for all platforms
+      - name: Build for iOS
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: yarn eas build --profile production --platform ios --non-interactive
-      - name: Commit version bump
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add app.config.js
-          git commit -m "chore: bump app version to $(node -p "require('./app.config.js').expo.version") [skip ci]"
-          git push
       - name: Submit to App Store
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
@@ -193,6 +235,49 @@ jobs:
           ASC_APP_ID: ${{ secrets.ASC_APP_ID }}
           EXPO_APPLE_TEAM_ID: ${{ secrets.EXPO_APPLE_TEAM_ID }}
         run: yarn eas submit --profile production --platform ios --latest --non-interactive
+      - name: Notify Rollbar of deploy
+        run: |
+          curl -s https://api.rollbar.com/api/1/deploy \
+            -F access_token=${{ secrets.ROLLBAR_ACCESS_TOKEN }} \
+            -F environment=production \
+            -F revision=${{ github.sha }} \
+            -F local_username=${{ github.actor }}
+
+  build-and-submit-android:
+    name: Build and submit Android
+    needs: [detect-fingerprint, bump-version]
+    if: needs.detect-fingerprint.outputs.needs_native_build_android == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.bump-version.outputs.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - uses: actions/cache@v4
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**', 'package.json') }}
+      - name: Cancel in-progress EAS builds
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          for STATUS in new in-progress; do
+            BUILDS=$(yarn eas build:list --profile production --platform android --status "$STATUS" --json --non-interactive 2>&1 | sed -n '/^\[/,/^\]/p')
+            for BUILD_ID in $(echo "$BUILDS" | jq -r '.[].id' 2>/dev/null); do
+              echo "Cancelling Android $STATUS build $BUILD_ID"
+              yarn eas build:cancel "$BUILD_ID" --non-interactive
+            done
+          done
+      - name: Build for Android
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: yarn eas build --profile production --platform android --non-interactive
+      - name: Submit to Play Store
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: yarn eas submit --profile production --platform android --latest --non-interactive
       - name: Notify Rollbar of deploy
         run: |
           curl -s https://api.rollbar.com/api/1/deploy \
