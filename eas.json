@@ -16,7 +16,7 @@
       "channel": "production",
       "env": {
         "APP_ENV": "production",
-        "LIVE_ACTIVITY_PROVISIONING_PROFILE": "Choreo Cue Live Activity App Store"
+        "LIVE_ACTIVITY_PROVISIONING_PROFILE": "43b96c97-68c3-43b2-b867-d22044127a6b"
       }
     }
   },
