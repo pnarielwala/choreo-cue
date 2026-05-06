@@ -137,11 +137,13 @@ All workflows live in `.github/workflows/`. The deployment pipeline uses **EAS (
 
 1. **`dev.workflow.yml`** (PR check) — on every pull request: typecheck, test, deploy EAS preview update using the PR branch name.
 
-2. **`main.workflow.yml`** (Production deploy) — on push to `main`: typecheck, test, then smart deploy:
-   - If the Expo fingerprint is unchanged → OTA update via `eas update --branch production`
-   - If the fingerprint changed (native deps, native config, or anything else `fingerprint.config.js` includes) → full EAS build + App Store submit
-   - Can force a native build via `workflow_dispatch` with `force_native_build: true`
-   - Notifies Rollbar of deployments
+2. **`main.workflow.yml`** (Production deploy) — on push to `main`: typecheck, test, then smart deploy per platform:
+   - Fingerprints are computed independently for iOS and Android.
+   - Per platform: if the fingerprint matches an existing production build → that platform gets an OTA update via `eas update --branch production --platform <plat>`.
+   - Per platform: if the fingerprint changed (native deps, native config, or anything else `fingerprint.config.js` includes) → full EAS build + store submit (App Store for iOS, Play Store for Android).
+   - When at least one platform needs a native build, a single `bump-version` job bumps `app.config.js` once and both platform builds check out the bumped commit.
+   - Can force native builds for both platforms via `workflow_dispatch` with `force_native_build: true`.
+   - Notifies Rollbar of deployments.
 
 3. **`staging.workflow.yml`** — on push to `staging`: typecheck, test, deploy OTA to staging channel.
 

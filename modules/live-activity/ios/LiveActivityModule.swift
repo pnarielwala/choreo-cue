@@ -16,6 +16,9 @@ public struct CueAttributes: ActivityAttributes {
     public let currentMs: Int
     public let durationMs: Int
     public let cuePositionsMs: [Int]  // length 4, -1 means "unset"
+    public let cueLabels: [String]    // length 4, "" means "no label"
+    public let cueLoopDurationsMs: [Int]  // length 4, -1 means "no loop"
+    public let cueColorSlots: [Int]   // length 4, 1..4 stable color identity; -1 = unset
   }
 
   public let audioId: Int
@@ -159,12 +162,22 @@ public class LiveActivityModule: Module {
       ])
     }
     var positions: [Int] = [-1, -1, -1, -1]
+    var labels: [String] = ["", "", "", ""]
+    var loops: [Int] = [-1, -1, -1, -1]
+    var colorSlots: [Int] = [-1, -1, -1, -1]
     for cue in cues {
       guard let n = cue["number"] as? Int, n >= 1, n <= 4 else { continue }
       if let p = cue["positionMs"] as? Int {
         positions[n - 1] = p
-      } else {
-        positions[n - 1] = -1
+      }
+      if let l = cue["label"] as? String {
+        labels[n - 1] = l
+      }
+      if let d = cue["loopDurationMs"] as? Int {
+        loops[n - 1] = d
+      }
+      if let cs = cue["colorSlot"] as? Int {
+        colorSlots[n - 1] = cs
       }
     }
     return (
@@ -174,7 +187,10 @@ public class LiveActivityModule: Module {
         isPlaying: isPlaying,
         currentMs: currentMs,
         durationMs: durationMs,
-        cuePositionsMs: positions
+        cuePositionsMs: positions,
+        cueLabels: labels,
+        cueLoopDurationsMs: loops,
+        cueColorSlots: colorSlots
       )
     )
   }

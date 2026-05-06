@@ -19,6 +19,9 @@ declare module 'knex/types/tables' {
     audio_id: number
     start: number
     cue_number: number
+    label: string | null
+    loop_duration_ms: number | null
+    order_index: number | null
   }
 
   interface Tables {

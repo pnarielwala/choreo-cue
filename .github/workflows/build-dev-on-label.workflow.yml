@@ -33,23 +33,29 @@ jobs:
       - name: Build development client
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: yarn eas build --profile development --platform ios --clear-cache --non-interactive
+        run: yarn eas build --profile development --platform all --clear-cache --non-interactive
 
-      - name: Get build URL
+      - name: Get build URLs
         id: build
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
-          BUILD_URL=$(yarn eas build:list --build-profile development --platform ios --status finished --limit 1 --json --non-interactive 2>&1 \
+          IOS_URL=$(yarn eas build:list --build-profile development --platform ios --status finished --limit 1 --json --non-interactive 2>&1 \
             | sed -n '/^\[/,/^\]/p' \
             | jq -r '"https://expo.dev/accounts/" + .[0].project.ownerAccount.name + "/projects/" + .[0].project.slug + "/builds/" + .[0].id')
-          echo "url=$BUILD_URL" >> $GITHUB_OUTPUT
+          ANDROID_URL=$(yarn eas build:list --build-profile development --platform android --status finished --limit 1 --json --non-interactive 2>&1 \
+            | sed -n '/^\[/,/^\]/p' \
+            | jq -r '"https://expo.dev/accounts/" + .[0].project.ownerAccount.name + "/projects/" + .[0].project.slug + "/builds/" + .[0].id')
+          echo "ios_url=$IOS_URL" >> $GITHUB_OUTPUT
+          echo "android_url=$ANDROID_URL" >> $GITHUB_OUTPUT
 
-      - name: Comment build link on PR
+      - name: Comment build links on PR
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IOS_URL: ${{ steps.build.outputs.ios_url }}
+          ANDROID_URL: ${{ steps.build.outputs.android_url }}
         run: |
-          COMMENT_BODY="📱 **Development Build** — ${{ steps.build.outputs.url }}"
+          COMMENT_BODY=$(printf '📱 **Development Build**\n- iOS: %s\n- Android: %s' "$IOS_URL" "$ANDROID_URL")
           EXISTING=$(gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments \
             --jq '.[] | select(.body | startswith("📱 **Development Build**")) | .id' | tail -1)
           if [ -n "$EXISTING" ]; then
