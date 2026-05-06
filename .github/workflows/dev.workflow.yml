@@ -56,7 +56,8 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     outputs:
-      needs_native_build: ${{ steps.check.outputs.needs_native_build }}
+      needs_native_build_ios: ${{ steps.check.outputs.needs_native_build_ios }}
+      needs_native_build_android: ${{ steps.check.outputs.needs_native_build_android }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -66,7 +67,7 @@ jobs:
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**', 'package.json') }}
-      - name: Generate fingerprint
+      - name: Generate fingerprints
         id: fingerprint
         env:
           APP_ENV: development
@@ -74,13 +75,18 @@ jobs:
           EXPO_SPOTIFY_CLIENT_ID: ${{ secrets.EXPO_SPOTIFY_CLIENT_ID }}
         run: |
           npx @expo/fingerprint fingerprint:generate --platform ios > fingerprint-ios.json
+          npx @expo/fingerprint fingerprint:generate --platform android > fingerprint-android.json
           IOS_HASH=$(jq -r '.hash' fingerprint-ios.json)
+          ANDROID_HASH=$(jq -r '.hash' fingerprint-android.json)
           echo "ios_hash=$IOS_HASH" >> $GITHUB_OUTPUT
-      - name: Upload fingerprint artifact
+          echo "android_hash=$ANDROID_HASH" >> $GITHUB_OUTPUT
+      - name: Upload fingerprint artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: fingerprint-ios-${{ github.sha }}
-          path: fingerprint-ios.json
+          name: fingerprint-${{ github.sha }}
+          path: |
+            fingerprint-ios.json
+            fingerprint-android.json
       - name: Check for existing builds
         id: check
         env:
@@ -93,16 +99,27 @@ jobs:
             --platform ios --status finished --limit 1 \
             --json --non-interactive 2>&1 | sed -n '/^\[/,/^\]/p' | jq 'length' 2>/dev/null)
           IOS_BUILDS=${IOS_BUILDS:-0}
+          ANDROID_BUILDS=$(yarn eas build:list \
+            --fingerprint-hash ${{ steps.fingerprint.outputs.android_hash }} \
+            --build-profile development \
+            --platform android --status finished --limit 1 \
+            --json --non-interactive 2>&1 | sed -n '/^\[/,/^\]/p' | jq 'length' 2>/dev/null)
+          ANDROID_BUILDS=${ANDROID_BUILDS:-0}
           if [[ "$IOS_BUILDS" -eq 0 ]]; then
-            echo "needs_native_build=true" >> $GITHUB_OUTPUT
+            echo "needs_native_build_ios=true" >> $GITHUB_OUTPUT
           else
-            echo "needs_native_build=false" >> $GITHUB_OUTPUT
+            echo "needs_native_build_ios=false" >> $GITHUB_OUTPUT
+          fi
+          if [[ "$ANDROID_BUILDS" -eq 0 ]]; then
+            echo "needs_native_build_android=true" >> $GITHUB_OUTPUT
+          else
+            echo "needs_native_build_android=false" >> $GITHUB_OUTPUT
           fi
 
   label-pr:
     name: Label PR if native build needed
     needs: detect-fingerprint
-    if: needs.detect-fingerprint.outputs.needs_native_build == 'true'
+    if: needs.detect-fingerprint.outputs.needs_native_build_ios == 'true' || needs.detect-fingerprint.outputs.needs_native_build_android == 'true'
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
@@ -125,17 +142,21 @@ jobs:
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', 'patches/**', 'package.json') }}
-      - name: Capture deploy-time fingerprint
+      - name: Capture deploy-time fingerprints
         env:
           APP_ENV: development
           EXPO_ROLLBAR_ACCESS_TOKEN: ${{ secrets.EXPO_ROLLBAR_ACCESS_TOKEN }}
           EXPO_SPOTIFY_CLIENT_ID: ${{ secrets.EXPO_SPOTIFY_CLIENT_ID }}
-        run: npx @expo/fingerprint fingerprint:generate --platform ios > fingerprint-ios-deploy.json
-      - name: Upload deploy-time fingerprint artifact
+        run: |
+          npx @expo/fingerprint fingerprint:generate --platform ios > fingerprint-ios-deploy.json
+          npx @expo/fingerprint fingerprint:generate --platform android > fingerprint-android-deploy.json
+      - name: Upload deploy-time fingerprint artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: fingerprint-ios-deploy-${{ github.sha }}
-          path: fingerprint-ios-deploy.json
+          name: fingerprint-deploy-${{ github.sha }}
+          path: |
+            fingerprint-ios-deploy.json
+            fingerprint-android-deploy.json
       - name: Deploy EAS update
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
