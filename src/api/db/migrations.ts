@@ -95,6 +95,17 @@ const addLastOpenedAtColumnToAudioTable = async () => {
   )
 }
 
+const extendCuesWithLabelLoopAndOrder = async () => {
+  await dbClient.schema.alterTable('cues', (table) => {
+    table.text('label').nullable()
+    table.integer('loop_duration_ms').nullable()
+    table.integer('order_index').nullable()
+  })
+  await dbClient.raw(
+    'UPDATE cues SET order_index = cue_number WHERE order_index IS NULL'
+  )
+}
+
 const migrations = {
   0: initializeMigrationTable,
   1: createAudioTable,
@@ -102,6 +113,7 @@ const migrations = {
   3: addCueNumberColumnToCuesTable,
   4: allowAudioIdToNotBeUnique,
   5: addLastOpenedAtColumnToAudioTable,
+  6: extendCuesWithLabelLoopAndOrder,
 }
 
 // =================== migrations end ===================

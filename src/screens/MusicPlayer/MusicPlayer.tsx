@@ -79,25 +79,76 @@ const MusicPlayer = (props: PropsT) => {
 
   const [trackName, setTrackName] = React.useState(details.trackName)
 
-  const { data: cuesByNumber } = useCues(audioId)
+  const { data: cues } = useCues(audioId)
+  const cuesArr = cues ?? []
+
+  type ActiveLoop = { cueId: number; start: number; durationMs: number }
+  const [activeLoop, setActiveLoop] = React.useState<ActiveLoop | null>(null)
+  const lastLoopSeekAtRef = useRef<number>(0)
+
+  // Drive the loop: when playing within an active loop, jump back once we
+  // reach (start + durationMs). Guard against re-firing during the seek.
+  useEffect(() => {
+    if (!activeLoop || !isPlaying) return
+    if (currentPosition < activeLoop.start) return
+    const elapsed = currentPosition - activeLoop.start
+    if (elapsed < activeLoop.durationMs) return
+    const now = Date.now()
+    if (now - lastLoopSeekAtRef.current < 250) return
+    lastLoopSeekAtRef.current = now
+    setAudioPosition(activeLoop.start)
+  }, [currentPosition, activeLoop, isPlaying, setAudioPosition])
+
+  // Pause cancels any active loop so we don't unexpectedly resume + jump.
+  useEffect(() => {
+    if (!isPlaying && activeLoop) setActiveLoop(null)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPlaying])
+
+  // Clear the loop on unmount.
+  useEffect(() => () => setActiveLoop(null), [])
+
+  const onCueActivated = (cue: {
+    id: number
+    start: number
+    loopDurationMs: number | null
+  }) => {
+    if (cue.loopDurationMs != null) {
+      setActiveLoop({
+        cueId: cue.id,
+        start: cue.start,
+        durationMs: cue.loopDurationMs,
+      })
+      lastLoopSeekAtRef.current = 0
+    } else {
+      setActiveLoop(null)
+    }
+  }
+
   useLiveActivity({
     audioId,
     trackName,
     isPlaying,
     currentMs: currentPosition,
     durationMs: duration,
-    cuesByNumber: cuesByNumber || {},
-    onCueTap: async (cueNumber) => {
-      const position = (cuesByNumber || {})[cueNumber]
+    cues: cuesArr.map((c) => ({
+      positionMs: c.start,
+      label: c.label,
+      loopDurationMs: c.loopDurationMs,
+      colorSlot: c.cueNumber as 1 | 2 | 3 | 4,
+    })),
+    onCueTap: async (slot) => {
+      const cue = cuesArr[slot - 1]
       console.log(
-        '[LiveActivity] onCueTap handler: cueNumber=',
-        cueNumber,
-        'position=',
-        position
+        '[LiveActivity] onCueTap handler: slot=',
+        slot,
+        'cueId=',
+        cue?.id
       )
-      if (position == null) return
+      if (!cue) return
       try {
-        await setAudioPosition(position)
+        onCueActivated(cue)
+        await setAudioPosition(cue.start)
         console.log('[LiveActivity] setAudioPosition resolved')
         playAudio()
         console.log('[LiveActivity] playAudio called')
@@ -216,11 +267,15 @@ const MusicPlayer = (props: PropsT) => {
         <View sx={{ flex: 1, alignItems: 'flex-start' }}>
           <Cues
             currentPosition={currentPosition}
-            onPlayAtPosition={async (position) => {
-              await setAudioPosition(position)
+            onSeekToCue={async (cue) => {
+              onCueActivated(cue)
+              await setAudioPosition(cue.start)
+            }}
+            onPlayCue={async (cue) => {
+              onCueActivated(cue)
+              await setAudioPosition(cue.start)
               playAudio()
             }}
-            onSeekToPosition={setAudioPosition}
             audioId={audioId}
           />
         </View>

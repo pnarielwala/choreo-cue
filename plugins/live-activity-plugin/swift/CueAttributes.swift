@@ -12,6 +12,9 @@ public struct CueAttributes: ActivityAttributes {
     public let currentMs: Int
     public let durationMs: Int
     public let cuePositionsMs: [Int]
+    public let cueLabels: [String]
+    public let cueLoopDurationsMs: [Int]
+    public let cueColorSlots: [Int]
   }
 
   public let audioId: Int

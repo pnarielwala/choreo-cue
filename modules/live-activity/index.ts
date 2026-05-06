@@ -8,6 +8,10 @@ import { Platform } from 'react-native'
 export type CueSlot = {
   number: 1 | 2 | 3 | 4
   positionMs: number | null
+  label: string | null
+  loopDurationMs: number | null
+  /** Stable color identity (1-4) so reordering preserves the cue's color. */
+  colorSlot: 1 | 2 | 3 | 4 | null
 }
 
 export type ActivityState = {

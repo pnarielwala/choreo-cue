@@ -71,15 +71,41 @@ private struct CueRow: View {
   let state: CueAttributes.ContentState
   let audioId: Int
 
+  private func label(at idx: Int) -> String {
+    let raw = idx < state.cueLabels.count ? state.cueLabels[idx] : ""
+    if raw.isEmpty { return "\(idx + 1)" }
+    return raw
+  }
+
+  private func loopMs(at idx: Int) -> Int {
+    guard idx < state.cueLoopDurationsMs.count else { return -1 }
+    return state.cueLoopDurationsMs[idx]
+  }
+
+  private func colorSlot(at idx: Int) -> Int {
+    let cs = idx < state.cueColorSlots.count ? state.cueColorSlots[idx] : -1
+    return cs > 0 ? cs : idx + 1
+  }
+
   var body: some View {
     HStack(spacing: 6) {
       ForEach(0..<4, id: \.self) { idx in
         let position = state.cuePositionsMs[idx]
         let unset = position < 0
+        let loop = loopMs(at: idx)
         Button(intent: JumpToCueIntent(audioId: audioId, cueNumber: idx + 1)) {
           VStack(spacing: 2) {
-            Text("\(idx + 1)")
-              .font(.system(size: 16, weight: .semibold, design: .rounded))
+            HStack(spacing: 3) {
+              Text(label(at: idx))
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .lineLimit(1)
+                .truncationMode(.tail)
+              if loop > 0 {
+                Image(systemName: "arrow.triangle.2.circlepath")
+                  .font(.system(size: 9, weight: .semibold))
+                  .opacity(0.85)
+              }
+            }
             Text(unset ? "--:--" : formatMsPadded(position))
               .font(.system(size: 10, weight: .regular, design: .monospaced))
               .opacity(unset ? 0.5 : 0.85)
@@ -87,7 +113,7 @@ private struct CueRow: View {
           .frame(maxWidth: .infinity, minHeight: 44)
         }
         .buttonStyle(.bordered)
-        .tint(unset ? Color.gray : cueSlotColor(idx + 1))
+        .tint(unset ? Color.gray : cueSlotColor(colorSlot(at: idx)))
         .disabled(unset)
       }
     }
