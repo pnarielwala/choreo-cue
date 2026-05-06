@@ -14,7 +14,19 @@ index 4ac5f28..a88a93c 100644
 +  s.vendored_frameworks = "ios/external/SpotifySDK/SpotifyiOS.xcframework"
  
    s.dependency 'React-Core'
-   
+
+diff --git a/node_modules/react-native-spotify-remote/android/build.gradle b/node_modules/react-native-spotify-remote/android/build.gradle
+index fda54cb..b7c4037 100644
+--- a/node_modules/react-native-spotify-remote/android/build.gradle
++++ b/node_modules/react-native-spotify-remote/android/build.gradle
+@@ -58,7 +58,6 @@ repositories {
+     }
+     google()
+     mavenCentral()
+-    jcenter()
+     flatDir {
+         dirs 'external/SpotifySDK/app-remote-lib'
+         dirs 'external/SpotifySDK/auth-lib'
 diff --git a/node_modules/react-native-spotify-remote/ios/RNSpotifyItem.h b/node_modules/react-native-spotify-remote/ios/RNSpotifyItem.h
 index ef45c71..fa30b46 100644
 --- a/node_modules/react-native-spotify-remote/ios/RNSpotifyItem.h
