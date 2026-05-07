@@ -13,6 +13,7 @@ type PropsT = {
   /** Convenience: render a chevron-right on the right side. Ignored if rightSlot is set. */
   showChevron?: boolean
   onPress?: () => void
+  onLongPress?: () => void
   disabled?: boolean
   showDivider?: boolean
   testID?: string
@@ -27,6 +28,7 @@ const ListItem = ({
   rightSlot,
   showChevron,
   onPress,
+  onLongPress,
   disabled,
   showDivider = true,
   testID,
@@ -71,9 +73,10 @@ const ListItem = ({
 
   return (
     <View>
-      {onPress ? (
+      {onPress || onLongPress ? (
         <Pressable
           onPress={onPress}
+          onLongPress={onLongPress}
           disabled={disabled}
           testID={testID}
           accessibilityLabel={accessibilityLabel}

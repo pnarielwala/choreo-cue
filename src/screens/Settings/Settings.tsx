@@ -1,7 +1,9 @@
 import React, { useEffect } from 'react'
 import * as Updates from 'expo-updates'
 import * as Application from 'expo-application'
+import * as Clipboard from 'expo-clipboard'
 import Constants from 'expo-constants'
+import Toast from 'react-native-toast-message'
 
 import {
   Button,
@@ -46,6 +48,21 @@ const Settings = (props: PropsT) => {
     Application.nativeBuildVersion ?? '-'
   })`
 
+  const updateGroup = (
+    Constants.manifest2?.metadata as Record<string, string> | undefined
+  )?.['updateGroup']
+  const updateId = currentlyRunning.updateId
+
+  const copyToClipboard = async (value: string, label: string) => {
+    await Clipboard.setStringAsync(value)
+    Toast.show({
+      type: 'success',
+      position: 'top',
+      text1: `${label} copied`,
+      visibilityTime: 1000,
+    })
+  }
+
   return (
     <ScreenLayout scroll>
       <SectionHeader>Appearance</SectionHeader>
@@ -71,16 +88,20 @@ const Settings = (props: PropsT) => {
       <ListItem
         leftIcon="layer-group"
         title="Update group"
-        subtitle={
-          (
-            Constants.manifest2?.metadata as Record<string, string> | undefined
-          )?.['updateGroup'] || 'Not set'
+        subtitle={updateGroup || 'Not set'}
+        onLongPress={
+          updateGroup
+            ? () => copyToClipboard(updateGroup, 'Update group')
+            : undefined
         }
       />
       <ListItem
         leftIcon="fingerprint"
         title="Update ID"
-        subtitle={currentlyRunning.updateId || 'Not set'}
+        subtitle={updateId || 'Not set'}
+        onLongPress={
+          updateId ? () => copyToClipboard(updateId, 'Update ID') : undefined
+        }
         showDivider={false}
       />
 
