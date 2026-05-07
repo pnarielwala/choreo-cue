@@ -22,14 +22,19 @@ import { FontAwesome5 } from '@expo/vector-icons'
 
 import TrackSlider from './components/TrackSlider'
 import Cues from './components/Cues'
-import Controls from './components/Controls/Controls'
+import Controls, { RepeatMode } from './components/Controls/Controls'
 import Tempo from './components/Tempo'
 import useMusicPlayer from 'hooks/useMusicPlayer'
 import useCues from 'hooks/useCues'
 import useLiveActivity from 'hooks/useLiveActivity'
 import { ScreenPropsT } from 'App'
 import { Dialog } from 'react-native-elements'
-import { touchAudioFile, updateAudioName } from 'api/db/audio'
+import {
+  getAudioRepeatMode,
+  touchAudioFile,
+  updateAudioName,
+  updateAudioRepeatMode,
+} from 'api/db/audio'
 
 export type PropsT = ScreenPropsT<'Player'>
 
@@ -86,6 +91,39 @@ const MusicPlayer = (props: PropsT) => {
   const [activeLoop, setActiveLoop] = React.useState<ActiveLoop | null>(null)
   const lastLoopSeekAtRef = useRef<number>(0)
 
+  const [repeatMode, setRepeatMode] = React.useState<RepeatMode>('off')
+  const [lastActivatedCueStart, setLastActivatedCueStart] = React.useState<
+    number | null
+  >(null)
+  const prevIsPlayingRef = useRef<boolean>(false)
+  const lastEndRepeatAtRef = useRef<number>(0)
+  const repeatModeLoadedRef = useRef<boolean>(false)
+
+  useEffect(() => {
+    let cancelled = false
+    repeatModeLoadedRef.current = false
+    getAudioRepeatMode(audioId)
+      .then((mode) => {
+        if (cancelled) return
+        setRepeatMode(mode)
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) repeatModeLoadedRef.current = true
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [audioId])
+
+  useEffect(() => {
+    if (!repeatModeLoadedRef.current) return
+    updateAudioRepeatMode(audioId, repeatMode).catch(() => {})
+  }, [audioId, repeatMode])
+
+  const cycleRepeatMode = () =>
+    setRepeatMode((m) => (m === 'off' ? 'song' : m === 'song' ? 'cue' : 'off'))
+
   // Drive the loop: when playing within an active loop, jump back once we
   // reach (start + durationMs). Guard against re-firing during the seek.
   useEffect(() => {
@@ -113,6 +151,7 @@ const MusicPlayer = (props: PropsT) => {
     start: number
     loopDurationMs: number | null
   }) => {
+    setLastActivatedCueStart(cue.start)
     if (cue.loopDurationMs != null) {
       setActiveLoop({
         cueId: cue.id,
@@ -124,6 +163,35 @@ const MusicPlayer = (props: PropsT) => {
       setActiveLoop(null)
     }
   }
+
+  // When the track finishes while a repeat mode is set, restart at the
+  // appropriate position. Detect end-of-track by watching for the
+  // playing→paused transition while position is near duration.
+  useEffect(() => {
+    const wasPlaying = prevIsPlayingRef.current
+    prevIsPlayingRef.current = isPlaying
+    if (repeatMode === 'off') return
+    if (!wasPlaying || isPlaying) return
+    if (duration <= 0) return
+    if (currentPosition < duration - 250) return
+    const now = Date.now()
+    if (now - lastEndRepeatAtRef.current < 1000) return
+    lastEndRepeatAtRef.current = now
+    const target =
+      repeatMode === 'song'
+        ? 0
+        : (lastActivatedCueStart ?? cuesArr[0]?.start ?? 0)
+    Promise.resolve(setAudioPosition(target)).then(() => playAudio())
+  }, [
+    isPlaying,
+    currentPosition,
+    duration,
+    repeatMode,
+    lastActivatedCueStart,
+    cuesArr,
+    setAudioPosition,
+    playAudio,
+  ])
 
   useLiveActivity({
     audioId,
@@ -232,6 +300,8 @@ const MusicPlayer = (props: PropsT) => {
             currentPosition={currentPosition}
             isPlaying={isPlaying}
             setPosition={setAudioPosition}
+            repeatMode={repeatMode}
+            onCycleRepeatMode={cycleRepeatMode}
           />
 
           <TrackSlider
