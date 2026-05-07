@@ -3,6 +3,9 @@ import dbClient from './client'
 import * as DocumentPicker from 'expo-document-picker'
 import { File } from 'expo-file-system'
 
+import { isRepeatMode } from 'types/Music'
+import type { RepeatMode } from 'types/Music'
+
 export type AudioSource = 'iCloud' | 'Dropbox' | 'Spotify' | 'YT' | 'Apple'
 
 export type AudioRecord = {
@@ -46,6 +49,18 @@ export const touchAudioFile = async (id: number) => {
 
 export const updateAudioName = async (id: number, name: string) => {
   await dbClient('audio').where({ id }).update({ name })
+}
+
+export const getAudioRepeatMode = async (id: number): Promise<RepeatMode> => {
+  const row = await dbClient('audio').where({ id }).first('repeat_mode')
+  return isRepeatMode(row?.repeat_mode) ? row.repeat_mode : 'off'
+}
+
+export const updateAudioRepeatMode = async (
+  id: number,
+  repeatMode: RepeatMode
+) => {
+  await dbClient('audio').where({ id }).update({ repeat_mode: repeatMode })
 }
 
 export const getAudioFile = async (id: number): Promise<AudioRecord | null> => {

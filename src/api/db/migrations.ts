@@ -106,6 +106,12 @@ const extendCuesWithLabelLoopAndOrder = async () => {
   )
 }
 
+const addRepeatModeColumnToAudioTable = async () => {
+  await dbClient.schema.alterTable('audio', (table) => {
+    table.string('repeat_mode').notNullable().defaultTo('off')
+  })
+}
+
 const migrations = {
   0: initializeMigrationTable,
   1: createAudioTable,
@@ -114,6 +120,7 @@ const migrations = {
   4: allowAudioIdToNotBeUnique,
   5: addLastOpenedAtColumnToAudioTable,
   6: extendCuesWithLabelLoopAndOrder,
+  7: addRepeatModeColumnToAudioTable,
 }
 
 // =================== migrations end ===================

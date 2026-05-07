@@ -23,13 +23,21 @@ import { FontAwesome5 } from '@expo/vector-icons'
 import TrackSlider from './components/TrackSlider'
 import Cues from './components/Cues'
 import Controls from './components/Controls/Controls'
+import type { RepeatMode } from 'types/Music'
 import Tempo from './components/Tempo'
 import useMusicPlayer from 'hooks/useMusicPlayer'
 import useCues from 'hooks/useCues'
+import useEndOfTrackRepeat from 'hooks/useEndOfTrackRepeat'
 import useLiveActivity from 'hooks/useLiveActivity'
+import analytics from 'resources/analytics'
 import { ScreenPropsT } from 'App'
 import { Dialog } from 'react-native-elements'
-import { touchAudioFile, updateAudioName } from 'api/db/audio'
+import {
+  getAudioRepeatMode,
+  touchAudioFile,
+  updateAudioName,
+  updateAudioRepeatMode,
+} from 'api/db/audio'
 
 export type PropsT = ScreenPropsT<'Player'>
 
@@ -86,6 +94,44 @@ const MusicPlayer = (props: PropsT) => {
   const [activeLoop, setActiveLoop] = React.useState<ActiveLoop | null>(null)
   const lastLoopSeekAtRef = useRef<number>(0)
 
+  const [repeatMode, setRepeatMode] = React.useState<RepeatMode>('off')
+  const [lastActivatedCueStart, setLastActivatedCueStart] = React.useState<
+    number | null
+  >(null)
+  // Tracks whether the user has cycled the repeat button since this audio
+  // mounted. A late-arriving load must not clobber a tap that already
+  // happened; conversely, persistence should fire on user-driven changes
+  // even if the load hasn't resolved yet.
+  const userTouchedRepeatRef = useRef<boolean>(false)
+
+  useEffect(() => {
+    let cancelled = false
+    userTouchedRepeatRef.current = false
+    getAudioRepeatMode(audioId)
+      .then((mode) => {
+        if (cancelled || userTouchedRepeatRef.current) return
+        setRepeatMode(mode)
+      })
+      .catch((err) => {
+        analytics.error('Failed to load repeat mode', err as any)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [audioId])
+
+  useEffect(() => {
+    if (!userTouchedRepeatRef.current) return
+    updateAudioRepeatMode(audioId, repeatMode).catch((err) => {
+      analytics.error('Failed to persist repeat mode', err as any)
+    })
+  }, [audioId, repeatMode])
+
+  const cycleRepeatMode = () => {
+    userTouchedRepeatRef.current = true
+    setRepeatMode((m) => (m === 'off' ? 'song' : m === 'song' ? 'cue' : 'off'))
+  }
+
   // Drive the loop: when playing within an active loop, jump back once we
   // reach (start + durationMs). Guard against re-firing during the seek.
   useEffect(() => {
@@ -113,6 +159,7 @@ const MusicPlayer = (props: PropsT) => {
     start: number
     loopDurationMs: number | null
   }) => {
+    setLastActivatedCueStart(cue.start)
     if (cue.loopDurationMs != null) {
       setActiveLoop({
         cueId: cue.id,
@@ -124,6 +171,17 @@ const MusicPlayer = (props: PropsT) => {
       setActiveLoop(null)
     }
   }
+
+  useEndOfTrackRepeat({
+    isPlaying,
+    currentPosition,
+    duration,
+    repeatMode,
+    lastActivatedCueStart,
+    firstCueStart: cuesArr[0]?.start ?? null,
+    setAudioPosition,
+    playAudio,
+  })
 
   useLiveActivity({
     audioId,
@@ -232,6 +290,8 @@ const MusicPlayer = (props: PropsT) => {
             currentPosition={currentPosition}
             isPlaying={isPlaying}
             setPosition={setAudioPosition}
+            repeatMode={repeatMode}
+            onCycleRepeatMode={cycleRepeatMode}
           />
 
           <TrackSlider
