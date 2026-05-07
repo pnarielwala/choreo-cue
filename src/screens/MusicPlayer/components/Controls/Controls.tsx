@@ -2,11 +2,9 @@ import React from 'react'
 import { Pressable, View, Flex, useTheme } from 'design'
 
 import { MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons'
-import type { RepeatMode } from 'api/db/audio'
+import type { RepeatMode } from 'types/Music'
 
 const SKIP_STEP = 10 * 1000 // 10 seconds
-
-export type { RepeatMode }
 
 export type PropsT = {
   playSound: () => void

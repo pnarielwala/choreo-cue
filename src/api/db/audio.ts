@@ -3,13 +3,9 @@ import dbClient from './client'
 import * as DocumentPicker from 'expo-document-picker'
 import { File } from 'expo-file-system'
 
+import { isRepeatMode, RepeatMode } from 'types/Music'
+
 export type AudioSource = 'iCloud' | 'Dropbox' | 'Spotify' | 'YT' | 'Apple'
-
-export type RepeatMode = 'off' | 'song' | 'cue'
-
-const REPEAT_MODES: RepeatMode[] = ['off', 'song', 'cue']
-const isRepeatMode = (v: unknown): v is RepeatMode =>
-  typeof v === 'string' && (REPEAT_MODES as string[]).includes(v)
 
 export type AudioRecord = {
   id: number
