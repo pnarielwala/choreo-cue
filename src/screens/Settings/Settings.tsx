@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
-import { Platform } from 'react-native'
 import * as Updates from 'expo-updates'
+import * as Application from 'expo-application'
 import Constants from 'expo-constants'
 
 import {
@@ -42,20 +42,8 @@ const Settings = (props: PropsT) => {
     })
   }, [])
 
-  const expoClient = Constants.manifest2?.extra?.expoClient
-  const buildNumber =
-    expoClient?.[
-      ({ ios: 'ios', android: 'android', web: 'web' } as const)[
-        Platform.OS as 'ios' | 'android' | 'web'
-      ]
-    ]?.[
-      ({ ios: 'buildNumber', android: 'versionCode', web: 'web' } as const)[
-        Platform.OS as 'ios' | 'android' | 'web'
-      ]
-    ]
-
-  const versionString = `${expoClient?.version ?? 'dev'} (${
-    buildNumber ?? 'local'
+  const versionString = `${Application.nativeApplicationVersion ?? '-'} (${
+    Application.nativeBuildVersion ?? '-'
   })`
 
   return (
