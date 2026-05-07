@@ -3,7 +3,8 @@ import dbClient from './client'
 import * as DocumentPicker from 'expo-document-picker'
 import { File } from 'expo-file-system'
 
-import { isRepeatMode, RepeatMode } from 'types/Music'
+import { isRepeatMode } from 'types/Music'
+import type { RepeatMode } from 'types/Music'
 
 export type AudioSource = 'iCloud' | 'Dropbox' | 'Spotify' | 'YT' | 'Apple'
 

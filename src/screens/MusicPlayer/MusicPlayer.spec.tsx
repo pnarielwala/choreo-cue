@@ -20,6 +20,18 @@ import { __mockPlayer } from 'expo-audio'
 
 import { act } from 'react-test-renderer'
 
+import { getAudioRepeatMode, updateAudioRepeatMode } from 'api/db/audio'
+
+jest.mock('api/db/audio', () => {
+  const actual = jest.requireActual('api/db/audio')
+  return {
+    ...actual,
+    getAudioRepeatMode: jest.fn().mockResolvedValue('off'),
+    updateAudioRepeatMode: jest.fn().mockResolvedValue(undefined),
+    touchAudioFile: jest.fn().mockResolvedValue(undefined),
+  }
+})
+
 afterEach(cleanup)
 
 type ScreenParamsT = ScreenPropsT<'Player'>['route']['params']
@@ -141,6 +153,27 @@ it('should change tempo of the audio', async () => {
 
   await waitFor(() => expect(getByText('0:01')).toBeDefined())
 }, 10000)
+
+it('loads the persisted repeat mode on mount and persists user changes', async () => {
+  ;(getAudioRepeatMode as jest.Mock).mockResolvedValueOnce('song')
+  ;(updateAudioRepeatMode as jest.Mock).mockClear()
+
+  const { getByLabelText } = doRenderWithProviders({
+    musicData: { name: 'Persisted.mp3', uri: 'file://p.mp3', id: 1 },
+  })
+
+  // Stored mode 'song' is applied once the load resolves.
+  await waitFor(() => {
+    expect(getByLabelText('Repeat: song')).toBeTruthy()
+  })
+
+  // Cycling fires a write to audio.repeat_mode with the new value.
+  fireEvent.press(getByLabelText('Repeat: song'))
+
+  await waitFor(() => {
+    expect(updateAudioRepeatMode).toHaveBeenCalledWith(1, 'cue')
+  })
+})
 
 it('should navigate to the correct time after pressing a cue', async () => {
   const { getByLabelText, getByText, queryAllByText } = doRenderWithProviders({

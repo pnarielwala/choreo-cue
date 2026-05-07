@@ -57,7 +57,13 @@ const useEndOfTrackRepeat = ({
       firstCueStart
     )
     if (target == null) return
-    Promise.resolve(setAudioPosition(target)).then(() => playAudio())
+    // Both useLocalPlayer and useSpotifyPlayer log/swallow their own native
+    // errors, so we don't expect rejections here. The catch is a safety net
+    // to keep a future implementation from producing an unhandled rejection.
+    Promise.resolve()
+      .then(() => setAudioPosition(target))
+      .then(() => playAudio())
+      .catch(() => {})
   }, [
     isPlaying,
     currentPosition,
