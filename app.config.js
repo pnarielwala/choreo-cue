@@ -19,7 +19,7 @@ module.exports = {
   expo: {
     name: env.name,
     slug: 'choreo-cue',
-    version: '1.12.13',
+    version: '1.12.14',
     scheme: 'choreo-cue',
     orientation: 'portrait',
     icon: './assets/icon.png',
