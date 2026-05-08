@@ -1,23 +1,11 @@
 import { Client } from 'rollbar-react-native'
 import * as Updates from 'expo-updates'
+import * as Application from 'expo-application'
 import Constants from 'expo-constants'
-import { Platform } from 'react-native'
 import * as DeviceInfo from 'expo-device'
 
-const versionString = `${Constants.manifest2?.extra?.expoClient?.version} (${
-  Constants.manifest2?.extra?.expoClient?.[
-    {
-      ios: 'ios',
-      android: 'android',
-      web: 'web',
-    }[Platform.OS]
-  ]?.[
-    {
-      ios: 'buildNumber',
-      android: 'versionCode',
-      web: 'web',
-    }[Platform.OS]
-  ] || 'dev mode'
+const versionString = `${Application.nativeApplicationVersion ?? '-'} (${
+  Application.nativeBuildVersion ?? '-'
 })`
 
 const rollbar = new Client({
