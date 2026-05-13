@@ -1,7 +1,7 @@
 import dbClient from './client'
 
 import * as DocumentPicker from 'expo-document-picker'
-import { File } from 'expo-file-system'
+import { File, Paths } from 'expo-file-system'
 
 import { isRepeatMode } from 'types/Music'
 import type { RepeatMode } from 'types/Music'
@@ -13,6 +13,21 @@ export type AudioRecord = {
   name: string
   uri: string
   source: AudioSource
+}
+
+// iCloud/Dropbox files live inside the app's Documents directory, whose
+// absolute path includes a container UUID that changes across iOS app
+// updates/reinstalls. Persist only the filename and rebuild the absolute URI
+// at read time against the current Documents directory.
+const isLocalFileSource = (source: AudioSource) =>
+  source === 'iCloud' || source === 'Dropbox'
+
+const toStoredPath = (uri: string): string => uri.split('/').pop() ?? uri
+
+const resolveStoredPath = (path: string, source: AudioSource): string => {
+  if (!isLocalFileSource(source)) return path
+  const base = Paths.document.uri
+  return base.endsWith('/') ? `${base}${path}` : `${base}/${path}`
 }
 
 export const createAudioTable = async () => {
@@ -36,7 +51,7 @@ export const getAudioFiles = async (): Promise<AudioRecord[]> => {
   return (results ?? []).map((result) => ({
     id: result.id,
     name: result.name,
-    uri: result.path,
+    uri: resolveStoredPath(result.path, result.source as AudioSource),
     source: result.source as AudioSource,
   }))
 }
@@ -72,7 +87,7 @@ export const getAudioFile = async (id: number): Promise<AudioRecord | null> => {
   return {
     id: result.id,
     name: result.name,
-    uri: result.path,
+    uri: resolveStoredPath(result.path, result.source as AudioSource),
     source: result.source as AudioSource,
   }
 }
@@ -99,7 +114,7 @@ export const addICloudAudioFile = async (
   const result = await dbClient('audio').insert(
     {
       name: file.name,
-      path: file.uri,
+      path: toStoredPath(file.uri),
       source: 'iCloud',
       created_at: now,
       last_opened_at: now,
@@ -118,7 +133,7 @@ export const addDropboxAudioFile = async (file: {
   const result = await dbClient('audio').insert(
     {
       name: file.name,
-      path: file.uri,
+      path: toStoredPath(file.uri),
       source: 'Dropbox',
       created_at: now,
       last_opened_at: now,

@@ -112,6 +112,24 @@ const addRepeatModeColumnToAudioTable = async () => {
   })
 }
 
+// iOS rebuilds the Documents container path (UUID segment) across app
+// updates/reinstalls, so any absolute file:// URIs we stored at import time
+// become stale even though the files themselves persist. Rewrite local-file
+// rows to hold the filename only; reads reconstruct the URI from the current
+// Documents directory.
+const storeLocalAudioPathsAsBasename = async () => {
+  const rows: Array<{ id: number; path: string }> = await dbClient('audio')
+    .whereIn('source', ['iCloud', 'Dropbox'])
+    .select('id', 'path')
+
+  for (const row of rows) {
+    const basename = row.path.split('/').pop() ?? row.path
+    if (basename !== row.path) {
+      await dbClient('audio').where({ id: row.id }).update({ path: basename })
+    }
+  }
+}
+
 const migrations = {
   0: initializeMigrationTable,
   1: createAudioTable,
@@ -121,6 +139,7 @@ const migrations = {
   5: addLastOpenedAtColumnToAudioTable,
   6: extendCuesWithLabelLoopAndOrder,
   7: addRepeatModeColumnToAudioTable,
+  8: storeLocalAudioPathsAsBasename,
 }
 
 // =================== migrations end ===================

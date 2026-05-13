@@ -5,7 +5,7 @@ const baseAudio: Audio = {
   name: 'Bye Bye Bye - NSYNC',
   created_at: new Date().toISOString(),
   last_opened_at: new Date().toISOString(),
-  path: 'file://audioPath',
+  path: 'audioPath.mp3',
   source: 'iCloud',
   repeat_mode: 'off',
 }
