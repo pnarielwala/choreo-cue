@@ -96,7 +96,7 @@ it('shows the auth-error dialog when authentication fails with reason error', as
   })
 })
 
-it('does not show the auth-error dialog when the user cancels the auth sheet', async () => {
+it('shows the auth-error dialog when the auth sheet is dismissed (covers Spotify allowlist rejection)', async () => {
   doRender()
 
   fireEvent.press(screen.getByText('Spotify'))
@@ -107,7 +107,7 @@ it('does not show the auth-error dialog when the user cancels the auth sheet', a
   })
 
   await waitFor(() => {
-    expect(screen.queryByText("Couldn't connect to Spotify")).toBeNull()
+    expect(screen.getByText("Couldn't connect to Spotify")).toBeOnTheScreen()
   })
 })
 

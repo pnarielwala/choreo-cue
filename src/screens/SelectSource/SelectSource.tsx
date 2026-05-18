@@ -69,9 +69,7 @@ const SelectSource = (props: PropsT) => {
   const { authenticate: authenticateSpotify } = useSpotifyAuth({
     onCheckAuth: async (result) => {
       if (!result.authenticated) {
-        if (result.reason === 'error') {
-          setShowAuthError(true)
-        }
+        setShowAuthError(true)
         return
       }
       try {
@@ -206,12 +204,13 @@ const SelectSource = (props: PropsT) => {
           titleStyle={{ color: colors.text }}
         />
         <Text sx={{ color: 'text', mb: 2 }}>
-          Spotify rejected the sign-in. While Choreo Cue's Spotify integration
-          is in developer mode, only allowlisted accounts can connect.
+          Either you cancelled, or your Spotify account isn't on the allowlist.
+          Choreo Cue's Spotify integration is in developer mode, so only
+          allowlisted accounts can connect.
         </Text>
         <Text sx={{ color: 'text', mb: 2 }}>
-          Tap Request access to email Parth and ask to be added to the
-          allowlist.
+          If you weren't able to sign in, tap Request access to email Parth and
+          ask to be added to the allowlist.
         </Text>
         <View
           sx={{
