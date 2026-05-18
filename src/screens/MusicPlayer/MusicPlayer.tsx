@@ -12,6 +12,7 @@ import {
   Pressable,
   Input,
   Button,
+  BottomSheet,
   ScreenLayout,
   useTheme,
 } from 'design'
@@ -31,7 +32,6 @@ import useEndOfTrackRepeat from 'hooks/useEndOfTrackRepeat'
 import useLiveActivity from 'hooks/useLiveActivity'
 import analytics from 'resources/analytics'
 import { ScreenPropsT } from 'App'
-import { Dialog } from 'react-native-elements'
 import {
   getAudioRepeatMode,
   touchAudioFile,
@@ -341,18 +341,13 @@ const MusicPlayer = (props: PropsT) => {
         </View>
       </ScreenLayout>
 
-      <Dialog
+      <BottomSheet
         isVisible={isVisible}
-        onBackdropPress={closeDialog}
-        overlayStyle={{ backgroundColor: colors.surfaceElevated }}
+        onClose={closeDialog}
+        title="Rename audio"
       >
-        <Dialog.Title
-          title="Rename audio"
-          titleStyle={{ color: colors.text }}
-        />
         <Input
           placeholder="New name"
-          sx={{ mt: 3 }}
           value={inputValue}
           onChange={onInputValueChange}
         />
@@ -371,7 +366,7 @@ const MusicPlayer = (props: PropsT) => {
             Save
           </Button>
         </View>
-      </Dialog>
+      </BottomSheet>
     </>
   )
 }

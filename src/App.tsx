@@ -7,6 +7,7 @@ import { SQLiteProvider } from 'expo-sqlite'
 import { NavigationContainer } from '@react-navigation/native'
 import Toast, { BaseToast, BaseToastProps } from 'react-native-toast-message'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import {
   StackScreenProps,
   createStackNavigator,
@@ -218,17 +219,19 @@ const App = () => {
   }
 
   return (
-    <SQLiteProvider databaseName="choreo_cue.db" onInit={migrateDbIfNeeded}>
-      <ThemeProvider>
-        <QueryClientProvider client={new QueryClient()}>
-          <NavigationContainer>
-            <ErrorBoundary>
-              <Navigation onLayoutRootView={onLayoutRootView} />
-            </ErrorBoundary>
-          </NavigationContainer>
-        </QueryClientProvider>
-      </ThemeProvider>
-    </SQLiteProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SQLiteProvider databaseName="choreo_cue.db" onInit={migrateDbIfNeeded}>
+        <ThemeProvider>
+          <QueryClientProvider client={new QueryClient()}>
+            <NavigationContainer>
+              <ErrorBoundary>
+                <Navigation onLayoutRootView={onLayoutRootView} />
+              </ErrorBoundary>
+            </NavigationContainer>
+          </QueryClientProvider>
+        </ThemeProvider>
+      </SQLiteProvider>
+    </GestureHandlerRootView>
   )
 }
 

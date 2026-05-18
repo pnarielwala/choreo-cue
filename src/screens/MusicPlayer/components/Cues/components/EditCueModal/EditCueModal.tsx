@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Dialog } from 'react-native-elements'
-import { Button, ButtonGroup, Input, Text, View, useTheme } from 'design'
+import { BottomSheet, Button, ButtonGroup, Input, Text, View } from 'design'
 import type { Cue } from 'hooks/useCues'
 
 type PropsT = {
@@ -22,8 +21,6 @@ const LOOP_PRESETS: Array<{ label: string; ms: number | null }> = [
 ]
 
 const EditCueModal = ({ cue, isVisible, onClose, onSave }: PropsT) => {
-  const theme = useTheme()
-  const colors = theme.colors as Record<string, string>
   const [label, setLabel] = useState('')
   const [loopMs, setLoopMs] = useState<number | null>(null)
 
@@ -47,12 +44,7 @@ const EditCueModal = ({ cue, isVisible, onClose, onSave }: PropsT) => {
   }
 
   return (
-    <Dialog
-      isVisible={isVisible}
-      onBackdropPress={onClose}
-      overlayStyle={{ backgroundColor: colors.surfaceElevated }}
-    >
-      <Dialog.Title title="Edit cue" titleStyle={{ color: colors.text }} />
+    <BottomSheet isVisible={isVisible} onClose={onClose} title="Edit cue">
       <Text sx={{ color: 'textMuted', mb: 1 }}>Label</Text>
       <Input
         placeholder="e.g. chorus 2"
@@ -84,7 +76,7 @@ const EditCueModal = ({ cue, isVisible, onClose, onSave }: PropsT) => {
           Save
         </Button>
       </View>
-    </Dialog>
+    </BottomSheet>
   )
 }
 

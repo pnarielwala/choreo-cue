@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Alert, Linking } from 'react-native'
-import { Dialog } from 'react-native-elements'
 
-import { Button, ListItem, ScreenLayout, Text, View, useTheme } from 'design'
+import { BottomSheet, Button, ListItem, ScreenLayout, Text, View } from 'design'
 
 import { ScreenPropsT } from 'App'
 
@@ -46,8 +45,6 @@ const SOURCES = {
 
 const SelectSource = (props: PropsT) => {
   const queryClient = useQueryClient()
-  const theme = useTheme()
-  const colors = theme.colors as Record<string, string>
 
   const [showLimitations, setShowLimitations] = useState(false)
   const [showAuthError, setShowAuthError] = useState(false)
@@ -157,15 +154,11 @@ const SelectSource = (props: PropsT) => {
         })}
       </ScreenLayout>
 
-      <Dialog
+      <BottomSheet
         isVisible={showLimitations}
-        onBackdropPress={() => setShowLimitations(false)}
-        overlayStyle={{ backgroundColor: colors.surfaceElevated }}
+        onClose={() => setShowLimitations(false)}
+        title="Before you connect Spotify"
       >
-        <Dialog.Title
-          title="Before you connect Spotify"
-          titleStyle={{ color: colors.text }}
-        />
         <Text sx={{ color: 'text', mb: 2 }}>
           Spotify support comes with some limitations:
         </Text>
@@ -194,17 +187,13 @@ const SelectSource = (props: PropsT) => {
             Continue
           </Button>
         </View>
-      </Dialog>
+      </BottomSheet>
 
-      <Dialog
+      <BottomSheet
         isVisible={showAuthError}
-        onBackdropPress={() => setShowAuthError(false)}
-        overlayStyle={{ backgroundColor: colors.surfaceElevated }}
+        onClose={() => setShowAuthError(false)}
+        title="Couldn't connect to Spotify"
       >
-        <Dialog.Title
-          title="Couldn't connect to Spotify"
-          titleStyle={{ color: colors.text }}
-        />
         <Text sx={{ color: 'text', mb: 2 }}>
           Spotify rejected the sign-in. While Choreo Cue's Spotify integration
           is in developer mode, only allowlisted accounts can connect.
@@ -232,7 +221,7 @@ const SelectSource = (props: PropsT) => {
             Request access
           </Button>
         </View>
-      </Dialog>
+      </BottomSheet>
     </>
   )
 }

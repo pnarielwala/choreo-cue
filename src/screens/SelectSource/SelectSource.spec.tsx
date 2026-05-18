@@ -62,14 +62,16 @@ it('shows the limitations dialog when Spotify is tapped, without authenticating'
   expect(spotifyAuthenticate).not.toHaveBeenCalled()
 })
 
-it('cancels without authenticating', () => {
+it('cancels without authenticating', async () => {
   doRender()
 
   fireEvent.press(screen.getByText('Spotify'))
   fireEvent.press(screen.getByText('Cancel'))
 
   expect(spotifyAuthenticate).not.toHaveBeenCalled()
-  expect(screen.queryByText('Before you connect Spotify')).toBeNull()
+  await waitFor(() =>
+    expect(screen.queryByText('Before you connect Spotify')).toBeNull()
+  )
 })
 
 it('continues to Spotify auth when Continue is pressed', () => {
