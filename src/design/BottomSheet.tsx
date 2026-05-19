@@ -34,6 +34,7 @@ const BottomSheet = ({ isVisible, onClose, title, children }: PropsT) => {
   const backdropOpacity = useRef(new Animated.Value(0)).current
 
   useEffect(() => {
+    let cancelled = false
     if (isVisible) {
       setMounted(true)
       Animated.parallel([
@@ -61,8 +62,11 @@ const BottomSheet = ({ isVisible, onClose, title, children }: PropsT) => {
           useNativeDriver: true,
         }),
       ]).start(({ finished }) => {
-        if (finished) setMounted(false)
+        if (finished && !cancelled) setMounted(false)
       })
+    }
+    return () => {
+      cancelled = true
     }
   }, [isVisible, screenHeight, translateY, backdropOpacity])
 
