@@ -69,8 +69,13 @@ it('cancels without authenticating', async () => {
   fireEvent.press(screen.getByText('Cancel'))
 
   expect(spotifyAuthenticate).not.toHaveBeenCalled()
-  await waitFor(() =>
-    expect(screen.queryByText('Before you connect Spotify')).toBeNull()
+  // BottomSheet stays mounted through its slide-down animation, and the
+  // Animated callback that flips `mounted` runs outside React's act
+  // batching. waitFor needs more than its 1s default to observe the
+  // unmount under --detectOpenHandles in CI.
+  await waitFor(
+    () => expect(screen.queryByText('Before you connect Spotify')).toBeNull(),
+    { timeout: 5000 }
   )
 })
 
