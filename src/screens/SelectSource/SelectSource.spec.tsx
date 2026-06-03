@@ -62,14 +62,21 @@ it('shows the limitations dialog when Spotify is tapped, without authenticating'
   expect(spotifyAuthenticate).not.toHaveBeenCalled()
 })
 
-it('cancels without authenticating', () => {
+it('cancels without authenticating', async () => {
   doRender()
 
   fireEvent.press(screen.getByText('Spotify'))
   fireEvent.press(screen.getByText('Cancel'))
 
   expect(spotifyAuthenticate).not.toHaveBeenCalled()
-  expect(screen.queryByText('Before you connect Spotify')).toBeNull()
+  // BottomSheet stays mounted through its slide-down animation, and the
+  // Animated callback that flips `mounted` runs outside React's act
+  // batching. waitFor needs more than its 1s default to observe the
+  // unmount under --detectOpenHandles in CI.
+  await waitFor(
+    () => expect(screen.queryByText('Before you connect Spotify')).toBeNull(),
+    { timeout: 5000 }
+  )
 })
 
 it('continues to Spotify auth when Continue is pressed', () => {

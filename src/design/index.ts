@@ -7,6 +7,7 @@ export { default as Input } from './Input'
 export { default as Button } from './Button'
 export { default as Card } from './Card'
 export { default as ListItem } from './ListItem'
+export { default as BottomSheet } from './BottomSheet'
 export { default as ScreenLayout } from './ScreenLayout'
 export { default as SectionHeader } from './SectionHeader'
 
