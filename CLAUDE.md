@@ -13,7 +13,7 @@ yarn ios              # run on iOS simulator
 yarn android          # run on Android emulator
 ```
 
-Node version: see `.nvmrc` (currently 22.12.0). Use `nvm use` before running commands.
+Node version: see `.nvmrc`. Use `nvm use` before running commands.
 
 Package manager: **yarn** (yarn.lock is the lockfile — never use npm or bun).
 
@@ -76,6 +76,7 @@ Config files at root: `app.config.js` (Expo config), `eas.json` (EAS Build profi
 Local SQLite with a custom migration system in `src/api/db/migrations.ts`. Migrations are numbered functions in a `migrations` object — the app tracks the current version in a `migrations` table and runs any newer migrations on startup.
 
 **Schema:**
+
 - `audio` — id, name, path, source (enum: iCloud/Dropbox/Spotify/YT/Apple), created_at
 - `cues` — id, audio_id, start (ms), cue_number
 
@@ -127,11 +128,11 @@ All workflows live in `.github/workflows/`. The deployment pipeline uses **EAS (
 
 ### Environments
 
-| Environment | EAS Profile   | EAS Channel  | Trigger |
-|-------------|---------------|--------------|---------|
-| Development | development   | —            | Local dev with dev client |
-| Staging     | staging       | staging      | Push to `staging` branch |
-| Production  | production    | production   | Push to `main` |
+| Environment | EAS Profile | EAS Channel | Trigger                   |
+| ----------- | ----------- | ----------- | ------------------------- |
+| Development | development | —           | Local dev with dev client |
+| Staging     | staging     | staging     | Push to `staging` branch  |
+| Production  | production  | production  | Push to `main`            |
 
 ### Workflows
 
@@ -166,6 +167,7 @@ Semantic Release manages version bumps automatically based on conventional commi
 ## Pre-commit Hooks
 
 Husky + lint-staged runs on every commit:
+
 - `tsc` on TypeScript files (typecheck)
 - `prettier --write` on staged files
 - `jest --findRelatedTests` on changed source files
