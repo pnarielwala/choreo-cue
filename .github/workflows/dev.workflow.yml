@@ -117,17 +117,22 @@ jobs:
           fi
 
   label-pr:
-    name: Label PR if native build needed
+    name: Sync native build label
     needs: detect-fingerprint
-    if: needs.detect-fingerprint.outputs.needs_native_build_ios == 'true' || needs.detect-fingerprint.outputs.needs_native_build_android == 'true'
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
     steps:
-      - name: Add native build label
+      - name: Sync native build label
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh pr edit ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --add-label "native build"
+          NEEDS_NATIVE: ${{ needs.detect-fingerprint.outputs.needs_native_build_ios == 'true' || needs.detect-fingerprint.outputs.needs_native_build_android == 'true' }}
+        run: |
+          if [[ "$NEEDS_NATIVE" == "true" ]]; then
+            gh pr edit ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --add-label "native build"
+          else
+            gh pr edit ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --remove-label "native build" || true
+          fi
 
   deploy-preview:
     name: Deploy preview update
