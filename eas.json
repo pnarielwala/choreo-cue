@@ -19,7 +19,7 @@
     },
     "production": {
       "autoIncrement": true,
-      "node": "22.11.0",
+      "node": "22.22.3",
       "channel": "production",
       "cache": {
         "paths": [
