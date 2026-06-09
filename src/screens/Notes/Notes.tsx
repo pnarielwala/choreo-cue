@@ -77,10 +77,36 @@ const buildToolbarTheme = (colors: EditorColors) => ({
 const buildColorCss = (colors: EditorColors) => `
   html, body, .ProseMirror, .ProseMirror * {
     color: ${colors.text};
+    -webkit-user-select: text !important;
+    user-select: text !important;
   }
   html, body {
     background-color: ${colors.background};
   }
+  *::selection {
+    background: #ffc600 !important;
+    color: #000000 !important;
+  }
+  
+  ::-webkit-selection {
+    background: #ffc600 !important;
+    color: #000000 !important;
+  }
+    .tiptap ::selection {
+      background-color: #ffc600 !important;
+      color: #000000 !important;
+    }
+    .tiptap *::selection {
+      background-color: #ffc600 !important;
+      color: #000000 !important;
+    }
+    /* Handles block element selections */
+    .ProseMirror-selectednode {
+      outline: 3px solid #ffc600 !important;
+    }
+      input, textarea, [contenteditable] {
+          -webkit-tap-highlight-color: #ff5722;
+        }
   .ProseMirror {
     caret-color: ${colors.text};
   }
@@ -274,16 +300,39 @@ const LINK_INTERCEPT_SCRIPT = `
         Math.abs(e.clientY - downY) > MOVE_THRESHOLD) moved = true;
   }, true);
 
-  // Cancel the auto-selection of inline runs on a tap. Allow:
+  // Undo the auto-selection of inline runs on a tap. We do this on touchend
+  // (collapse the resulting selection) instead of preventing 'selectstart'
+  // up front - the upfront preventDefault races with iOS's own drag-select
+  // gesture detection. iOS can fire selectstart before our touchmove handler
+  // has seen enough movement to flip 'moved', so a real drag-select gets its
+  // initial 'selectstart' canceled and the WebView's selection state ends up
+  // out of sync with the finger, producing a jumpy / over-selecting feel.
+  // Skip the collapse for:
   //  - drag-select (moved past threshold)
-  //  - long-press (held past LONG_PRESS_MS)
+  //  - long-press (held past LONG_PRESS_MS, e.g. magnifier-driven selection)
   //  - second tap of a double-tap (browser's native word select)
-  document.addEventListener('selectstart', function(e) {
+  // Registered before handleTap so withinDoubleWindow() still reflects the
+  // PREVIOUS tap's time, not the one we're currently handling.
+  document.addEventListener('touchend', function() {
     if (moved) return;
     if (Date.now() - downTime > LONG_PRESS_MS) return;
     if (withinDoubleWindow()) return;
-    e.preventDefault();
-  }, true);
+    var tapX = downX;
+    var tapY = downY;
+    requestAnimationFrame(function () {
+      var sel = window.getSelection && window.getSelection();
+      if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
+      if (document.caretRangeFromPoint) {
+        var range = document.caretRangeFromPoint(tapX, tapY);
+        if (range) {
+          sel.removeAllRanges();
+          sel.addRange(range);
+          return;
+        }
+      }
+      sel.collapseToEnd();
+    });
+  }, { capture: true, passive: true });
 
   // Stop ProseMirror's mousedown/touchstart handlers from running for:
   //  - links (so the first tap doesn't select the link range)
@@ -428,6 +477,7 @@ const EditorPane = ({
     initialContent: initialNotes,
     customSource,
     theme: { toolbar: buildToolbarTheme(colors) },
+    disableColorHighlight: true,
   })
 
   const lastSavedRef = useRef(initialNotes)
