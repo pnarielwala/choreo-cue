@@ -97,7 +97,7 @@ const Navigation = ({ onLayoutRootView }: { onLayoutRootView: () => void }) => {
           onPress={() => {
             props.onPress?.()
           }}
-          hitSlop={48}
+          hitSlop={{ top: 48, left: 48, right: 24, bottom: 12 }}
           accessibilityLabel="Back"
         >
           <FontAwesome5 name="chevron-left" size={24} color={colors.text} />

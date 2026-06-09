@@ -257,7 +257,7 @@ const MusicPlayer = (props: PropsT) => {
             onPress={() => {
               props.navigation.push('Notes', { audioId, trackName })
             }}
-            hitSlop={48}
+            hitSlop={{ top: 48, bottom: 48, left: 48, right: 12 }}
             accessibilityLabel="Edit notes"
           >
             <FontAwesome5 name="sticky-note" size={22} color={colors.text} />
@@ -266,7 +266,7 @@ const MusicPlayer = (props: PropsT) => {
             onPress={() => {
               setIsVisible(true)
             }}
-            hitSlop={48}
+            hitSlop={{ top: 48, bottom: 48, left: 12, right: 48 }}
             accessibilityLabel="Rename audio"
           >
             <FontAwesome5 name="pencil-alt" size={22} color={colors.text} />
