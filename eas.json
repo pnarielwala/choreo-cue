@@ -5,6 +5,13 @@
       "developmentClient": true,
       "distribution": "internal",
       "channel": "development",
+      "cache": {
+        "paths": [
+          "~/.gradle/caches",
+          "~/.gradle/wrapper",
+          "node_modules/.cache"
+        ]
+      },
       "env": {
         "APP_ENV": "development",
         "LIVE_ACTIVITY_PROVISIONING_PROFILE": "6298d4b8-c88c-4523-907b-380cc0c11843"
@@ -14,6 +21,13 @@
       "autoIncrement": true,
       "node": "22.11.0",
       "channel": "production",
+      "cache": {
+        "paths": [
+          "~/.gradle/caches",
+          "~/.gradle/wrapper",
+          "node_modules/.cache"
+        ]
+      },
       "env": {
         "APP_ENV": "production",
         "LIVE_ACTIVITY_PROVISIONING_PROFILE": "43b96c97-68c3-43b2-b867-d22044127a6b"

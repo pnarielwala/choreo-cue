@@ -91,6 +91,10 @@ module.exports = {
               { name: 'RollbarCrash', modular_headers: true },
             ],
           },
+          android:
+            APP_ENV === 'production'
+              ? undefined
+              : { buildArchs: ['arm64-v8a'] },
         },
       ],
       ['./plugins/rollbar-config-plugin', { environment: 'production' }],
