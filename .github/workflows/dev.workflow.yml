@@ -4,6 +4,21 @@ on:
   pull_request:
 
 jobs:
+  check-node-version-sync:
+    name: Check .nvmrc and eas.json node versions match
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compare node versions
+        run: |
+          NVMRC_VERSION=$(tr -d '[:space:]' < .nvmrc)
+          EAS_VERSION=$(jq -r '.build.production.node' eas.json)
+          if [[ "$NVMRC_VERSION" != "$EAS_VERSION" ]]; then
+            echo "::error::.nvmrc ($NVMRC_VERSION) does not match eas.json build.production.node ($EAS_VERSION)"
+            exit 1
+          fi
+          echo "Node versions match: $NVMRC_VERSION"
+
   setup:
     name: Install dependencies
     runs-on: ubuntu-latest
