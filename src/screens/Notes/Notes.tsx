@@ -516,13 +516,13 @@ const EditorPane = ({
       editor.webviewRef.current?.injectJavaScript(`
         (function () {
           var doc = document.querySelector('.ProseMirror');
-          if (doc) doc.style.paddingBottom = '${px}px';
+          if (doc) doc.style.marginBottom = '${px}px';
           true;
         })();
       `)
     }
     const hideSub = Keyboard.addListener(hideEvent, () => {
-      // TenTap resets .ProseMirror paddingBottom to 0 on keyboard hide -
+      // TenTap resets .ProseMirror marginBottom to 0 on keyboard hide -
       // restore our baseline so content still has bottom breathing room.
       setTimeout(() => setPadding(baselineBottomPadPx), 10)
     })
@@ -537,7 +537,7 @@ const EditorPane = ({
             var scroller = document.querySelector('#root > div') || document.scrollingElement || document.documentElement;
             var doc = document.querySelector('.ProseMirror');
             if (doc) {
-              doc.style.paddingBottom = '${total}px';
+              doc.style.marginBottom = '${total}px';
               void doc.offsetHeight;
             }
             if (scroller) {
