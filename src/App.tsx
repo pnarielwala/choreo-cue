@@ -20,6 +20,7 @@ import * as SplashScreen from 'expo-splash-screen'
 import { Pressable, View, ThemeProvider, useTheme } from 'design'
 import Main from 'screens/Main'
 import MusicPlayer from 'screens/MusicPlayer'
+import Notes from 'screens/Notes'
 import DropboxNavigator from 'screens/DropboxNavigator'
 import SpotifyNavigator from 'screens/SpotifyNavigator'
 import ErrorBoundary from 'components/ErrorBoundary'
@@ -42,6 +43,10 @@ export type StacksT = {
   Home: undefined
   Player: {
     musicData: { uri: string; name: string; id: number; source?: AudioSource }
+  }
+  Notes: {
+    audioId: number
+    trackName: string
   }
   DropboxNavigator: {
     path: string
@@ -92,7 +97,7 @@ const Navigation = ({ onLayoutRootView }: { onLayoutRootView: () => void }) => {
           onPress={() => {
             props.onPress?.()
           }}
-          hitSlop={48}
+          hitSlop={{ top: 48, left: 48, right: 24, bottom: 12 }}
           accessibilityLabel="Back"
         >
           <FontAwesome5 name="chevron-left" size={24} color={colors.text} />
@@ -120,6 +125,7 @@ const Navigation = ({ onLayoutRootView }: { onLayoutRootView: () => void }) => {
             component={MusicPlayer}
             options={{ gestureEnabled: false }}
           />
+          <Stack.Screen name="Notes" component={Notes} />
         </Stack.Group>
 
         {/* Modal Stack Screens */}

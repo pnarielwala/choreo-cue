@@ -130,6 +130,12 @@ const storeLocalAudioPathsAsBasename = async () => {
   }
 }
 
+const addNotesColumnToAudioTable = async () => {
+  await dbClient.schema.alterTable('audio', (table) => {
+    table.text('notes').nullable()
+  })
+}
+
 const migrations = {
   0: initializeMigrationTable,
   1: createAudioTable,
@@ -140,6 +146,7 @@ const migrations = {
   6: extendCuesWithLabelLoopAndOrder,
   7: addRepeatModeColumnToAudioTable,
   8: storeLocalAudioPathsAsBasename,
+  9: addNotesColumnToAudioTable,
 }
 
 // =================== migrations end ===================
