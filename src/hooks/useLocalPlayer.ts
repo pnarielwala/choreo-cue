@@ -74,7 +74,7 @@ const useLocalPlayer = (
   }
   const setAudioSpeed = (tempo: number) => {
     try {
-      player.setPlaybackRate(tempo)
+      player.setPlaybackRate(tempo, 'high')
     } catch {
       /* native object already released */
     }
