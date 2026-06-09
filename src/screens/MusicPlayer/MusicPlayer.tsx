@@ -252,18 +252,29 @@ const MusicPlayer = (props: PropsT) => {
       ),
       headerTitle: 'Music Player',
       headerRight: () => (
-        <Pressable
-          onPress={() => {
-            setIsVisible(true)
-          }}
-          hitSlop={48}
-          accessibilityLabel="Rename audio"
-        >
-          <FontAwesome5 name="pencil-alt" size={22} color={colors.text} />
-        </Pressable>
+        <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          <Pressable
+            onPress={() => {
+              props.navigation.push('Notes', { audioId, trackName })
+            }}
+            hitSlop={48}
+            accessibilityLabel="Edit notes"
+          >
+            <FontAwesome5 name="sticky-note" size={22} color={colors.text} />
+          </Pressable>
+          <Pressable
+            onPress={() => {
+              setIsVisible(true)
+            }}
+            hitSlop={48}
+            accessibilityLabel="Rename audio"
+          >
+            <FontAwesome5 name="pencil-alt" size={22} color={colors.text} />
+          </Pressable>
+        </View>
       ),
     })
-  }, [props, colors.text])
+  }, [props, colors.text, audioId, trackName])
 
   return (
     <>

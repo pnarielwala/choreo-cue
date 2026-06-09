@@ -8,6 +8,7 @@ const baseAudio: Audio = {
   path: 'audioPath.mp3',
   source: 'iCloud',
   repeat_mode: 'off',
+  notes: null,
 }
 
 export const anAudio = (overrides: Partial<Audio> = {}): Audio => ({

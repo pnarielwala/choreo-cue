@@ -13,6 +13,7 @@ declare module 'knex/types/tables' {
     created_at: string
     last_opened_at: string | null
     repeat_mode: 'off' | 'song' | 'cue'
+    notes: string | null
   }
 
   interface Cue {

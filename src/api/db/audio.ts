@@ -78,6 +78,15 @@ export const updateAudioRepeatMode = async (
   await dbClient('audio').where({ id }).update({ repeat_mode: repeatMode })
 }
 
+export const getAudioNotes = async (id: number): Promise<string> => {
+  const row = await dbClient('audio').where({ id }).first('notes')
+  return typeof row?.notes === 'string' ? row.notes : ''
+}
+
+export const updateAudioNotes = async (id: number, notes: string) => {
+  await dbClient('audio').where({ id }).update({ notes })
+}
+
 export const getAudioFile = async (id: number): Promise<AudioRecord | null> => {
   const result = await dbClient('audio').where({ id }).first()
 
