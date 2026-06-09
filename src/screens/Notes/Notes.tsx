@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Keyboard, KeyboardAvoidingView, Platform } from 'react-native'
+import { Keyboard, KeyboardAvoidingView, Linking, Platform } from 'react-native'
+import type { WebViewMessageEvent } from 'react-native-webview'
 import {
   RichText,
   Toolbar,
@@ -15,7 +16,7 @@ import { File } from 'expo-file-system'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { View, ScreenLayout, useTheme, P } from 'design'
+import { View, ScreenLayout, useTheme, Pressable, Text } from 'design'
 import { ScreenPropsT } from 'App'
 import useAudioNotes, { useUpdateAudioNotes } from 'hooks/useAudioNotes'
 import analytics from 'resources/analytics'
@@ -24,8 +25,54 @@ type EditorColors = {
   text: string
   background: string
   textMuted: string
+  textSubtle: string
   accent: string
+  accentText: string
+  surface: string
+  surfaceMuted: string
+  border: string
 }
+
+const buildToolbarTheme = (colors: EditorColors) => ({
+  toolbarBody: {
+    backgroundColor: colors.surface,
+    borderTopColor: colors.border,
+    borderBottomColor: colors.border,
+  },
+  toolbarButton: {
+    backgroundColor: colors.surface,
+  },
+  icon: {
+    tintColor: colors.textMuted,
+  },
+  iconDisabled: {
+    tintColor: colors.textSubtle,
+  },
+  iconWrapper: {
+    backgroundColor: colors.surface,
+  },
+  iconWrapperActive: {
+    backgroundColor: colors.surfaceMuted,
+  },
+  linkBarTheme: {
+    addLinkContainer: {
+      backgroundColor: colors.surface,
+      borderTopColor: colors.border,
+      borderBottomColor: colors.border,
+    },
+    linkInput: {
+      backgroundColor: colors.surface,
+      color: colors.text,
+    },
+    placeholderTextColor: colors.textMuted,
+    doneButton: {
+      backgroundColor: colors.accent,
+    },
+    doneButtonText: {
+      color: colors.accentText,
+    },
+  },
+})
 
 const buildColorCss = (colors: EditorColors) => `
   html, body, .ProseMirror, .ProseMirror * {
@@ -43,6 +90,38 @@ const buildColorCss = (colors: EditorColors) => `
   .ProseMirror p.is-editor-empty:first-child::before,
   .ProseMirror .is-empty::before {
     color: ${colors.textMuted};
+  }
+  .ProseMirror blockquote {
+    border-left-color: ${colors.textSubtle};
+  }
+  .ProseMirror ul[data-type="taskList"] li > label > input[type="checkbox"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 1.1em;
+    height: 1.1em;
+    margin: 0.15rem 0.1rem;
+    padding: 0;
+    border: 1.5px solid ${colors.textSubtle};
+    border-radius: 0.25rem;
+    background: transparent;
+    position: relative;
+    cursor: pointer;
+    vertical-align: middle;
+  }
+  .ProseMirror ul[data-type="taskList"] li > label > input[type="checkbox"]:checked {
+    background: ${colors.accent};
+    border-color: ${colors.accent};
+  }
+  .ProseMirror ul[data-type="taskList"] li > label > input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 45%;
+    width: 0.3em;
+    height: 0.6em;
+    border: solid ${colors.accentText};
+    border-width: 0 0.16em 0.16em 0;
+    transform: translate(-50%, -55%) rotate(45deg);
   }
 `
 
@@ -103,8 +182,192 @@ const loadEditorCss = async (
   return buildEditorCss(regularB64, boldB64, bottomPadPx, colors)
 }
 
+// Capture-phase tap handling. Two goals:
+//  1. Stop iOS WebView / ProseMirror from auto-selecting the inline run under a
+//     single tap (most visible on formatted text - bold/italic/link words get
+//     selected just from a tap). Done by canceling 'selectstart' for taps that
+//     aren't drags, long-presses, or second-of-double.
+//  2. Show a confirmation pill before opening a link. Single tap on a link
+//     swallows mousedown/touchstart so ProseMirror doesn't select the link
+//     range, then touchend/click posts the href + rect to RN.
+// Drag-select, long-press, and double-tap-to-word-select are all preserved.
+const LINK_INTERCEPT_SCRIPT = `
+(function() {
+  if (window.__ccLinkIntercept) return;
+  window.__ccLinkIntercept = true;
+  var DBL_WINDOW_MS = 350;
+  var TAP_DEDUPE_MS = 60;
+  var LONG_PRESS_MS = 450;
+  var MOVE_THRESHOLD = 8;
+  var lastTapTime = 0;
+  var lastTapAnchor = null;
+  var lastShowAt = 0;
+  var downTime = 0;
+  var downX = 0;
+  var downY = 0;
+  var moved = false;
+  function findAnchor(el) {
+    while (el && el !== document.body) {
+      if (el.tagName === 'A') return el;
+      el = el.parentElement;
+    }
+    return null;
+  }
+  function findCheckbox(el) {
+    while (el && el !== document.body) {
+      if (el.tagName === 'INPUT' && el.type === 'checkbox') return el;
+      el = el.parentElement;
+    }
+    return null;
+  }
+  function blurActive() {
+    var ae = document.activeElement;
+    if (ae && typeof ae.blur === 'function') ae.blur();
+  }
+  // TipTap's TaskItem change handler calls editor.chain().focus() async, so a
+  // single blur loses the race. Hold an aggressive blur for a short window
+  // after a checkbox tap to defeat the late focus.
+  var keepBlurredUntil = 0;
+  function keepBlurringEditor() {
+    if (Date.now() > keepBlurredUntil) return;
+    var pm = document.querySelector('.ProseMirror');
+    if (pm && document.activeElement === pm) {
+      pm.blur();
+    }
+    requestAnimationFrame(keepBlurringEditor);
+  }
+  function suppressEditorFocusBriefly(ms) {
+    keepBlurredUntil = Date.now() + ms;
+    requestAnimationFrame(keepBlurringEditor);
+  }
+  function post(msg) {
+    if (window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(JSON.stringify(msg));
+    }
+  }
+  function withinDoubleWindow() {
+    return Date.now() - lastTapTime < DBL_WINDOW_MS;
+  }
+
+  // Position + movement tracking - shared by selectstart and link suppression.
+  document.addEventListener('touchstart', function(e) {
+    var t = e.touches && e.touches[0];
+    if (t) { downX = t.clientX; downY = t.clientY; }
+    downTime = Date.now();
+    moved = false;
+  }, { capture: true, passive: true });
+  document.addEventListener('mousedown', function(e) {
+    downX = e.clientX;
+    downY = e.clientY;
+    downTime = Date.now();
+    moved = false;
+  }, true);
+  document.addEventListener('touchmove', function(e) {
+    var t = e.touches && e.touches[0];
+    if (!t) return;
+    if (Math.abs(t.clientX - downX) > MOVE_THRESHOLD ||
+        Math.abs(t.clientY - downY) > MOVE_THRESHOLD) moved = true;
+  }, { capture: true, passive: true });
+  document.addEventListener('mousemove', function(e) {
+    if (e.buttons === 0) return;
+    if (Math.abs(e.clientX - downX) > MOVE_THRESHOLD ||
+        Math.abs(e.clientY - downY) > MOVE_THRESHOLD) moved = true;
+  }, true);
+
+  // Cancel the auto-selection of inline runs on a tap. Allow:
+  //  - drag-select (moved past threshold)
+  //  - long-press (held past LONG_PRESS_MS)
+  //  - second tap of a double-tap (browser's native word select)
+  document.addEventListener('selectstart', function(e) {
+    if (moved) return;
+    if (Date.now() - downTime > LONG_PRESS_MS) return;
+    if (withinDoubleWindow()) return;
+    e.preventDefault();
+  }, true);
+
+  // Stop ProseMirror's mousedown/touchstart handlers from running for:
+  //  - links (so the first tap doesn't select the link range)
+  //  - task-list checkboxes (so toggling doesn't focus the editor / open the
+  //    keyboard). The native default action still toggles the checkbox.
+  function suppress(e) {
+    var a = findAnchor(e.target);
+    if (a) {
+      if (!withinDoubleWindow()) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      return;
+    }
+    if (findCheckbox(e.target)) {
+      e.stopPropagation();
+      suppressEditorFocusBriefly(400);
+    }
+  }
+  document.addEventListener('mousedown', suppress, true);
+  document.addEventListener('touchstart', suppress, { capture: true, passive: false });
+
+  function handleTap(e) {
+    var now = Date.now();
+    if (now - lastShowAt < TAP_DEDUPE_MS) return;
+    if (findCheckbox(e.target)) {
+      // Stop the click from focusing the editable, blur anything that already
+      // got focus, and keep blurring for a short window because TipTap's
+      // TaskItem extension re-focuses the editor async after the change event.
+      e.stopPropagation();
+      lastShowAt = now;
+      setTimeout(blurActive, 0);
+      suppressEditorFocusBriefly(400);
+      post({ type: 'cc-link-dismiss' });
+      return;
+    }
+    var a = findAnchor(e.target);
+    var prevTime = lastTapTime;
+    var prevAnchor = lastTapAnchor;
+    lastTapTime = now;
+    lastTapAnchor = a;
+    lastShowAt = now;
+    if (!a || !a.getAttribute('href')) {
+      post({ type: 'cc-link-dismiss' });
+      return;
+    }
+    var isDouble = prevAnchor === a && (now - prevTime < DBL_WINDOW_MS);
+    if (isDouble) {
+      // Second tap on same link → let the editor handle word selection.
+      post({ type: 'cc-link-dismiss' });
+      return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    var r = a.getBoundingClientRect();
+    post({
+      type: 'cc-link-click',
+      href: a.getAttribute('href'),
+      rect: { top: r.top, left: r.left, bottom: r.bottom, width: r.width },
+    });
+  }
+  document.addEventListener('touchend', handleTap, true);
+  document.addEventListener('click', handleTap, true);
+  document.addEventListener('scroll', function() {
+    post({ type: 'cc-link-dismiss' });
+  }, true);
+})();
+`
+
+// editorHtml embeds the tiptap bundle, which contains string literals like
+// `<body>${t}</body>` - so an earlier `</body>` occurrence belongs to that JS,
+// not the document. Splice at the *last* `</body>` to inject before the real
+// closing tag.
+const injectBeforeClosingBody = (html: string, snippet: string): string => {
+  const idx = html.lastIndexOf('</body>')
+  if (idx === -1) return html + snippet
+  return html.slice(0, idx) + snippet + html.slice(idx)
+}
+
 const buildCustomSource = (fontCss: string): string =>
-  editorHtml.replace('</head>', `<style>${fontCss}</style></head>`)
+  injectBeforeClosingBody(
+    editorHtml.replace('</head>', `<style>${fontCss}</style></head>`),
+    `<script>${LINK_INTERCEPT_SCRIPT}</script>`
+  )
 
 const dismissKeyboardItem: ToolbarItem = {
   onPress:
@@ -126,6 +389,15 @@ const TOOLBAR_ITEMS: ToolbarItem[] = [
 // view, and .ProseMirror's padding-bottom must be at least this big so there
 // is runway to scroll into when editing near the end of the document.
 const TOOLBAR_CLEARANCE_PX = 60
+
+const PILL_HEIGHT = 32
+const PILL_URL_MAX = 36
+
+const truncateUrl = (url: string) => {
+  const stripped = url.replace(/^https?:\/\//, '')
+  if (stripped.length <= PILL_URL_MAX) return stripped
+  return stripped.slice(0, PILL_URL_MAX - 3) + '...'
+}
 
 export type PropsT = ScreenPropsT<'Notes'>
 
@@ -155,6 +427,7 @@ const EditorPane = ({
     bridgeExtensions: TenTapStartKit,
     initialContent: initialNotes,
     customSource,
+    theme: { toolbar: buildToolbarTheme(colors) },
   })
 
   const lastSavedRef = useRef(initialNotes)
@@ -261,6 +534,48 @@ const EditorPane = ({
     `)
   }, [editor, colors.text, colors.background, colors.textMuted, colors.accent])
 
+  const [linkPrompt, setLinkPrompt] = useState<{
+    href: string
+    top: number
+    left: number
+  } | null>(null)
+
+  const handleMessage = (event: WebViewMessageEvent) => {
+    const raw = event.nativeEvent.data
+    if (typeof raw !== 'string') return
+    let parsed: unknown
+    try {
+      parsed = JSON.parse(raw)
+    } catch {
+      return
+    }
+    if (!parsed || typeof parsed !== 'object') return
+    const msg = parsed as { type?: string; href?: string; rect?: any }
+    if (msg.type === 'cc-link-click' && typeof msg.href === 'string') {
+      const rect = msg.rect || {}
+      const pillTop =
+        rect.top > PILL_HEIGHT + 8
+          ? rect.top - PILL_HEIGHT - 4
+          : rect.bottom + 4
+      setLinkPrompt({
+        href: msg.href,
+        top: pillTop,
+        left: Math.max(0, rect.left ?? 0),
+      })
+    } else if (msg.type === 'cc-link-dismiss') {
+      setLinkPrompt(null)
+    }
+  }
+
+  const openLink = async (href: string) => {
+    setLinkPrompt(null)
+    try {
+      await Linking.openURL(href)
+    } catch (err) {
+      analytics.error('Failed to open notes link', err as any)
+    }
+  }
+
   return (
     <View sx={{ flex: 1, backgroundColor: 'background' }}>
       <View sx={{ flex: 1, px: 3, pt: 2 }}>
@@ -269,7 +584,33 @@ const EditorPane = ({
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}
           style={{ backgroundColor: colors.background }}
+          onMessage={handleMessage}
+          exclusivelyUseCustomOnMessage={false}
         />
+        {linkPrompt && (
+          <Pressable
+            onPress={() => openLink(linkPrompt.href)}
+            sx={{
+              position: 'absolute',
+              top: linkPrompt.top,
+              left: linkPrompt.left,
+              maxWidth: '90%',
+              backgroundColor: 'surfaceElevated',
+              borderColor: 'border',
+              borderWidth: 1,
+              borderRadius: 8,
+              paddingHorizontal: 12,
+              paddingVertical: 8,
+            }}
+          >
+            <Text
+              numberOfLines={1}
+              sx={{ color: 'text', fontSize: 14, fontWeight: '500' }}
+            >
+              Go to {truncateUrl(linkPrompt.href)}
+            </Text>
+          </Pressable>
+        )}
       </View>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -296,7 +637,12 @@ const Notes = (props: PropsT) => {
     text: themeColors.text,
     background: themeColors.background,
     textMuted: themeColors.textMuted,
+    textSubtle: themeColors.textSubtle,
     accent: themeColors.accent,
+    accentText: themeColors.accentText,
+    surface: themeColors.surface,
+    surfaceMuted: themeColors.surfaceMuted,
+    border: themeColors.border,
   }
 
   const { data: notes, isLoading } = useAudioNotes(audioId)
