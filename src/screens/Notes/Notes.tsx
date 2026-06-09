@@ -20,10 +20,37 @@ import { ScreenPropsT } from 'App'
 import useAudioNotes, { useUpdateAudioNotes } from 'hooks/useAudioNotes'
 import analytics from 'resources/analytics'
 
+type EditorColors = {
+  text: string
+  background: string
+  textMuted: string
+  accent: string
+}
+
+const buildColorCss = (colors: EditorColors) => `
+  html, body, .ProseMirror, .ProseMirror * {
+    color: ${colors.text};
+  }
+  html, body {
+    background-color: ${colors.background};
+  }
+  .ProseMirror {
+    caret-color: ${colors.text};
+  }
+  .ProseMirror a {
+    color: ${colors.accent};
+  }
+  .ProseMirror p.is-editor-empty:first-child::before,
+  .ProseMirror .is-empty::before {
+    color: ${colors.textMuted};
+  }
+`
+
 const buildEditorCss = (
   regularB64: string,
   boldB64: string,
-  bottomPadPx: number
+  bottomPadPx: number,
+  colors: EditorColors
 ) => `
   @font-face {
     font-family: 'Satoshi';
@@ -45,6 +72,7 @@ const buildEditorCss = (
   .ProseMirror {
     padding-bottom: ${bottomPadPx}px;
   }
+  ${buildColorCss(colors)}
   * {
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -56,7 +84,10 @@ const buildEditorCss = (
   }
 `
 
-const loadEditorCss = async (bottomPadPx: number): Promise<string> => {
+const loadEditorCss = async (
+  bottomPadPx: number,
+  colors: EditorColors
+): Promise<string> => {
   const [regular, bold] = await Promise.all([
     Asset.fromModule(
       require('assets/fonts/Satoshi-Regular.ttf')
@@ -69,7 +100,7 @@ const loadEditorCss = async (bottomPadPx: number): Promise<string> => {
     new File(regularUri).base64(),
     new File(boldUri).base64(),
   ])
-  return buildEditorCss(regularB64, boldB64, bottomPadPx)
+  return buildEditorCss(regularB64, boldB64, bottomPadPx, colors)
 }
 
 const buildCustomSource = (fontCss: string): string =>
@@ -104,6 +135,7 @@ type EditorPaneProps = {
   customSource: string
   baselineBottomPadPx: number
   navigation: PropsT['navigation']
+  colors: EditorColors
 }
 
 const EditorPane = ({
@@ -112,9 +144,8 @@ const EditorPane = ({
   customSource,
   baselineBottomPadPx,
   navigation,
+  colors,
 }: EditorPaneProps) => {
-  const theme = useTheme()
-  const colors = theme.colors as Record<string, string>
   const headerHeight = useHeaderHeight()
   const updateNotes = useUpdateAudioNotes(audioId)
 
@@ -211,6 +242,25 @@ const EditorPane = ({
     }
   }, [editor, baselineBottomPadPx])
 
+  // Push theme color updates into the WebView so toggling light/dark while the
+  // editor is mounted recolors text without losing editor state.
+  useEffect(() => {
+    const css = buildColorCss(colors)
+    editor.webviewRef.current?.injectJavaScript(`
+      (function () {
+        var id = 'cc-theme-colors';
+        var el = document.getElementById(id);
+        if (!el) {
+          el = document.createElement('style');
+          el.id = id;
+          document.head.appendChild(el);
+        }
+        el.textContent = ${JSON.stringify(css)};
+        true;
+      })();
+    `)
+  }, [editor, colors.text, colors.background, colors.textMuted, colors.accent])
+
   return (
     <View sx={{ flex: 1, backgroundColor: 'background' }}>
       <View sx={{ flex: 1, px: 3, pt: 2 }}>
@@ -240,14 +290,21 @@ const Notes = (props: PropsT) => {
   const { audioId, trackName } = props.route.params
   const insets = useSafeAreaInsets()
   const bottomPadPx = insets.bottom + 24
+  const theme = useTheme()
+  const themeColors = theme.colors as Record<string, string>
+  const editorColors: EditorColors = {
+    text: themeColors.text,
+    background: themeColors.background,
+    textMuted: themeColors.textMuted,
+    accent: themeColors.accent,
+  }
 
   const { data: notes, isLoading } = useAudioNotes(audioId)
 
   const [customSource, setCustomSource] = useState<string | null>(null)
   useEffect(() => {
     let cancelled = false
-    console.log('bottomPadPx', bottomPadPx)
-    loadEditorCss(bottomPadPx)
+    loadEditorCss(bottomPadPx, editorColors)
       .then((css) => {
         if (!cancelled) setCustomSource(buildCustomSource(css))
       })
@@ -259,6 +316,9 @@ const Notes = (props: PropsT) => {
     return () => {
       cancelled = true
     }
+    // Only build initial source once; runtime theme changes are pushed via
+    // injected CSS in EditorPane.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bottomPadPx])
 
   useEffect(() => {
@@ -276,6 +336,7 @@ const Notes = (props: PropsT) => {
           customSource={customSource!}
           baselineBottomPadPx={bottomPadPx}
           navigation={props.navigation}
+          colors={editorColors}
         />
       ) : (
         <View sx={{ flex: 1, backgroundColor: 'background' }} />
