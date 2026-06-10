@@ -106,7 +106,7 @@ const buildColorCss = (colors: EditorColors) => `
     }
       input, textarea, [contenteditable] {
           -webkit-tap-highlight-color: #ff5722;
-        }
+  }
   .ProseMirror {
     caret-color: ${colors.text};
   }
@@ -175,7 +175,7 @@ const buildEditorCss = (
     font-family: 'Satoshi', -apple-system, system-ui, sans-serif;
   }
   .ProseMirror {
-    padding-bottom: ${bottomPadPx}px;
+    margin-bottom: ${bottomPadPx}px;
   }
   ${buildColorCss(colors)}
   * {
@@ -208,63 +208,28 @@ const loadEditorCss = async (
   return buildEditorCss(regularB64, boldB64, bottomPadPx, colors)
 }
 
-// Capture-phase tap handling. Two goals:
-//  1. Stop iOS WebView / ProseMirror from auto-selecting the inline run under a
-//     single tap (most visible on formatted text - bold/italic/link words get
-//     selected just from a tap). Done by canceling 'selectstart' for taps that
-//     aren't drags, long-presses, or second-of-double.
-//  2. Show a confirmation pill before opening a link. Single tap on a link
-//     swallows mousedown/touchstart so ProseMirror doesn't select the link
-//     range, then touchend/click posts the href + rect to RN.
-// Drag-select, long-press, and double-tap-to-word-select are all preserved.
+// Intercept taps on links so we can show a confirmation pill instead of
+// navigating immediately. Single tap on an <a>: swallow the default click
+// (so ProseMirror doesn't select the link range and the browser doesn't
+// open it) and post the href + bounding rect to RN. Double-tap on the same
+// link: let it through so the user can edit/word-select. Tap elsewhere or
+// any scroll: post a dismiss so the pill goes away.
 const LINK_INTERCEPT_SCRIPT = `
 (function() {
   if (window.__ccLinkIntercept) return;
   window.__ccLinkIntercept = true;
   var DBL_WINDOW_MS = 350;
   var TAP_DEDUPE_MS = 60;
-  var LONG_PRESS_MS = 450;
-  var MOVE_THRESHOLD = 8;
   var lastTapTime = 0;
   var lastTapAnchor = null;
   var lastShowAt = 0;
-  var downTime = 0;
-  var downX = 0;
-  var downY = 0;
-  var moved = false;
+
   function findAnchor(el) {
     while (el && el !== document.body) {
       if (el.tagName === 'A') return el;
       el = el.parentElement;
     }
     return null;
-  }
-  function findCheckbox(el) {
-    while (el && el !== document.body) {
-      if (el.tagName === 'INPUT' && el.type === 'checkbox') return el;
-      el = el.parentElement;
-    }
-    return null;
-  }
-  function blurActive() {
-    var ae = document.activeElement;
-    if (ae && typeof ae.blur === 'function') ae.blur();
-  }
-  // TipTap's TaskItem change handler calls editor.chain().focus() async, so a
-  // single blur loses the race. Hold an aggressive blur for a short window
-  // after a checkbox tap to defeat the late focus.
-  var keepBlurredUntil = 0;
-  function keepBlurringEditor() {
-    if (Date.now() > keepBlurredUntil) return;
-    var pm = document.querySelector('.ProseMirror');
-    if (pm && document.activeElement === pm) {
-      pm.blur();
-    }
-    requestAnimationFrame(keepBlurringEditor);
-  }
-  function suppressEditorFocusBriefly(ms) {
-    keepBlurredUntil = Date.now() + ms;
-    requestAnimationFrame(keepBlurringEditor);
   }
   function post(msg) {
     if (window.ReactNativeWebView) {
@@ -274,82 +239,11 @@ const LINK_INTERCEPT_SCRIPT = `
   function withinDoubleWindow() {
     return Date.now() - lastTapTime < DBL_WINDOW_MS;
   }
-
-  // Position + movement tracking - shared by selectstart and link suppression.
-  document.addEventListener('touchstart', function(e) {
-    var t = e.touches && e.touches[0];
-    if (t) { downX = t.clientX; downY = t.clientY; }
-    downTime = Date.now();
-    moved = false;
-  }, { capture: true, passive: true });
-  document.addEventListener('mousedown', function(e) {
-    downX = e.clientX;
-    downY = e.clientY;
-    downTime = Date.now();
-    moved = false;
-  }, true);
-  document.addEventListener('touchmove', function(e) {
-    var t = e.touches && e.touches[0];
-    if (!t) return;
-    if (Math.abs(t.clientX - downX) > MOVE_THRESHOLD ||
-        Math.abs(t.clientY - downY) > MOVE_THRESHOLD) moved = true;
-  }, { capture: true, passive: true });
-  document.addEventListener('mousemove', function(e) {
-    if (e.buttons === 0) return;
-    if (Math.abs(e.clientX - downX) > MOVE_THRESHOLD ||
-        Math.abs(e.clientY - downY) > MOVE_THRESHOLD) moved = true;
-  }, true);
-
-  // Undo the auto-selection of inline runs on a tap. We do this on touchend
-  // (collapse the resulting selection) instead of preventing 'selectstart'
-  // up front - the upfront preventDefault races with iOS's own drag-select
-  // gesture detection. iOS can fire selectstart before our touchmove handler
-  // has seen enough movement to flip 'moved', so a real drag-select gets its
-  // initial 'selectstart' canceled and the WebView's selection state ends up
-  // out of sync with the finger, producing a jumpy / over-selecting feel.
-  // Skip the collapse for:
-  //  - drag-select (moved past threshold)
-  //  - long-press (held past LONG_PRESS_MS, e.g. magnifier-driven selection)
-  //  - second tap of a double-tap (browser's native word select)
-  // Registered before handleTap so withinDoubleWindow() still reflects the
-  // PREVIOUS tap's time, not the one we're currently handling.
-  document.addEventListener('touchend', function() {
-    if (moved) return;
-    if (Date.now() - downTime > LONG_PRESS_MS) return;
-    if (withinDoubleWindow()) return;
-    var tapX = downX;
-    var tapY = downY;
-    requestAnimationFrame(function () {
-      var sel = window.getSelection && window.getSelection();
-      if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
-      if (document.caretRangeFromPoint) {
-        var range = document.caretRangeFromPoint(tapX, tapY);
-        if (range) {
-          sel.removeAllRanges();
-          sel.addRange(range);
-          return;
-        }
-      }
-      sel.collapseToEnd();
-    });
-  }, { capture: true, passive: true });
-
-  // Stop ProseMirror's mousedown/touchstart handlers from running for:
-  //  - links (so the first tap doesn't select the link range)
-  //  - task-list checkboxes (so toggling doesn't focus the editor / open the
-  //    keyboard). The native default action still toggles the checkbox.
   function suppress(e) {
     var a = findAnchor(e.target);
-    if (a) {
-      if (!withinDoubleWindow()) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-      return;
-    }
-    if (findCheckbox(e.target)) {
+    if (a && !withinDoubleWindow()) {
+      e.preventDefault();
       e.stopPropagation();
-      suppressEditorFocusBriefly(400);
     }
   }
   document.addEventListener('mousedown', suppress, true);
@@ -358,17 +252,6 @@ const LINK_INTERCEPT_SCRIPT = `
   function handleTap(e) {
     var now = Date.now();
     if (now - lastShowAt < TAP_DEDUPE_MS) return;
-    if (findCheckbox(e.target)) {
-      // Stop the click from focusing the editable, blur anything that already
-      // got focus, and keep blurring for a short window because TipTap's
-      // TaskItem extension re-focuses the editor async after the change event.
-      e.stopPropagation();
-      lastShowAt = now;
-      setTimeout(blurActive, 0);
-      suppressEditorFocusBriefly(400);
-      post({ type: 'cc-link-dismiss' });
-      return;
-    }
     var a = findAnchor(e.target);
     var prevTime = lastTapTime;
     var prevAnchor = lastTapAnchor;
@@ -381,7 +264,6 @@ const LINK_INTERCEPT_SCRIPT = `
     }
     var isDouble = prevAnchor === a && (now - prevTime < DBL_WINDOW_MS);
     if (isDouble) {
-      // Second tap on same link → let the editor handle word selection.
       post({ type: 'cc-link-dismiss' });
       return;
     }
@@ -412,11 +294,24 @@ const injectBeforeClosingBody = (html: string, snippet: string): string => {
   return html.slice(0, idx) + snippet + html.slice(idx)
 }
 
-const buildCustomSource = (fontCss: string): string =>
+const buildCustomSource = (css: string): string =>
   injectBeforeClosingBody(
-    editorHtml.replace('</head>', `<style>${fontCss}</style></head>`),
+    editorHtml.replace('</head>', `<style>${css}</style></head>`),
     `<script>${LINK_INTERCEPT_SCRIPT}</script>`
   )
+
+// Floating toolbar height + a little breathing room - how far above the
+// keyboard the cursor should land after the keyboard-show scroll.
+const TOOLBAR_CLEARANCE_PX = 60
+
+const PILL_HEIGHT = 32
+const PILL_URL_MAX = 36
+
+const truncateUrl = (url: string) => {
+  const stripped = url.replace(/^https?:\/\//, '')
+  if (stripped.length <= PILL_URL_MAX) return stripped
+  return stripped.slice(0, PILL_URL_MAX - 3) + '...'
+}
 
 const dismissKeyboardItem: ToolbarItem = {
   onPress:
@@ -433,28 +328,12 @@ const TOOLBAR_ITEMS: ToolbarItem[] = [
   ...DEFAULT_TOOLBAR_ITEMS,
 ]
 
-// Floating toolbar height (44pt) + buffer. ProseMirror is told to keep the
-// cursor this far above the WebView's visible bottom when scrolling it into
-// view, and .ProseMirror's padding-bottom must be at least this big so there
-// is runway to scroll into when editing near the end of the document.
-const TOOLBAR_CLEARANCE_PX = 60
-
-const PILL_HEIGHT = 32
-const PILL_URL_MAX = 36
-
-const truncateUrl = (url: string) => {
-  const stripped = url.replace(/^https?:\/\//, '')
-  if (stripped.length <= PILL_URL_MAX) return stripped
-  return stripped.slice(0, PILL_URL_MAX - 3) + '...'
-}
-
 export type PropsT = ScreenPropsT<'Notes'>
 
 type EditorPaneProps = {
   audioId: number
   initialNotes: string
   customSource: string
-  baselineBottomPadPx: number
   navigation: PropsT['navigation']
   colors: EditorColors
 }
@@ -463,7 +342,6 @@ const EditorPane = ({
   audioId,
   initialNotes,
   customSource,
-  baselineBottomPadPx,
   navigation,
   colors,
 }: EditorPaneProps) => {
@@ -500,89 +378,6 @@ const EditorPane = ({
     return unsubscribe
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigation])
-
-  // TenTap's `avoidIosKeyboard: true` pads .ProseMirror and sets
-  // scrollMargin.bottom to (keyboardHeight + 10) on keyboard up, which places
-  // the cursor at the top of the keyboard - behind the floating toolbar.
-  // After TenTap's keyboard effect settles, bump both values by
-  // TOOLBAR_CLEARANCE_PX and manually scroll the cursor into the new visible
-  // area. The visible area excludes the keyboard and the toolbar.
-  useEffect(() => {
-    const showEvent =
-      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow'
-    const hideEvent =
-      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide'
-    const setPadding = (px: number) => {
-      editor.webviewRef.current?.injectJavaScript(`
-        (function () {
-          var doc = document.querySelector('.ProseMirror');
-          if (doc) doc.style.marginBottom = '${px}px';
-          true;
-        })();
-      `)
-    }
-    const hideSub = Keyboard.addListener(hideEvent, () => {
-      // TenTap resets .ProseMirror marginBottom to 0 on keyboard hide -
-      // restore our baseline so content still has bottom breathing room.
-      setTimeout(() => setPadding(baselineBottomPadPx), 10)
-    })
-    const showSub = Keyboard.addListener(showEvent, (e) => {
-      const kbHeight = e.endCoordinates.height
-      const total = kbHeight + 10 + TOOLBAR_CLEARANCE_PX
-      const hiddenBelow = kbHeight + TOOLBAR_CLEARANCE_PX
-      setTimeout(() => {
-        editor.updateScrollThresholdAndMargin(total)
-        editor.webviewRef.current?.injectJavaScript(`
-          (function () {
-            var scroller = document.querySelector('#root > div') || document.scrollingElement || document.documentElement;
-            var doc = document.querySelector('.ProseMirror');
-            if (doc) {
-              doc.style.marginBottom = '${total}px';
-              void doc.offsetHeight;
-            }
-            if (scroller) {
-              scroller.style.scrollPaddingBottom = '${hiddenBelow}px';
-              scroller.style.scrollBehavior = 'smooth';
-            }
-            requestAnimationFrame(function () {
-              var sel = window.getSelection && window.getSelection();
-              if (!sel || sel.rangeCount === 0) return;
-              var node = sel.focusNode;
-              if (!node) return;
-              var el = node.nodeType === 3 ? node.parentElement : node;
-              if (el && typeof el.scrollIntoView === 'function') {
-                el.scrollIntoView({ block: 'end', behavior: 'smooth' });
-              }
-            });
-            true;
-          })();
-        `)
-      }, 10)
-    })
-    return () => {
-      showSub.remove()
-      hideSub.remove()
-    }
-  }, [editor, baselineBottomPadPx])
-
-  // Push theme color updates into the WebView so toggling light/dark while the
-  // editor is mounted recolors text without losing editor state.
-  useEffect(() => {
-    const css = buildColorCss(colors)
-    editor.webviewRef.current?.injectJavaScript(`
-      (function () {
-        var id = 'cc-theme-colors';
-        var el = document.getElementById(id);
-        if (!el) {
-          el = document.createElement('style');
-          el.id = id;
-          document.head.appendChild(el);
-        }
-        el.textContent = ${JSON.stringify(css)};
-        true;
-      })();
-    `)
-  }, [editor, colors.text, colors.background, colors.textMuted, colors.accent])
 
   const [linkPrompt, setLinkPrompt] = useState<{
     href: string
@@ -626,13 +421,92 @@ const EditorPane = ({
     }
   }
 
+  // Push theme color updates into the WebView so toggling light/dark while
+  // the editor is mounted recolors text without losing editor state.
+  useEffect(() => {
+    const css = buildColorCss(colors)
+    editor.webviewRef.current?.injectJavaScript(`
+      (function () {
+        var id = 'cc-theme-colors';
+        var el = document.getElementById(id);
+        if (!el) {
+          el = document.createElement('style');
+          el.id = id;
+          document.head.appendChild(el);
+        }
+        el.textContent = ${JSON.stringify(css)};
+        true;
+      })();
+    `)
+  }, [editor, colors.text, colors.background, colors.textMuted, colors.accent])
+
+  // On keyboard show, scroll the cursor above the keyboard + toolbar if it
+  // would otherwise be hidden. We have to add our own bottom margin first to
+  // guarantee scroll runway: TenTap reads keyboardHeight from
+  // `keyboardDidShow` (~250ms after `keyboardWillShow`) before applying its
+  // own paddingBottom, so at this point the scroller has no room to scroll
+  // the cursor up. Inject a marginBottom of (kbHeight + clearance + 20) so
+  // the worst-case scroll (cursor at end of content) always has room. Clear
+  // it on keyboard hide so the CSS baseline marginBottom takes over.
+  useEffect(() => {
+    const showEvent =
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow'
+    const hideEvent =
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide'
+    const showSub = Keyboard.addListener(showEvent, (e) => {
+      const kbHeight = e.endCoordinates.height
+      const hiddenBelow = kbHeight + TOOLBAR_CLEARANCE_PX
+      const runway = hiddenBelow + 20
+      setTimeout(() => {
+        editor.webviewRef.current?.injectJavaScript(`
+          (function () {
+            var doc = document.querySelector('.ProseMirror');
+            if (doc) {
+              doc.style.marginBottom = '${runway}px';
+              void doc.offsetHeight;
+            }
+            var sel = window.getSelection && window.getSelection();
+            if (!sel || sel.rangeCount === 0) return;
+            var node = sel.focusNode;
+            if (!node) return;
+            var el = node.nodeType === 3 ? node.parentElement : node;
+            if (!el) return;
+            var rect = el.getBoundingClientRect();
+            var visibleBottom = window.innerHeight - ${hiddenBelow};
+            if (rect.bottom <= visibleBottom) return;
+            var scroller = document.querySelector('#root > div') || document.scrollingElement || document.documentElement;
+            if (!scroller) return;
+            var delta = rect.bottom - visibleBottom + 20;
+            if (typeof scroller.scrollTo === 'function') {
+              scroller.scrollTo({ top: scroller.scrollTop + delta, behavior: 'smooth' });
+            } else {
+              scroller.scrollTop = scroller.scrollTop + delta;
+            }
+            true;
+          })();
+        `)
+      }, 50)
+    })
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      editor.webviewRef.current?.injectJavaScript(`
+        (function () {
+          var doc = document.querySelector('.ProseMirror');
+          if (doc) doc.style.marginBottom = '';
+          true;
+        })();
+      `)
+    })
+    return () => {
+      showSub.remove()
+      hideSub.remove()
+    }
+  }, [editor])
+
   return (
     <View sx={{ flex: 1, backgroundColor: 'background' }}>
       <View sx={{ flex: 1, px: 3, pt: 2 }}>
         <RichText
           editor={editor}
-          showsVerticalScrollIndicator={false}
-          showsHorizontalScrollIndicator={false}
           style={{ backgroundColor: colors.background }}
           onMessage={handleMessage}
           exclusivelyUseCustomOnMessage={false}
@@ -706,7 +580,6 @@ const Notes = (props: PropsT) => {
       })
       .catch((err) => {
         analytics.error('Failed to load notes editor font', err as any)
-        // Fall back to default source so the editor still renders.
         if (!cancelled) setCustomSource(editorHtml)
       })
     return () => {
@@ -730,7 +603,6 @@ const Notes = (props: PropsT) => {
           audioId={audioId}
           initialNotes={notes ?? ''}
           customSource={customSource!}
-          baselineBottomPadPx={bottomPadPx}
           navigation={props.navigation}
           colors={editorColors}
         />
