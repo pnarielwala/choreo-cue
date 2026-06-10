@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Keyboard, KeyboardAvoidingView, Platform } from 'react-native'
+import { Keyboard, KeyboardAvoidingView, Linking, Platform } from 'react-native'
+import type { WebViewMessageEvent } from 'react-native-webview'
 import {
   RichText,
   Toolbar,
@@ -15,15 +16,146 @@ import { File } from 'expo-file-system'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { View, ScreenLayout, useTheme, P } from 'design'
+import { View, ScreenLayout, useTheme, Pressable, Text } from 'design'
 import { ScreenPropsT } from 'App'
 import useAudioNotes, { useUpdateAudioNotes } from 'hooks/useAudioNotes'
 import analytics from 'resources/analytics'
 
+type EditorColors = {
+  text: string
+  background: string
+  textMuted: string
+  textSubtle: string
+  accent: string
+  accentText: string
+  surface: string
+  surfaceMuted: string
+  border: string
+}
+
+const buildToolbarTheme = (colors: EditorColors) => ({
+  toolbarBody: {
+    backgroundColor: colors.surface,
+    borderTopColor: colors.border,
+    borderBottomColor: colors.border,
+  },
+  toolbarButton: {
+    backgroundColor: colors.surface,
+  },
+  icon: {
+    tintColor: colors.textMuted,
+  },
+  iconDisabled: {
+    tintColor: colors.textSubtle,
+  },
+  iconWrapper: {
+    backgroundColor: colors.surface,
+  },
+  iconWrapperActive: {
+    backgroundColor: colors.surfaceMuted,
+  },
+  linkBarTheme: {
+    addLinkContainer: {
+      backgroundColor: colors.surface,
+      borderTopColor: colors.border,
+      borderBottomColor: colors.border,
+    },
+    linkInput: {
+      backgroundColor: colors.surface,
+      color: colors.text,
+    },
+    placeholderTextColor: colors.textMuted,
+    doneButton: {
+      backgroundColor: colors.accent,
+    },
+    doneButtonText: {
+      color: colors.accentText,
+    },
+  },
+})
+
+const buildColorCss = (colors: EditorColors) => `
+  html, body, .ProseMirror, .ProseMirror * {
+    color: ${colors.text};
+    -webkit-user-select: text !important;
+    user-select: text !important;
+  }
+  html, body {
+    background-color: ${colors.background};
+  }
+  *::selection {
+    background: #ffc600 !important;
+    color: #000000 !important;
+  }
+  
+  ::-webkit-selection {
+    background: #ffc600 !important;
+    color: #000000 !important;
+  }
+    .tiptap ::selection {
+      background-color: #ffc600 !important;
+      color: #000000 !important;
+    }
+    .tiptap *::selection {
+      background-color: #ffc600 !important;
+      color: #000000 !important;
+    }
+    /* Handles block element selections */
+    .ProseMirror-selectednode {
+      outline: 3px solid #ffc600 !important;
+    }
+      input, textarea, [contenteditable] {
+          -webkit-tap-highlight-color: #ff5722;
+  }
+  .ProseMirror {
+    caret-color: ${colors.text};
+  }
+  .ProseMirror a {
+    color: ${colors.accent};
+  }
+  .ProseMirror p.is-editor-empty:first-child::before,
+  .ProseMirror .is-empty::before {
+    color: ${colors.textMuted};
+  }
+  .ProseMirror blockquote {
+    border-left-color: ${colors.textSubtle};
+  }
+  .ProseMirror ul[data-type="taskList"] li > label > input[type="checkbox"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 1.1em;
+    height: 1.1em;
+    margin: 0.15rem 0.1rem;
+    padding: 0;
+    border: 1.5px solid ${colors.textSubtle};
+    border-radius: 0.25rem;
+    background: transparent;
+    position: relative;
+    cursor: pointer;
+    vertical-align: middle;
+  }
+  .ProseMirror ul[data-type="taskList"] li > label > input[type="checkbox"]:checked {
+    background: ${colors.accent};
+    border-color: ${colors.accent};
+  }
+  .ProseMirror ul[data-type="taskList"] li > label > input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 45%;
+    width: 0.3em;
+    height: 0.6em;
+    border: solid ${colors.accentText};
+    border-width: 0 0.16em 0.16em 0;
+    transform: translate(-50%, -55%) rotate(45deg);
+  }
+`
+
 const buildEditorCss = (
   regularB64: string,
   boldB64: string,
-  bottomPadPx: number
+  bottomPadPx: number,
+  colors: EditorColors
 ) => `
   @font-face {
     font-family: 'Satoshi';
@@ -43,8 +175,9 @@ const buildEditorCss = (
     font-family: 'Satoshi', -apple-system, system-ui, sans-serif;
   }
   .ProseMirror {
-    padding-bottom: ${bottomPadPx}px;
+    margin-bottom: ${bottomPadPx}px;
   }
+  ${buildColorCss(colors)}
   * {
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -56,7 +189,10 @@ const buildEditorCss = (
   }
 `
 
-const loadEditorCss = async (bottomPadPx: number): Promise<string> => {
+const loadEditorCss = async (
+  bottomPadPx: number,
+  colors: EditorColors
+): Promise<string> => {
   const [regular, bold] = await Promise.all([
     Asset.fromModule(
       require('assets/fonts/Satoshi-Regular.ttf')
@@ -69,11 +205,113 @@ const loadEditorCss = async (bottomPadPx: number): Promise<string> => {
     new File(regularUri).base64(),
     new File(boldUri).base64(),
   ])
-  return buildEditorCss(regularB64, boldB64, bottomPadPx)
+  return buildEditorCss(regularB64, boldB64, bottomPadPx, colors)
 }
 
-const buildCustomSource = (fontCss: string): string =>
-  editorHtml.replace('</head>', `<style>${fontCss}</style></head>`)
+// Intercept taps on links so we can show a confirmation pill instead of
+// navigating immediately. Single tap on an <a>: swallow the default click
+// (so ProseMirror doesn't select the link range and the browser doesn't
+// open it) and post the href + bounding rect to RN. Double-tap on the same
+// link: let it through so the user can edit/word-select. Tap elsewhere or
+// any scroll: post a dismiss so the pill goes away.
+const LINK_INTERCEPT_SCRIPT = `
+(function() {
+  if (window.__ccLinkIntercept) return;
+  window.__ccLinkIntercept = true;
+  var DBL_WINDOW_MS = 350;
+  var TAP_DEDUPE_MS = 60;
+  var lastTapTime = 0;
+  var lastTapAnchor = null;
+  var lastShowAt = 0;
+
+  function findAnchor(el) {
+    while (el && el !== document.body) {
+      if (el.tagName === 'A') return el;
+      el = el.parentElement;
+    }
+    return null;
+  }
+  function post(msg) {
+    if (window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(JSON.stringify(msg));
+    }
+  }
+  function withinDoubleWindow() {
+    return Date.now() - lastTapTime < DBL_WINDOW_MS;
+  }
+  function suppress(e) {
+    var a = findAnchor(e.target);
+    if (a && !withinDoubleWindow()) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }
+  document.addEventListener('mousedown', suppress, true);
+  document.addEventListener('touchstart', suppress, { capture: true, passive: false });
+
+  function handleTap(e) {
+    var now = Date.now();
+    if (now - lastShowAt < TAP_DEDUPE_MS) return;
+    var a = findAnchor(e.target);
+    var prevTime = lastTapTime;
+    var prevAnchor = lastTapAnchor;
+    lastTapTime = now;
+    lastTapAnchor = a;
+    lastShowAt = now;
+    if (!a || !a.getAttribute('href')) {
+      post({ type: 'cc-link-dismiss' });
+      return;
+    }
+    var isDouble = prevAnchor === a && (now - prevTime < DBL_WINDOW_MS);
+    if (isDouble) {
+      post({ type: 'cc-link-dismiss' });
+      return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    var r = a.getBoundingClientRect();
+    post({
+      type: 'cc-link-click',
+      href: a.getAttribute('href'),
+      rect: { top: r.top, left: r.left, bottom: r.bottom, width: r.width },
+    });
+  }
+  document.addEventListener('touchend', handleTap, true);
+  document.addEventListener('click', handleTap, true);
+  document.addEventListener('scroll', function() {
+    post({ type: 'cc-link-dismiss' });
+  }, true);
+})();
+`
+
+// editorHtml embeds the tiptap bundle, which contains string literals like
+// `<body>${t}</body>` - so an earlier `</body>` occurrence belongs to that JS,
+// not the document. Splice at the *last* `</body>` to inject before the real
+// closing tag.
+const injectBeforeClosingBody = (html: string, snippet: string): string => {
+  const idx = html.lastIndexOf('</body>')
+  if (idx === -1) return html + snippet
+  return html.slice(0, idx) + snippet + html.slice(idx)
+}
+
+const buildCustomSource = (css: string): string =>
+  injectBeforeClosingBody(
+    editorHtml.replace('</head>', `<style>${css}</style></head>`),
+    `<script>${LINK_INTERCEPT_SCRIPT}</script>`
+  )
+
+// Floating toolbar height + a little breathing room - how far above the
+// keyboard the cursor should land after the keyboard-show scroll.
+const TOOLBAR_CLEARANCE_PX = 60
+
+const PILL_HEIGHT = 32
+const PILL_URL_MAX = 36
+
+const truncateUrl = (url: string) => {
+  const stripped = url.replace(/^https?:\/\//, '')
+  if (stripped.length <= PILL_URL_MAX) return stripped
+  return stripped.slice(0, PILL_URL_MAX - 3) + '...'
+}
 
 const dismissKeyboardItem: ToolbarItem = {
   onPress:
@@ -90,31 +328,23 @@ const TOOLBAR_ITEMS: ToolbarItem[] = [
   ...DEFAULT_TOOLBAR_ITEMS,
 ]
 
-// Floating toolbar height (44pt) + buffer. ProseMirror is told to keep the
-// cursor this far above the WebView's visible bottom when scrolling it into
-// view, and .ProseMirror's padding-bottom must be at least this big so there
-// is runway to scroll into when editing near the end of the document.
-const TOOLBAR_CLEARANCE_PX = 60
-
 export type PropsT = ScreenPropsT<'Notes'>
 
 type EditorPaneProps = {
   audioId: number
   initialNotes: string
   customSource: string
-  baselineBottomPadPx: number
   navigation: PropsT['navigation']
+  colors: EditorColors
 }
 
 const EditorPane = ({
   audioId,
   initialNotes,
   customSource,
-  baselineBottomPadPx,
   navigation,
+  colors,
 }: EditorPaneProps) => {
-  const theme = useTheme()
-  const colors = theme.colors as Record<string, string>
   const headerHeight = useHeaderHeight()
   const updateNotes = useUpdateAudioNotes(audioId)
 
@@ -124,6 +354,8 @@ const EditorPane = ({
     bridgeExtensions: TenTapStartKit,
     initialContent: initialNotes,
     customSource,
+    theme: { toolbar: buildToolbarTheme(colors) },
+    disableColorHighlight: true,
   })
 
   const lastSavedRef = useRef(initialNotes)
@@ -147,79 +379,162 @@ const EditorPane = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigation])
 
-  // TenTap's `avoidIosKeyboard: true` pads .ProseMirror and sets
-  // scrollMargin.bottom to (keyboardHeight + 10) on keyboard up, which places
-  // the cursor at the top of the keyboard - behind the floating toolbar.
-  // After TenTap's keyboard effect settles, bump both values by
-  // TOOLBAR_CLEARANCE_PX and manually scroll the cursor into the new visible
-  // area. The visible area excludes the keyboard and the toolbar.
+  const [linkPrompt, setLinkPrompt] = useState<{
+    href: string
+    top: number
+    left: number
+  } | null>(null)
+
+  const handleMessage = (event: WebViewMessageEvent) => {
+    const raw = event.nativeEvent.data
+    if (typeof raw !== 'string') return
+    let parsed: unknown
+    try {
+      parsed = JSON.parse(raw)
+    } catch {
+      return
+    }
+    if (!parsed || typeof parsed !== 'object') return
+    const msg = parsed as { type?: string; href?: string; rect?: any }
+    if (msg.type === 'cc-link-click' && typeof msg.href === 'string') {
+      const rect = msg.rect || {}
+      const pillTop =
+        rect.top > PILL_HEIGHT + 8
+          ? rect.top - PILL_HEIGHT - 4
+          : rect.bottom + 4
+      setLinkPrompt({
+        href: msg.href,
+        top: pillTop,
+        left: Math.max(0, rect.left ?? 0),
+      })
+    } else if (msg.type === 'cc-link-dismiss') {
+      setLinkPrompt(null)
+    }
+  }
+
+  const openLink = async (href: string) => {
+    setLinkPrompt(null)
+    try {
+      await Linking.openURL(href)
+    } catch (err) {
+      analytics.error('Failed to open notes link', err as any)
+    }
+  }
+
+  // Push theme color updates into the WebView so toggling light/dark while
+  // the editor is mounted recolors text without losing editor state.
+  useEffect(() => {
+    const css = buildColorCss(colors)
+    editor.webviewRef.current?.injectJavaScript(`
+      (function () {
+        var id = 'cc-theme-colors';
+        var el = document.getElementById(id);
+        if (!el) {
+          el = document.createElement('style');
+          el.id = id;
+          document.head.appendChild(el);
+        }
+        el.textContent = ${JSON.stringify(css)};
+        true;
+      })();
+    `)
+  }, [editor, colors.text, colors.background, colors.textMuted, colors.accent])
+
+  // On keyboard show, scroll the cursor above the keyboard + toolbar if it
+  // would otherwise be hidden. We have to add our own bottom margin first to
+  // guarantee scroll runway: TenTap reads keyboardHeight from
+  // `keyboardDidShow` (~250ms after `keyboardWillShow`) before applying its
+  // own paddingBottom, so at this point the scroller has no room to scroll
+  // the cursor up. Inject a marginBottom of (kbHeight + clearance + 20) so
+  // the worst-case scroll (cursor at end of content) always has room. Clear
+  // it on keyboard hide so the CSS baseline marginBottom takes over.
   useEffect(() => {
     const showEvent =
       Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow'
     const hideEvent =
       Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide'
-    const setPadding = (px: number) => {
-      editor.webviewRef.current?.injectJavaScript(`
-        (function () {
-          var doc = document.querySelector('.ProseMirror');
-          if (doc) doc.style.paddingBottom = '${px}px';
-          true;
-        })();
-      `)
-    }
-    const hideSub = Keyboard.addListener(hideEvent, () => {
-      // TenTap resets .ProseMirror paddingBottom to 0 on keyboard hide -
-      // restore our baseline so content still has bottom breathing room.
-      setTimeout(() => setPadding(baselineBottomPadPx), 10)
-    })
     const showSub = Keyboard.addListener(showEvent, (e) => {
       const kbHeight = e.endCoordinates.height
-      const total = kbHeight + 10 + TOOLBAR_CLEARANCE_PX
       const hiddenBelow = kbHeight + TOOLBAR_CLEARANCE_PX
+      const runway = hiddenBelow + 20
       setTimeout(() => {
-        editor.updateScrollThresholdAndMargin(total)
         editor.webviewRef.current?.injectJavaScript(`
           (function () {
-            var scroller = document.querySelector('#root > div') || document.scrollingElement || document.documentElement;
             var doc = document.querySelector('.ProseMirror');
             if (doc) {
-              doc.style.paddingBottom = '${total}px';
+              doc.style.marginBottom = '${runway}px';
               void doc.offsetHeight;
             }
-            if (scroller) {
-              scroller.style.scrollPaddingBottom = '${hiddenBelow}px';
-              scroller.style.scrollBehavior = 'smooth';
+            var sel = window.getSelection && window.getSelection();
+            if (!sel || sel.rangeCount === 0) return;
+            var node = sel.focusNode;
+            if (!node) return;
+            var el = node.nodeType === 3 ? node.parentElement : node;
+            if (!el) return;
+            var rect = el.getBoundingClientRect();
+            var visibleBottom = window.innerHeight - ${hiddenBelow};
+            if (rect.bottom <= visibleBottom) return;
+            var scroller = document.querySelector('#root > div') || document.scrollingElement || document.documentElement;
+            if (!scroller) return;
+            var delta = rect.bottom - visibleBottom + 20;
+            if (typeof scroller.scrollTo === 'function') {
+              scroller.scrollTo({ top: scroller.scrollTop + delta, behavior: 'smooth' });
+            } else {
+              scroller.scrollTop = scroller.scrollTop + delta;
             }
-            requestAnimationFrame(function () {
-              var sel = window.getSelection && window.getSelection();
-              if (!sel || sel.rangeCount === 0) return;
-              var node = sel.focusNode;
-              if (!node) return;
-              var el = node.nodeType === 3 ? node.parentElement : node;
-              if (el && typeof el.scrollIntoView === 'function') {
-                el.scrollIntoView({ block: 'end', behavior: 'smooth' });
-              }
-            });
             true;
           })();
         `)
-      }, 10)
+      }, 50)
+    })
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      editor.webviewRef.current?.injectJavaScript(`
+        (function () {
+          var doc = document.querySelector('.ProseMirror');
+          if (doc) doc.style.marginBottom = '';
+          true;
+        })();
+      `)
     })
     return () => {
       showSub.remove()
       hideSub.remove()
     }
-  }, [editor, baselineBottomPadPx])
+  }, [editor])
 
   return (
     <View sx={{ flex: 1, backgroundColor: 'background' }}>
       <View sx={{ flex: 1, px: 3, pt: 2 }}>
         <RichText
           editor={editor}
-          showsVerticalScrollIndicator={false}
-          showsHorizontalScrollIndicator={false}
           style={{ backgroundColor: colors.background }}
+          onMessage={handleMessage}
+          exclusivelyUseCustomOnMessage={false}
         />
+        {linkPrompt && (
+          <Pressable
+            onPress={() => openLink(linkPrompt.href)}
+            sx={{
+              position: 'absolute',
+              top: linkPrompt.top,
+              left: linkPrompt.left,
+              maxWidth: '90%',
+              backgroundColor: 'surfaceElevated',
+              borderColor: 'border',
+              borderWidth: 1,
+              borderRadius: 8,
+              paddingHorizontal: 12,
+              paddingVertical: 8,
+            }}
+          >
+            <Text
+              numberOfLines={1}
+              sx={{ color: 'text', fontSize: 14, fontWeight: '500' }}
+            >
+              Go to {truncateUrl(linkPrompt.href)}
+            </Text>
+          </Pressable>
+        )}
       </View>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -240,25 +555,39 @@ const Notes = (props: PropsT) => {
   const { audioId, trackName } = props.route.params
   const insets = useSafeAreaInsets()
   const bottomPadPx = insets.bottom + 24
+  const theme = useTheme()
+  const themeColors = theme.colors as Record<string, string>
+  const editorColors: EditorColors = {
+    text: themeColors.text,
+    background: themeColors.background,
+    textMuted: themeColors.textMuted,
+    textSubtle: themeColors.textSubtle,
+    accent: themeColors.accent,
+    accentText: themeColors.accentText,
+    surface: themeColors.surface,
+    surfaceMuted: themeColors.surfaceMuted,
+    border: themeColors.border,
+  }
 
   const { data: notes, isLoading } = useAudioNotes(audioId)
 
   const [customSource, setCustomSource] = useState<string | null>(null)
   useEffect(() => {
     let cancelled = false
-    console.log('bottomPadPx', bottomPadPx)
-    loadEditorCss(bottomPadPx)
+    loadEditorCss(bottomPadPx, editorColors)
       .then((css) => {
         if (!cancelled) setCustomSource(buildCustomSource(css))
       })
       .catch((err) => {
         analytics.error('Failed to load notes editor font', err as any)
-        // Fall back to default source so the editor still renders.
         if (!cancelled) setCustomSource(editorHtml)
       })
     return () => {
       cancelled = true
     }
+    // Only build initial source once; runtime theme changes are pushed via
+    // injected CSS in EditorPane.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bottomPadPx])
 
   useEffect(() => {
@@ -274,8 +603,8 @@ const Notes = (props: PropsT) => {
           audioId={audioId}
           initialNotes={notes ?? ''}
           customSource={customSource!}
-          baselineBottomPadPx={bottomPadPx}
           navigation={props.navigation}
+          colors={editorColors}
         />
       ) : (
         <View sx={{ flex: 1, backgroundColor: 'background' }} />
