@@ -21,7 +21,7 @@ describe('Tempo', () => {
     doRender()
 
     expect(screen.getByText('Tempo')).toBeTruthy()
-    expect(screen.getByText('1x')).toBeTruthy()
+    expect(screen.getByTestId('tempo-value')).toHaveTextContent('1x')
   })
 
   it('calls setRate with the correct value when slider value changes', () => {
@@ -32,7 +32,7 @@ describe('Tempo', () => {
     fireEvent(slider, 'onValueChange', 1.2)
 
     expect(setRateMock).toHaveBeenCalledWith(1.2)
-    expect(screen.getByText('1.2x')).toBeTruthy()
+    expect(screen.getByTestId('tempo-value')).toHaveTextContent('1.2x')
   })
 
   it('updates the tempo text when slider value changes', () => {
@@ -41,7 +41,7 @@ describe('Tempo', () => {
     const slider = screen.getByTestId('tempo-slider')
     fireEvent(slider, 'onValueChange', 0.8)
 
-    expect(screen.getByText('0.8x')).toBeTruthy()
+    expect(screen.getByTestId('tempo-value')).toHaveTextContent('0.8x')
   })
 
   it('renders with the correct initial tempo value', () => {
@@ -68,11 +68,13 @@ describe('Tempo', () => {
     const slider = screen.getByTestId('tempo-slider')
     fireEvent(slider, 'onValueChange', 0.8)
 
-    expect(screen.getByText('0.8x')).toBeTruthy()
+    expect(screen.getByTestId('tempo-value')).toHaveTextContent('0.8x')
 
     const resetButton = screen.getByRole('button', { name: 'Reset tempo' })
     fireEvent.press(resetButton)
 
-    await waitFor(() => expect(screen.getByText('1x')).toBeTruthy())
+    await waitFor(() =>
+      expect(screen.getByTestId('tempo-value')).toHaveTextContent('1x')
+    )
   })
 })

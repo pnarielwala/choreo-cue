@@ -60,7 +60,15 @@ export default function Tempo({ setRate, disabled = false }: PropsT) {
             alignSelf: 'center',
           }}
         />
-        <Text sx={{ alignSelf: 'center', minWidth: 45, textAlign: 'right' }}>
+        <Text
+          testID="tempo-value"
+          sx={{
+            alignSelf: 'center',
+            minWidth: 45,
+            textAlign: 'right',
+            fontWeight: '600',
+          }}
+        >
           {tempo}x
         </Text>
         <Pressable
@@ -74,8 +82,8 @@ export default function Tempo({ setRate, disabled = false }: PropsT) {
           role="button"
         >
           <FontAwesome5
-            name="sync-alt"
-            size={24}
+            name="history"
+            size={22}
             style={sx({
               color: disabled || tempo === 1 ? 'textMuted' : 'text',
             })}
