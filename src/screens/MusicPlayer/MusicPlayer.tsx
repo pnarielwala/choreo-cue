@@ -1,18 +1,12 @@
 import 'react-native-gesture-handler'
 import React, { useEffect, useRef } from 'react'
-import {
-  Easing,
-  NativeSyntheticEvent,
-  TextInputChangeEventData,
-} from 'react-native'
+import { Easing } from 'react-native'
 import {
   View,
   H1,
   Text,
   Pressable,
-  Input,
   Button,
-  BottomSheet,
   ScreenLayout,
   useTheme,
 } from 'design'
@@ -35,7 +29,6 @@ import { ScreenPropsT } from 'App'
 import {
   getAudioRepeatMode,
   touchAudioFile,
-  updateAudioName,
   updateAudioRepeatMode,
 } from 'api/db/audio'
 
@@ -85,7 +78,7 @@ const MusicPlayer = (props: PropsT) => {
     }
   }, [])
 
-  const [trackName, setTrackName] = React.useState(details.trackName)
+  const trackName = details.trackName
 
   const { data: cues } = useCues(audioId)
   const cuesArr = cues ?? []
@@ -216,27 +209,6 @@ const MusicPlayer = (props: PropsT) => {
     },
   })
 
-  const [isVisible, setIsVisible] = React.useState(false)
-  const [inputValue, setInputValue] = React.useState(
-    props.route.params.musicData.name
-  )
-
-  const onInputValueChange = (
-    event: NativeSyntheticEvent<TextInputChangeEventData>
-  ) => {
-    setInputValue(event.nativeEvent.text)
-  }
-
-  const onRenameAudio = async () => {
-    await updateAudioName(audioId, inputValue)
-    setTrackName(inputValue)
-    closeDialog()
-  }
-
-  const closeDialog = () => {
-    setIsVisible(false)
-  }
-
   useEffect(() => {
     props.navigation.setOptions({
       headerLeft: () => (
@@ -252,133 +224,93 @@ const MusicPlayer = (props: PropsT) => {
       ),
       headerTitle: 'Music Player',
       headerRight: () => (
-        <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-          <Pressable
-            onPress={() => {
-              props.navigation.push('Notes', { audioId, trackName })
-            }}
-            hitSlop={{ top: 48, bottom: 48, left: 48, right: 12 }}
-            accessibilityLabel="Edit notes"
-          >
-            <FontAwesome5 name="sticky-note" size={22} color={colors.text} />
-          </Pressable>
-          <Pressable
-            onPress={() => {
-              setIsVisible(true)
-            }}
-            hitSlop={{ top: 48, bottom: 48, left: 12, right: 48 }}
-            accessibilityLabel="Rename audio"
-          >
-            <FontAwesome5 name="pencil-alt" size={22} color={colors.text} />
-          </Pressable>
-        </View>
+        <Pressable
+          onPress={() => {
+            props.navigation.push('Notes', { audioId, trackName })
+          }}
+          hitSlop={48}
+          accessibilityLabel="Edit notes"
+        >
+          <FontAwesome5 name="sticky-note" size={22} color={colors.text} />
+        </Pressable>
       ),
     })
   }, [props, colors.text, audioId, trackName])
 
   return (
-    <>
-      <ScreenLayout padding={3}>
-        <View sx={{ height: 'auto' }}>
-          <View sx={{ alignItems: 'flex-start', width: '100%' }}>
-            <H1
-              as={TextTicker}
-              // @ts-ignore TODO: Fix TS typing for Dripsy on "as" prop
-              loop={false}
-              bounce={false}
-              repeatSpacer={20}
-              scrollSpeed={200}
-              easing={Easing.linear}
-              marqueeDelay={1000}
-            >
-              {trackName}
-            </H1>
-          </View>
-
-          <Controls
-            playSound={playAudio}
-            pauseSound={pauseAudio}
-            currentPosition={currentPosition}
-            isPlaying={isPlaying}
-            setPosition={setAudioPosition}
-            repeatMode={repeatMode}
-            onCycleRepeatMode={cycleRepeatMode}
-          />
-
-          <TrackSlider
-            duration={duration}
-            currentPosition={currentPosition}
-            onPositionChange={setAudioPosition}
-            disabled={false}
-          />
-
-          {showOpenSpotifyBanner ? (
-            <View
-              sx={{
-                backgroundColor: 'surfaceMuted',
-                borderRadius: 8,
-                p: 3,
-                mt: 3,
-                width: '100%',
-              }}
-            >
-              <Text sx={{ mb: 3, color: 'text' }}>
-                Spotify isn't running. Tap resume to wake it back up - if no
-                Spotify device is active we'll bounce you into the app to start
-                playback.
-              </Text>
-              <Button variant="primary" size="sm" onPress={() => playAudio()}>
-                Resume playback
-              </Button>
-            </View>
-          ) : (
-            <Tempo setRate={setAudioSpeed} disabled={!capabilities.tempo} />
-          )}
+    <ScreenLayout padding={3}>
+      <View sx={{ height: 'auto' }}>
+        <View sx={{ alignItems: 'flex-start', width: '100%' }}>
+          <H1
+            as={TextTicker}
+            // @ts-ignore TODO: Fix TS typing for Dripsy on "as" prop
+            loop={false}
+            bounce={false}
+            repeatSpacer={20}
+            scrollSpeed={200}
+            easing={Easing.linear}
+            marqueeDelay={1000}
+          >
+            {trackName}
+          </H1>
         </View>
-        <View sx={{ flex: 1, alignItems: 'flex-start' }}>
-          <Cues
-            currentPosition={currentPosition}
-            onSeekToCue={async (cue) => {
-              onCueActivated(cue)
-              await setAudioPosition(cue.start)
-            }}
-            onPlayCue={async (cue) => {
-              onCueActivated(cue)
-              await setAudioPosition(cue.start)
-              playAudio()
-            }}
-            audioId={audioId}
-          />
-        </View>
-      </ScreenLayout>
 
-      <BottomSheet
-        isVisible={isVisible}
-        onClose={closeDialog}
-        title="Rename audio"
-      >
-        <Input
-          placeholder="New name"
-          value={inputValue}
-          onChange={onInputValueChange}
+        <Controls
+          playSound={playAudio}
+          pauseSound={pauseAudio}
+          currentPosition={currentPosition}
+          isPlaying={isPlaying}
+          setPosition={setAudioPosition}
+          repeatMode={repeatMode}
+          onCycleRepeatMode={cycleRepeatMode}
         />
-        <View
-          sx={{
-            flexDirection: 'row',
-            mt: 3,
-            justifyContent: 'flex-end',
-            gap: 3,
+
+        <TrackSlider
+          duration={duration}
+          currentPosition={currentPosition}
+          onPositionChange={setAudioPosition}
+          disabled={false}
+        />
+
+        {showOpenSpotifyBanner ? (
+          <View
+            sx={{
+              backgroundColor: 'surfaceMuted',
+              borderRadius: 8,
+              p: 3,
+              mt: 3,
+              width: '100%',
+            }}
+          >
+            <Text sx={{ mb: 3, color: 'text' }}>
+              Spotify isn't running. Tap resume to wake it back up - if no
+              Spotify device is active we'll bounce you into the app to start
+              playback.
+            </Text>
+            <Button variant="primary" size="sm" onPress={() => playAudio()}>
+              Resume playback
+            </Button>
+          </View>
+        ) : (
+          <Tempo setRate={setAudioSpeed} disabled={!capabilities.tempo} />
+        )}
+      </View>
+      <View sx={{ flex: 1, alignItems: 'flex-start' }}>
+        <Cues
+          currentPosition={currentPosition}
+          onSeekToCue={async (cue) => {
+            onCueActivated(cue)
+            await setAudioPosition(cue.start)
           }}
-        >
-          <Button variant="ghost" size="sm" onPress={closeDialog}>
-            Cancel
-          </Button>
-          <Button variant="primary" size="sm" onPress={onRenameAudio}>
-            Save
-          </Button>
-        </View>
-      </BottomSheet>
-    </>
+          onPlayCue={async (cue) => {
+            onCueActivated(cue)
+            await setAudioPosition(cue.start)
+            playAudio()
+          }}
+          audioId={audioId}
+        />
+      </View>
+    </ScreenLayout>
   )
 }
 
